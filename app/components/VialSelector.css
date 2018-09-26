@@ -1,0 +1,122 @@
+/* Demo specifics */
+
+.main {
+  padding: 10px 10px;
+  overflow: hidden;
+  height: auto;
+  overflow: visible;
+  position: relative;
+}
+
+.selectable-selectbox {
+  z-index: 9000;
+  position: absolute;
+  cursor: default;
+  background: none;
+  border: 1px dashed grey;
+}
+.albums {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.album-label {
+  display: block;
+  font-size: smaller;
+}
+.item {
+  position: relative;
+  width: 100px;
+  min-height: 100px;
+  border-radius: 100px;
+  margin: 7px;
+  float: left;
+  text-align: center;
+  border: 1px solid #cccccc;
+  padding: 18px;
+  overflow: hidden;
+  color: black;
+}
+.item.not-selectable {
+  background: #DCDCDC;
+}
+.item .tick {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: #009688;
+  font-weight: bold;
+  cursor: pointer;
+}
+.item h2 {
+  font-size: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
+  color: inherit;
+  font-weight: 600;
+}
+.item.selected {
+  background: #fff5e6;
+  color: black;
+  border: 2px solid #ff9900;
+}
+.item.selecting {
+  border: 1px solid #FFB03B;
+}
+.not-selectable {}
+.counter {
+  color: #009688;
+}
+.selectable-button {
+  display: inline-block;
+  margin: 15px 10px 10px 3px;
+}
+.in-selection-mode .item {
+  cursor: pointer;
+}
+button {
+  display: inline-block;
+  position: relative;
+  width: 121px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+
+
+/* If you want the content centered horizontally and vertically */
+.centered {
+  text-align: center;
+  float: none;
+  margin: 0 auto;
+}
+.button-position {
+  text-align: right;
+}
+
+.toggle-button-position {
+  text-align: left;
+  position: relative;
+  top: -52px;
+  left: 14px;
+  width: 190px;
+}
+
+/* If you want the content centered horizontally and vertically */
+.vialArray-gui {
+  padding-left: 0px;
+
+}
+
+.strain-label{
+  font-size: 12px;
+  font-style: italic;
+}
