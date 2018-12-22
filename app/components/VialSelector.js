@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 
 
-const disabledVial = [1]
+const disabledVial = []
 
 function isDisabled(currentVial) {
   return disabledVial.includes(currentVial)
@@ -89,26 +89,23 @@ class VialSelector extends Component<Props>  {
   }
 
   handleSelecting = selectingItems => {
-    if (selectingItems.length !== this.state.selectingItems.length) {
+    console.log("Handle selecting");
+            if (selectingItems.length !== this.state.selectingItems.length) {
       this.setState({ selectingItems })
     }
   }
 
   handleSelectionFinish = selectedItems => {
-    this.setState({
-      selectedItems,
+    console.log("Handle selection finish");
+    console.log(selectedItems);
+            this.setState({
+      selectedItems: selectedItems,
       selectingItems: [],
-    })
-
-    var selectedVials = this.state.selectedItems;
-    this.props.vialSelectionFinish(selectedVials);
-
-    // eslint-disable-next-line no-console
-    console.log(`Finished selection ${selectedItems.length}`)
+    }, this.props.vialSelectionFinish(selectedItems))
   }
 
-  handleSelectionClear() {
-    console.log('Cancel selection') // eslint-disable-line no-console
+  handleSelectionClear = selectedItems => {  
+    console.log("Handle selection clear");
   }
 
   toggleFirstRow = () => {
@@ -152,13 +149,6 @@ class VialSelector extends Component<Props>  {
             <span  style={{paddingRight: 10}}> Toggle: </span >
             <button className = "btn btn-sm btn-outline-primary" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
-          {/*
-          <div>
-            {this.state.selectedItems.map((SelectableItem, index) => (
-                <p key={index}>Hello, {SelectableItem.props.vial}!</p>
-            ))}
-          </div>
-          */}
         </Card>
     )
   }

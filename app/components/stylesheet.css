@@ -5,8 +5,27 @@
 body {
   padding: 0;
   margin: 0;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: back;
+}
+
+.homeButtons {
+  margin: 20px 20px 10px 20px;
+}
+
+.homeFooter {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.setupButton {
+  text-align: center;
+}
+
+.setupPanel {
+  margin: 0px 0px 0px 0px;
 }

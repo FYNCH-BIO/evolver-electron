@@ -44,8 +44,12 @@ const installExtensions = async () => {
 function createWindow () {
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728
+    width: 1150,
+    height: 680,
+    backgroundColor: '#F7F7F7',
+    minWidth: 1150,
+    minHeight: 680
+
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);

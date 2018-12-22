@@ -153,7 +153,7 @@
     "css-loader": "^1.0.0",
     "detect-port": "^1.2.3",
     "electron": "^2.0.6",
-    "electron-builder": "^20.26.0",
+    "electron-builder": "^20.38.4",
     "electron-devtools-installer": "^2.2.4",
     "electron-rebuild": "^1.8.2",
     "enzyme": "^3.3.0",
@@ -192,12 +192,13 @@
     "rimraf": "^2.6.2",
     "sass-loader": "^7.0.3",
     "sinon": "^6.1.4",
+    "socket.io-client": "^2.2.0",
     "spectron": "^3.8.0",
     "style-loader": "^0.21.0",
     "stylelint": "^9.4.0",
     "stylelint-config-standard": "^18.2.0",
     "uglifyjs-webpack-plugin": "1.2.7",
-    "url-loader": "^1.0.1",
+    "url-loader": "^1.1.1",
     "webpack": "^4.16.3",
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.1.0",
@@ -206,7 +207,7 @@
     "yarn": "^1.9.2"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.2.0",
+    "@fortawesome/fontawesome-free": "^5.3.1",
     "@material-ui/core": "^3.1.1",
     "@material-ui/lab": "^3.0.0-alpha.17",
     "devtron": "^1.4.0",
@@ -222,6 +223,7 @@
     "react-selectable-fast": "^2.1.1",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0",
+    "socket.io-client": "^2.2.0",
     "source-map-support": "^0.5.6"
   },
   "devEngines": {
