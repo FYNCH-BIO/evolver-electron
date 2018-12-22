@@ -44,11 +44,11 @@ const installExtensions = async () => {
 function createWindow () {
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1150,
-    height: 680,
+    width: 1280,
+    height: 768,
     backgroundColor: '#F7F7F7',
-    minWidth: 1150,
-    minHeight: 680
+    minWidth: 1280,
+    minHeight: 768
 
   });
 
