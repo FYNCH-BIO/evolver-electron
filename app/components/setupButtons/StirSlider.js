@@ -37,7 +37,7 @@ class StirSlider extends React.Component {
   }
   
   clickSubmit = (event) => {
-      this.props.onSubmitButton("stir", (Math.round(this.state.value * 100)/100).toFixed(1));
+      this.props.onSubmitButton("stir", (Math.round(this.state.value * 100)/100));
   }  
 
   render() {

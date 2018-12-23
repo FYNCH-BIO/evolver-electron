@@ -58,7 +58,7 @@ export default class Setup extends Component<Props> {
           }
           var binaryString = this.getBinaryString(vialsToBinary);
           evolverMessage = {pumps_binary: binaryString, pump_time: value.time, efflux_pump_time: 0, delay_interval: 0, times_to_repeat: 0, run_efflux:0};
-          this.setState({arduinoMessage: evolverComponent});
+          this.setState({arduinoMessage: "Running pump for Vials: " + vials});
       }
       else if (evolverComponent == "light") {
           this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});          
@@ -69,6 +69,7 @@ export default class Setup extends Component<Props> {
         for (var i = 0; i < vials.length; i++) {
             evolverMessage[vials[i]] = value;
         }
+        this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
       console.log(evolverMessage);      
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
