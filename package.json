@@ -48,6 +48,7 @@
   "build": {
     "productName": "ElectronReact",
     "appId": "org.develar.ElectronReact",
+    "artifactName": "evolver-electron-${version}.${ext}",
     "files": [
       "dist/",
       "node_modules/",

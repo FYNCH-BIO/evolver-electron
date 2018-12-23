@@ -51,7 +51,8 @@ function createWindow () {
     minHeight: 768
 
   });
-
+  //mainWindow.setFullScreen(true);
+  mainWindow.setMenu(null);
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event
@@ -72,8 +73,8 @@ function createWindow () {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  // const menuBuilder = new MenuBuilder(mainWindow);
+  // menuBuilder.buildMenu();
 }
 
 
