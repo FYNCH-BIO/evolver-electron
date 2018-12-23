@@ -54,3 +54,8 @@ main.js.map
 .idea
 npm-debug.log.*
 /nbproject/private/
+release/mac/ElectronReact.app/Contents/Resources/app.asar
+release/mac/ElectronReact.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
+release/mac/ElectronReact.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libnode.dylib
+release/mac/ElectronReact.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libffmpeg.dylib
+release/mac/ElectronReact.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
