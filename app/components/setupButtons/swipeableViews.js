@@ -68,9 +68,9 @@ function ActiveButtons(props) {
   const currentTag = props.currentTag;
   console.log(currentTag)
   if (currentButtons == 0) {
-    return <StirSlider/>;
+    return <StirSlider onSubmitButton={props.onSubmitButton}/>;
   }
-  return <FluidicsButtons/>;
+  return <FluidicsButtons onSubmitButton={props.onSubmitButton}/>;
 }
 
 class SwipeableTextMobileStepper extends React.Component {
@@ -117,8 +117,7 @@ class SwipeableTextMobileStepper extends React.Component {
               <Card key={step.label} className={classes.card}>
                   {Math.abs(activeStep - index) <= 2 ? (
                     <ActiveButtons currentButtons={activeStep}
-                    currentTag={tutorialSteps[activeStep].outputTag}
-                    onSubmitButton={this.props.onSubmitButton}/>
+                    currentTag={tutorialSteps[activeStep].outputTag} onSubmitButton={this.props.onSubmitButton}/>
                   ) : null}
               </Card>
           ))}
