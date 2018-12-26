@@ -83,7 +83,7 @@ export default class Setup extends Component<Props> {
                 <VialSelector items={data} vialSelectionFinish={this.onSelectVials}/>
               </div>
               <div className="buttons-dashboard ">
-                <Demo />
+                <Demo arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 {/*
                 <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 */}

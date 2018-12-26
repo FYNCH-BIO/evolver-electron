@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import MobileStepper from '@material-ui/core/MobileStepper';
@@ -19,15 +19,19 @@ import LightButtons from './LightButtons'
 const tutorialSteps = [
   {
     label: 'STIR RATE',
+    outputTag: 'stir',
   },
   {
     label: 'TEMPERATURE',
+    outputTag: 'temp',
   },
   {
     label: 'FLUIDICS',
+    outputTag: 'pump',
   },
   {
     label: 'LIGHT',
+    outputTag: 'light',
   },
 ];
 
@@ -57,6 +61,17 @@ const styles = theme => ({
     height: 200,
   },
 });
+
+function ActiveButtons(props) {
+  console.log('active button change')
+  const currentButtons = props.currentButtons;
+  const currentTag = props.currentTag;
+  console.log(currentTag)
+  if (currentButtons == 0) {
+    return <StirSlider/>;
+  }
+  return <FluidicsButtons/>;
+}
 
 class SwipeableTextMobileStepper extends React.Component {
   state = {
@@ -101,7 +116,9 @@ class SwipeableTextMobileStepper extends React.Component {
             {tutorialSteps.map((step, index) => (
               <Card key={step.label} className={classes.card}>
                   {Math.abs(activeStep - index) <= 2 ? (
-                    <StirSlider onSubmitButton={this.props.onSubmitButton}/>
+                    <ActiveButtons currentButtons={activeStep}
+                    currentTag={tutorialSteps[activeStep].outputTag}
+                    onSubmitButton={this.props.onSubmitButton}/>
                   ) : null}
               </Card>
           ))}
