@@ -30,7 +30,7 @@ const styles = {
 
 class SetupButtons extends React.Component {
 
-  
+
   render(){
     const { classes } = this.props;
     return (

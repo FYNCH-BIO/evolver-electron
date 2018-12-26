@@ -44,11 +44,11 @@ const installExtensions = async () => {
 function createWindow () {
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1280,
-    height: 768,
+    width: 1110,
+    height: 666,
     backgroundColor: '#F7F7F7',
-    minWidth: 1280,
-    minHeight: 768
+    minWidth: 1110,
+    minHeight: 666
 
   });
   //mainWindow.setFullScreen(true);

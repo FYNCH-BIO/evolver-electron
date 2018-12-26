@@ -35,10 +35,10 @@ class StirSlider extends React.Component {
     }
     this.setState({ value: newValue});
   }
-  
+
   clickSubmit = (event) => {
       this.props.onSubmitButton("stir", (Math.round(this.state.value * 100)/100).toFixed(1));
-  }  
+  }
 
   render() {
     const { value } = this.state;
@@ -53,7 +53,13 @@ class StirSlider extends React.Component {
                 </span>
               </button>
             <button type="button" className="btn btn-outline-secondary btn-circle" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
-          <Slider value={value} min={this.state.min} max={this.state.max} step={1} aria-labelledby="label" onChange={this.handleChange} />
+          <Slider
+          value={value}
+          min={this.state.min}
+          max={this.state.max}
+          step={1}
+          aria-labelledby="label"
+          onChange={this.handleChange} />
         </span>
       </div>
     );

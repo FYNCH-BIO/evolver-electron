@@ -5,9 +5,9 @@ import routes from '../constants/routes.json';
 import data from './sample-data'
 import VialSelector from './VialSelector'
 import Navbar from './Navbar'
-import Footer from './Footer'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
+import Demo from './SetupButtons/SwipeableViews';
 
 type Props = {
 };
@@ -22,15 +22,15 @@ export default class Setup extends Component<Props> {
             selectedItems: [],
             arduinoMessage: ""
         };
-      this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));  
+      this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
       this.socket = io("http://localhost:8081/dpu-evolver");
-      
+
       // TODO: Define params from actual device
       this.socket.on('connect', function(){console.log("Connected evolver");});
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});   
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
   }
   props: Props
-  
+
   getBinaryString = vials => {
       var binaryInteger = 0;
       for (var i = 0; i< vials.length; i++) {
@@ -38,15 +38,15 @@ export default class Setup extends Component<Props> {
       }
       return binaryInteger.toString(2);
   }
-  
+
   onSelectVials = (selectedVials) =>    {
     this.setState({selectedItems: selectedVials});
-  }  
-  
-  onSubmitButton = (evolverComponent, value) => {      
+  }
+
+  onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
       if (evolverComponent == "pump") {
-          var evolverMessage = {};          
+          var evolverMessage = {};
           var vialsToBinary = [];
           for (var i = 0; i < vials.length; i++) {
               if (value.in1) {
@@ -61,8 +61,8 @@ export default class Setup extends Component<Props> {
           this.setState({arduinoMessage: evolverComponent});
       }
       else if (evolverComponent == "light") {
-          this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});          
-          
+          this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});
+
       }
       else {
         var evolverMessage = Array(16).fill("NaN")
@@ -70,27 +70,26 @@ export default class Setup extends Component<Props> {
             evolverMessage[vials[i]] = value;
         }
       }
-      console.log(evolverMessage);      
+      console.log(evolverMessage);
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }
 
   render() {
     return (
       <div>
-        <Navbar/>
-        <div className="row setupPanel">
-                <div className="col-8.5 centered">
-                    <div className="row setupButton">
-                      <div>
-                        <VialSelector items={data} vialSelectionFinish={this.onSelectVials}/>
-                      </div>
-                      <div className="buttons-dashboard ">
-                        <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
-                      </div>
-                    </div>
-                </div>
-          </div>
-          <Footer/>
+        <div className="col-8.5 centered">
+            <div className="row setupButton centered">
+              <div>
+                <VialSelector items={data} vialSelectionFinish={this.onSelectVials}/>
+              </div>
+              <div className="buttons-dashboard ">
+                <Demo />
+                {/*
+                <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+                */}
+              </div>
+            </div>
+        </div>
       </div>
     )
   }
