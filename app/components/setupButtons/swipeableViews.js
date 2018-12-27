@@ -46,7 +46,7 @@ const styles = theme => ({
   header: {
     display: 'flex',
     height: 50,
-    paddingLeft: theme.spacing.unit * 4,
+    padding: '20px 0px 0px 0px',
     backgroundColor: 'black',
   },
   headerText: {
@@ -59,7 +59,7 @@ const styles = theme => ({
   },
   card: {
     width: 450,
-    height: 170,
+    height: 220,
     backgroundColor: 'black',
   },
   cardSpacer: {
@@ -77,8 +77,8 @@ const styles = theme => ({
   },
   dot: {
     backgroundColor: 'white',
-    width: 10,
-    height: 10,
+    width: 12,
+    height: 12,
   },
   dotActive: {
     backgroundColor: '#f58245',

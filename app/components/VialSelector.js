@@ -26,8 +26,8 @@ const Label = ({ selecting, selected, vial, od, temp}) => (
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="OD-label">OD: {`${od}`}</span><br/>
-    <span className="temp-label">Temp: {`${temp}`}</span>
+    <span className="temp-label">{`${temp}`} &deg;C</span><br/>
+    <span className="OD-label">OD: {`${od}`}</span>
     <br />
   </div>
 )

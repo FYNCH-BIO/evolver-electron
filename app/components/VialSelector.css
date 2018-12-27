@@ -117,7 +117,13 @@ button {
   background-color: black;
 }
 
-.strain-label {
+.OD-label {
+  font-size: 15px;
+  font-style: italic;
+  color: white;
+}
+
+.temp-label {
   font-size: 15px;
   font-style: italic;
   color: white;
