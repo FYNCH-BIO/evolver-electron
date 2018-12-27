@@ -14,12 +14,12 @@ class FluidicsButtons extends React.Component {
   handleChange = name => event => {
     this.setState({ [name]: event.target.checked });
   };
-  
+
   handleSubmit = value => {
       var values = {time: value, in1: this.state.mediaAToggle, in2: this.state.mediaBToggle, efflux: this.state.effluxToggle};
       this.props.onSubmitButton("pump", values);
   };
-      
+
   render() {
     return (
       <div>

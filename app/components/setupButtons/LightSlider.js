@@ -35,7 +35,7 @@ class LightSlider extends React.Component {
     }
     this.setState({ value: newValue});
   }
-  
+
   clickSubmit = (event) => {
       this.props.handleSubmit((Math.round(this.state.value * 100)/100).toFixed(0));
   }
@@ -46,13 +46,13 @@ class LightSlider extends React.Component {
     return (
       <div className="slider-style">
         <span id="label">
-            <button type="button" className="btn btn-outline-secondary btn-circle" onClick={this.clickSubtract}><i className="fa fa-minus"></i></button>
-              <button className = "btn btn-sm btn-outline-secondary" onClick={this.clickSubmit}>
+            <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickSubtract}><i className="fa fa-minus"></i></button>
+              <button className = "btn btn-sm btn-outline-secondary setupButton" onClick={this.clickSubmit}>
                 <span className="slider-label">
                   Light: {(Math.round(this.state.value * 100)/100).toFixed(0)} %
                 </span>
               </button>
-            <button type="button" className="btn btn-outline-secondary btn-circle" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
+            <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
           <Slider value={value} min={this.state.min} max={this.state.max} step={5} aria-labelledby="label" onChange={this.handleChange} />
         </span>
       </div>

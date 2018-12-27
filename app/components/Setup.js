@@ -7,7 +7,7 @@ import VialSelector from './VialSelector'
 import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
-import Demo from './SetupButtons/SwipeableViews';
+import ButtonCards from './SetupButtons/SwipeableViews';
 
 type Props = {
 };
@@ -78,12 +78,12 @@ export default class Setup extends Component<Props> {
     return (
       <div>
         <div className="col-8.5 centered">
-            <div className="row setupButton centered">
+            <div className="row centered">
               <div>
                 <VialSelector items={data} vialSelectionFinish={this.onSelectVials}/>
               </div>
               <div className="buttons-dashboard ">
-                <Demo arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 {/*
                 <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 */}

@@ -38,6 +38,13 @@ body {
 
 .setupButton {
   text-align: center;
+  color: white;
+  border: 2px solid white;
+  height: 50px;
+}
+
+.stepperStyling {
+  color: white;
 }
 
 .setupPanel {
