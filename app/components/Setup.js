@@ -11,23 +11,34 @@ import ButtonCards from './SetupButtons/SwipeableViews';
 
 type Props = {
 };
-/*{
-	"param": "pump",
-	"message": {"pumps_binary":"11111111111111110000000000000000", "pump_time":5, "efflux_pump_time":0, "delay_interval":0, "times_to_repeat":0, "run_efflux":0}
-}*/
+
 export default class Setup extends Component<Props> {
   constructor(props) {
-      super(props);
+      super(props);     
       this.state = {
             selectedItems: [],
-            arduinoMessage: ""
+            arduinoMessage: "",
+            vialData: data
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
       this.socket = io("http://localhost:8081/dpu-evolver");
 
       // TODO: Define params from actual device
-      this.socket.on('connect', function(){console.log("Connected evolver");});
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
+      this.socket.on('connect', function(){console.log("Connected evolver");this.socket.emit('pingdata', {});}.bind(this));
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
+      this.socket.on('dataresponse', function(response) {
+        console.log("Handling it");
+        console.log(response);
+        var newVialData = Array.apply(null, Array(16)).map(function () {});
+        for(var i = 0; i < this.state.vialData.length; i++) {
+            newVialData[i] = {};
+            newVialData[i].vial = this.state.vialData[i].vial;
+            newVialData[i].selected = this.state.vialData[i].selected;
+            newVialData[i].od = response.OD[this.state.vialData[i].vial];
+            newVialData[i].temp = response.temp[this.state.vialData[i].vial];              
+        }
+        this.setState({vialData: newVialData});}.bind(this));       
+          
   }
   props: Props
 
@@ -80,7 +91,7 @@ export default class Setup extends Component<Props> {
         <div className="col-8.5 centered">
             <div className="row centered">
               <div>
-                <VialSelector items={data} vialSelectionFinish={this.onSelectVials}/>
+                <VialSelector items={this.state.vialData} vialSelectionFinish={this.onSelectVials}/>
               </div>
               <div className="buttons-dashboard ">
                 <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
