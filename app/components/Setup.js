@@ -14,7 +14,7 @@ type Props = {
 
 export default class Setup extends Component<Props> {
   constructor(props) {
-      super(props);     
+      super(props);
       this.state = {
             selectedItems: [],
             arduinoMessage: "",
@@ -25,7 +25,7 @@ export default class Setup extends Component<Props> {
 
       // TODO: Define params from actual device
       this.socket.on('connect', function(){console.log("Connected evolver");this.socket.emit('pingdata', {});}.bind(this));
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
       this.socket.on('dataresponse', function(response) {
         console.log("Handling it");
         console.log(response);
@@ -35,10 +35,10 @@ export default class Setup extends Component<Props> {
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
             newVialData[i].od = response.OD[this.state.vialData[i].vial];
-            newVialData[i].temp = response.temp[this.state.vialData[i].vial];              
+            newVialData[i].temp = response.temp[this.state.vialData[i].vial];
         }
-        this.setState({vialData: newVialData});}.bind(this));       
-          
+        this.setState({vialData: newVialData});}.bind(this));
+
   }
   props: Props
 
@@ -81,6 +81,7 @@ export default class Setup extends Component<Props> {
             evolverMessage[vials[i]] = value;
         }
       }
+      console.log(evolverComponent);
       console.log(evolverMessage);
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }

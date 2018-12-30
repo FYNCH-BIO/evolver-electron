@@ -14,9 +14,9 @@ function isDisabled(currentVial) {
 
 const styles = {
   card: {
-    width: 560,
-    height: 600,
-    margin: '10px 5px 15px 20px',
+    width: 580,
+    height: 620,
+    margin: '3px 5px 15px 20px',
   },
 };
 
@@ -39,7 +39,7 @@ class List extends Component {
 
   render() {
     return (
-      <div style={{width: 540}}>
+      <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map(item => (
             <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>

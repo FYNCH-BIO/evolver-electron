@@ -42,11 +42,13 @@ const styles = theme => ({
     minWidth: 450,
     backgroundColor: 'black',
     alignItems: 'center',
+    border: '2px solid white',
+    padding: '0px 0px 0px 0px',
   },
   header: {
     display: 'flex',
     height: 50,
-    padding: '20px 0px 0px 0px',
+    padding: '15px 0px 0px 20px',
     backgroundColor: 'black',
   },
   headerText: {
@@ -58,16 +60,12 @@ const styles = theme => ({
     fontStyle: 'italic',
   },
   card: {
-    width: 450,
-    height: 220,
+    width: 440,
+    height: 205,
     backgroundColor: 'black',
   },
   cardSpacer: {
-    width: 450,
     height: 30,
-    backgroundColor: 'black',
-  },
-  mobileStepper: {
     backgroundColor: 'black',
   },
   stepperStyle: {
@@ -82,6 +80,9 @@ const styles = theme => ({
   },
   dotActive: {
     backgroundColor: '#f58245',
+  },
+  positionStatic: {
+    margin: '0px 0px -1px -2px'
   },
 });
 
@@ -162,6 +163,7 @@ class SwipeableTextMobileStepper extends React.Component {
               root: classes.root,
               dotActive: classes.dotActive,
               dot: classes.dot,
+              positionStatic: classes.positionStatic,
             }}
           nextButton={
             <Button size="large" className={classes.stepperStyle} onClick={this.handleNext} disabled={activeStep === maxSteps - 1}>
