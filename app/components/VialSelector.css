@@ -13,7 +13,7 @@
   position: absolute;
   cursor: default;
   background: none;
-  border: 1px dashed grey;
+  border: 2px dashed white;
 }
 .albums {
   display: flex;
@@ -26,45 +26,48 @@
 }
 .item {
   position: relative;
-  width: 100px;
-  min-height: 100px;
-  border-radius: 100px;
+  width: 125px;
+  min-height: 125px;
+  border-radius: 125px;
   margin: 7px;
   float: left;
   text-align: center;
-  border: 1px solid #cccccc;
+  border: 2px solid #cccccc;
   padding: 18px;
   overflow: hidden;
-  color: black;
+  color: grey;
+  background: #1e1a1b;
 }
 .item.not-selectable {
-  background: #DCDCDC;
+  background: #dcdcdc;
 }
 .item .tick {
   position: absolute;
   top: 4px;
   right: 4px;
   font-size: 10px;
-  color: #009688;
+  color: #f58245;
   font-weight: bold;
   cursor: pointer;
 }
 .item h2 {
-  font-size: 14px;
+  font-size: 17px;
   margin-top: 0;
   margin-bottom: 0;
   color: inherit;
   font-weight: 600;
 }
 .item.selected {
-  background: #fff5e6;
-  color: black;
-  border: 2px solid #ff9900;
+  background: #1e1a1b;
+  color: #f58245;
+  border: 2px solid #f58245;
 }
 .item.selecting {
-  border: 1px solid #FFB03B;
+  border: 2px solid #f58245;
+  color: #f58245;
 }
-.not-selectable {}
+.not-selectable {
+}
 .counter {
   color: #009688;
 }
@@ -90,8 +93,6 @@ button {
   padding: 0;
 }
 
-
-
 /* If you want the content centered horizontally and vertically */
 .centered {
   text-align: center;
@@ -105,18 +106,25 @@ button {
 .toggle-button-position {
   text-align: left;
   position: relative;
-  top: -52px;
-  left: 14px;
-  width: 190px;
+  top: -60px;
+  left: 17px;
+  width: 120px;
 }
 
 /* If you want the content centered horizontally and vertically */
 .vialArray-gui {
   padding-left: 0px;
-
+  background-color: black;
 }
 
-.strain-label{
-  font-size: 12px;
+.OD-label {
+  font-size: 15px;
   font-style: italic;
+  color: white;
+}
+
+.temp-label {
+  font-size: 15px;
+  font-style: italic;
+  color: white;
 }

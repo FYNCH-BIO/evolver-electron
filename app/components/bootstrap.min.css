@@ -75,7 +75,7 @@ body {
   line-height: 1.5;
   color: #212529;
   text-align: left;
-  background-color: #fff;
+  background-color: black;
 }
 [tabindex='-1']:focus {
   outline: 0 !important;
@@ -223,9 +223,9 @@ label {
 button {
   border-radius: 0;
 }
-button:focus {
-  outline: 1px dotted;
-  outline: 5px auto -webkit-focus-ring-color;
+button:focus,
+select:focus {
+  outline: none;
 }
 button,
 input,

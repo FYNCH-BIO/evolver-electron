@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import styles from './Home.css';
 import Navbar from './Navbar'
-import Footer from './Footer'
 
 type Props = {};
 
@@ -19,10 +18,9 @@ export default class Home extends Component<Props> {
             <div className="p-5"/>
             <h1 className="display-2 centered">eVOLVER</h1>
             <p className="font-italic"> Continuous Culture </p>
-            <button className = "btn btn-sm btn-outline-primary homeButtons"><Link to={routes.SETUP}>Experiment</Link></button>
-            <button className = "btn btn-sm btn-outline-primary homeButtons"><Link to={routes.SETUP}>Device Setup</Link></button>
+            <Link to={routes.SETUP}><button className = "btn btn-lg homeButtons">Experiment</button></Link>
+            <Link to={routes.SETUP}><button className = "btn btn-lg homeButtons">Device Setup</button></Link>
         </div>
-        <Footer/>
       </div>
     );
   }

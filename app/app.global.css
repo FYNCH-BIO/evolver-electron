@@ -10,7 +10,7 @@
 
 body {
   position: relative;
-  color: black;
+  color: white;
   height: 100vh;
   font-family: Arial, Helvetica, Helvetica Neue, serif;
   overflow-y: hidden;
@@ -21,7 +21,7 @@ h2 {
   font-size: 2.25rem;
   font-weight: bold;
   letter-spacing: -0.025em;
-  color: black;
+  color: white;
 }
 
 p {
@@ -33,8 +33,7 @@ li {
 }
 
 a {
-  color: blue;
-  opacity: 0.75;
+  color: white;
   text-decoration: none;
 }
 

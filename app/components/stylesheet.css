@@ -13,6 +13,11 @@ body {
 
 .homeButtons {
   margin: 20px 20px 10px 20px;
+  position: relative;
+  width: 160px;
+  height: 50px;
+  color: black;
+  background-color: #f58245;
 }
 
 .homeFooter {
@@ -22,10 +27,36 @@ body {
   text-align: center;
 }
 
+.vialSelectorButtons {
+  width: 172px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+}
+
 .setupButton {
   text-align: center;
+  color: white;
+  border: 2px solid white;
+  height: 50px;
+  width: 200px;
+}
+
+.setupButton:hover {
+  background-color: black;
+  border: 2px solid white;
+}
+
+.stepperStyling {
+  color: white;
 }
 
 .setupPanel {
   margin: 0px 0px 0px 0px;
+}
+
+.navBar {
+  background-color: black;
 }

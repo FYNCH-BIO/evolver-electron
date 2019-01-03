@@ -14,19 +14,20 @@ function isDisabled(currentVial) {
 
 const styles = {
   card: {
-    width: 500,
-    height: 525,
-    margin: '20px 5px 15px 5px',
+    width: 580,
+    height: 620,
+    margin: '3px 5px 15px 20px',
   },
 };
 
-const Label = ({ selecting, selected, vial, strain }) => (
+const Label = ({ selecting, selected, vial, od, temp}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="strain-label">{`${strain}`}</span>
+    <span className="temp-label">{`${temp}`} &deg;C</span><br/>
+    <span className="OD-label">OD: {`${od}`}</span>
     <br />
   </div>
 )
@@ -38,18 +39,18 @@ class List extends Component {
 
   render() {
     return (
-      <div style={{width: 460}}>
+      <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map(item => (
-            <SelectableAlbum key={item.vial} strain={item.strain} vial={item.vial} selected={item.selected}/>
+            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
           ))}
         </div>
         <div className="button-position">
           <SelectAll className="selectable-button">
-            <button  className="btn btn-sm btn-outline-secondary">Select All</button>
+            <button  className="btn btn-md vialSelectorButtons">Select All</button>
           </SelectAll>
           <DeselectAll className="selectable-button">
-            <button className="btn btn-sm btn-outline-secondary">Clear Selection</button>
+            <button className="btn btn-md vialSelectorButtons">Clear Selection</button>
           </DeselectAll>
         </div>
       </div>
@@ -58,7 +59,7 @@ class List extends Component {
 }
 
 const Album = ({
-  selectableRef, selected, selecting, strain, vial,
+  selectableRef, selected, selecting, strain, vial, od, temp
 }) => (
   <div
     id = {"vialID-" + vial}
@@ -71,7 +72,7 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain}/>
+    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} od={od} temp={temp}/>
   </div>
 )
 
@@ -104,7 +105,7 @@ class VialSelector extends Component<Props>  {
     }, this.props.vialSelectionFinish(selectedItems))
   }
 
-  handleSelectionClear = selectedItems => {  
+  handleSelectionClear = selectedItems => {
     console.log("Handle selection clear");
   }
 
@@ -146,8 +147,7 @@ class VialSelector extends Component<Props>  {
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">
-            <span  style={{paddingRight: 10}}> Toggle: </span >
-            <button className = "btn btn-sm btn-outline-primary" onClick={this.toggleOrder}>{buttonLabel}</button>
+            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
         </Card>
     )
