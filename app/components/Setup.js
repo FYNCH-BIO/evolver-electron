@@ -7,14 +7,14 @@ import VialSelector from './VialSelector'
 import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
-import Demo from './SetupButtons/SwipeableViews';
+import ButtonCards from './SetupButtons/SwipeableViews';
 
 type Props = {
 };
 
 export default class Setup extends Component<Props> {
   constructor(props) {
-      super(props);     
+      super(props);
       this.state = {
             selectedItems: [],
             arduinoMessage: "",
@@ -86,7 +86,7 @@ export default class Setup extends Component<Props> {
           }
           var binaryString = this.getBinaryString(vialsToBinary);
           evolverMessage = {pumps_binary: binaryString, pump_time: value.time, efflux_pump_time: 0, delay_interval: 0, times_to_repeat: 0, run_efflux:0};
-          this.setState({arduinoMessage: evolverComponent});
+          this.setState({arduinoMessage: "Running pump for Vials: " + vials});
       }
       else if (evolverComponent == "light") {
           this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});
@@ -97,6 +97,7 @@ export default class Setup extends Component<Props> {
         for (var i = 0; i < vials.length; i++) {
             evolverMessage[vials[i]] = value;
         }
+        this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }
@@ -113,12 +114,12 @@ export default class Setup extends Component<Props> {
     return (
       <div>
         <div className="col-8.5 centered">
-            <div className="row setupButton centered">
+            <div className="row centered">
               <div>
                 <VialSelector items={this.state.vialData} vialSelectionFinish={this.onSelectVials}/>
               </div>
               <div className="buttons-dashboard ">
-                <Demo arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 {/*
                 <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
                 */}

@@ -28,7 +28,7 @@ body {
 }
 
 .vialSelectorButtons {
-  width: 166px;
+  width: 172px;
   height: 40px;
   opacity: 0.9;
   background-color: #1e1a1b;
@@ -38,6 +38,19 @@ body {
 
 .setupButton {
   text-align: center;
+  color: white;
+  border: 2px solid white;
+  height: 50px;
+  width: 200px;
+}
+
+.setupButton:hover {
+  background-color: black;
+  border: 2px solid white;
+}
+
+.stepperStyling {
+  color: white;
 }
 
 .setupPanel {

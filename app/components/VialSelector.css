@@ -26,9 +26,9 @@
 }
 .item {
   position: relative;
-  width: 120px;
-  min-height: 120px;
-  border-radius: 120px;
+  width: 125px;
+  min-height: 125px;
+  border-radius: 125px;
   margin: 7px;
   float: left;
   text-align: center;
@@ -108,7 +108,7 @@ button {
   position: relative;
   top: -60px;
   left: 17px;
-  width: 190px;
+  width: 120px;
 }
 
 /* If you want the content centered horizontally and vertically */
@@ -117,7 +117,13 @@ button {
   background-color: black;
 }
 
-.strain-label {
+.OD-label {
+  font-size: 15px;
+  font-style: italic;
+  color: white;
+}
+
+.temp-label {
   font-size: 15px;
   font-style: italic;
   color: white;
