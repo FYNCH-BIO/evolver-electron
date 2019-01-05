@@ -19,7 +19,7 @@ export default class Home extends Component<Props> {
             <h1 className="display-2 centered">eVOLVER</h1>
             <p className="font-italic"> Continuous Culture </p>
             <Link to={routes.SETUP}><button className = "btn btn-lg homeButtons">Experiment</button></Link>
-            <Link to={routes.SETUP}><button className = "btn btn-lg homeButtons">Device Setup</button></Link>
+            <Link to={routes.CALIBRATE}><button className = "btn btn-lg homeButtons">Device Setup</button></Link>
         </div>
       </div>
     );

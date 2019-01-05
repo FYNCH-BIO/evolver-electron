@@ -30,7 +30,7 @@ export default class Setup extends Component<Props> {
           this.socket.emit('getcalibration', {});
           this.socket.emit('pingdata', {});
       }.bind(this));
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
       this.socket.on('dataresponse', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
@@ -38,10 +38,10 @@ export default class Setup extends Component<Props> {
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
             newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]], i).toFixed(3);
-            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'], i).toFixed(2);              
+            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'], i).toFixed(2);
         }
         this.setState({vialData: newVialData});
-    }.bind(this));    
+    }.bind(this));
     this.socket.on('calibration', function(response) {
         var odCals = response.metaData.params.OD.calibrations;
         var tempCals = response.metaData.params.temp.calibrations;
@@ -55,7 +55,7 @@ export default class Setup extends Component<Props> {
         }
         this.setState({tempCals: newTempCals, odCals: newOdCals});
     }.bind(this));
-          
+
   }
   props: Props
 
@@ -101,11 +101,11 @@ export default class Setup extends Component<Props> {
       }
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }
-  
+
   sigmoidRawToCal = (value, cal, index) => {
     return (cal[index][2] - ((Math.log10((cal[index][1] - cal[index][0]) / (value - cal[index][0]) - 1)) / cal[index][3]));
   }
-  
+
   linearRawToCal = (value, cal, index) => {
     return (value * cal[index][0]) + cal[index][1];
   }
@@ -120,9 +120,6 @@ export default class Setup extends Component<Props> {
               </div>
               <div className="buttons-dashboard ">
                 <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
-                {/*
-                <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
-                */}
               </div>
             </div>
         </div>

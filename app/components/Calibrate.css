@@ -1,0 +1,60 @@
+/*Number Pad Main Box */
+.ggSakI {
+  width: 450px;
+  height: 540px;
+}
+
+/*Individual Number Button Box Size */
+.eEwiEh {
+  height: 93px;
+}
+
+/*Number Font  */
+.jzuLCB {
+  font-size: 30px;
+}
+
+/*Title Box Size */
+.jijhfo {
+  height: 80px;
+}
+
+/*Title Icons Font Style*/
+.eSvebU {
+  font-size: 40px;
+}
+
+/*Title Font Style*/
+.hsCQBs {
+  font-size: 33px;
+}
+
+/*Input Text Box Size*/
+.cmFnGs {
+  height: 80px;
+}
+
+/*Input Text Font Style*/
+.khxFsg {
+  font-size: 31px;
+  padding-left: 20px;
+}
+
+input {
+  height: 50px;
+  width: 130px;
+  border-radius: 6px;
+  padding: 0px 5px 0px 5px;
+  margin: 0px 10px 0px 10px;
+  font-size: 20px;
+  text-align: center;
+}
+
+label {
+  font-size: 25px;
+  margin: 0px 10px 0px 10px;
+}
+
+button {
+  font-size: 20px;
+}

@@ -6,13 +6,14 @@ import App from './containers/App';
 import HomePage from './containers/HomePage';
 import CounterPage from './containers/CounterPage';
 import SetupPage from './containers/SetupPage';
+import CalibrationsPage from './containers/CalibrationsPage';
 
 export default () => (
   <App>
     <Switch>
       <Route exact path={routes.HOME} component={HomePage} />
-      <Route path={routes.COUNTER} component={CounterPage} />
-      <Route path={routes.SETUP} component={SetupPage} />
+      <Route exact path={routes.SETUP} component={SetupPage} />
+      <Route exact path={routes.CALIBRATIONS} component={CalibrationsPage} />
     </Switch>
   </App>
 );

@@ -178,6 +178,7 @@ class SwipeableTextMobileStepper extends React.Component {
             </Button>
           }
         />
+
       </div>
     );
   }

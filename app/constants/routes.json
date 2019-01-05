@@ -1,5 +1,6 @@
 {
   "HOME": "/",
   "COUNTER": "/counter",
-  "SETUP": "/setup"
+  "SETUP": "/setup",
+  "CALIBRATE": "/calibrate"
 }
