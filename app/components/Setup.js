@@ -24,14 +24,13 @@ export default class Setup extends Component<Props> {
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
-      this.socket = io("http://localhost:8081/dpu-evolver");
+      this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
       this.socket.on('connect', function(){
           console.log("Connected evolver");
           this.socket.emit('getcalibration', {});
-          this.socket.emit('pingdata', {});
       }.bind(this));
       this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
-      this.socket.on('dataresponse', function(response) {
+      this.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
             newVialData[i] = {};
