@@ -1,45 +1,3 @@
-/*Number Pad Main Box */
-.ggSakI {
-  width: 450px;
-  height: 540px;
-}
-
-/*Individual Number Button Box Size */
-.eEwiEh {
-  height: 93px;
-}
-
-/*Number Font  */
-.jzuLCB {
-  font-size: 30px;
-}
-
-/*Title Box Size */
-.jijhfo {
-  height: 80px;
-}
-
-/*Title Icons Font Style*/
-.eSvebU {
-  font-size: 40px;
-}
-
-/*Title Font Style*/
-.hsCQBs {
-  font-size: 33px;
-}
-
-/*Input Text Box Size*/
-.cmFnGs {
-  height: 80px;
-}
-
-/*Input Text Font Style*/
-.khxFsg {
-  font-size: 31px;
-  padding-left: 20px;
-}
-
 input {
   height: 50px;
   width: 130px;
@@ -55,6 +13,52 @@ label {
   margin: 0px 10px 0px 10px;
 }
 
-button {
-  font-size: 20px;
+.styles_closeButton__20ID4 {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.numClearButton{
+  height: 100%;
+  background-color: transparent;
+  width: 80px;
+  text-align: left;
+  margin-top: 0px;
+  padding-left: 8px;
+  font-size: 35px;
+  border: none
+}
+
+.numPadInput {
+  font-weight: normal;
+}
+
+.numPadPosition{
+  position: absolute;
+  min-height: 100vh;
+  min-width: 100vw;
+  text-align: center;
+}
+
+.numPadButton{
+  margin: 2px 2px 2px 2px;
+  font-size: 35px;
+  width: 32%;
+  height: 25%;
+  border: none
+}
+
+.testText{
+  position: absolute;
+  margin: 400px 2px 2px 300px;
+  color: blue;
+}
+
+.blurBackground{
+  position: absolute;
+  min-height: 100vh;
+  min-width: 100vw;
+  opacity: .5;
+  background-color: white;
 }
