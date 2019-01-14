@@ -73,14 +73,26 @@ const styles = theme => ({
 });
 
 class NumPad extends React.Component {
-  state = {
-    inputString: '',
-    title: ''
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      inputString: this.props.currentValue,
+      title: this.props.currentID,
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.currentID !== prevProps.currentID) {
+      this.setState({ title: this.props.currentID})
+    }
+    if (this.props.currentValue !== prevProps.currentValue) {
+      this.setState({ inputString: this.props.currentValue})
+    }
+  }
 
   handleNumButtons = (id) => {
     let newString = this.state.inputString
-    if (newString.length < 13){
+    if (newString.length < 7){
       if (id == '.'){
         if (!(newString.indexOf('.') > -1)){
           if (newString == ''){
@@ -104,6 +116,7 @@ class NumPad extends React.Component {
         newString = newString + id
       }
     }
+    this.props.onNumChange(newString);
     this.setState({ inputString: newString});
   };
 
