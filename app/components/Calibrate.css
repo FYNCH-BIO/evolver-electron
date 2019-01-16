@@ -109,3 +109,56 @@ label {
   position: absolute;
   margin: 25px 0px 0px 73px;
 }
+
+.vialItem {
+  display: block;
+  border-radius: 60px;
+  background: white;
+  width: 90px;
+  height: 90px;
+  margin: 25.5px;
+  color: black;
+  text-align: center;
+}
+
+ul {
+  list-style: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: row;
+  display: flex;
+  max-width: 600px;
+  padding: 0px 0px 0px 0px;
+}
+
+.vialOutline {
+  width: 105px;
+  height: 105px;
+  margin: 18px;
+  border-radius: 60px;
+  border: 2px solid white;
+  background: transparent;
+}
+
+.outlineWrapper {
+  position: absolute;
+  margin: -579px 0px 0px 0px;
+}
+
+.vialOutlineText {
+  position: absolute;
+  padding: 0px 0px 0px 0px;
+  margin: -17px 0px 0px 0px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 141px;
+  font-size: 20px;
+  font-style: italic;
+}
+.odAdvanceBtn {
+  margin: 12px 0px 0px 200px;
+  height: 40px;
+  width: 200px;
+}
