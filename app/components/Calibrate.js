@@ -8,8 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import ODcalGUI from './calibrationInputs/ODcalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import {FaPlay, FaArrowLeft, FaArrowRight, FaStop } from 'react-icons/fa';
 import normalize from 'array-normalize'
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -31,7 +33,7 @@ const cardStyles = theme => ({
   },
   bar: {
     backgroundColor: '#f58245',
-  }
+  },
 });
 
 class ODcal extends React.Component {
@@ -47,8 +49,32 @@ class ODcal extends React.Component {
       odInputs: [],
       generalSampleOpacity: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       inputsEntered: false,
+      odInputsFloat: [],
+      readProgress: 0,
     };
   }
+
+  startRead = () => {
+    this.timer = setInterval(this.progress, 1000);
+    this.setState({readProgress: this.state.readProgress + .01})
+  }
+
+  stopRead = () => {
+    this.setState({readProgress: 0})
+    clearInterval(this.timer);
+  }
+
+  progress = () => {
+     let readProgress = this.state.readProgress;
+     if (readProgress < 100 ) {
+       readProgress = readProgress + 10
+       this.setState({readProgress: readProgress})
+     }
+     else {
+       this.setState({readProgress: 0})
+       clearInterval(this.timer);
+     }
+   };
 
   handleBack = () => {
     var disableForward
@@ -93,19 +119,20 @@ class ODcal extends React.Component {
   };
 
   handleODChange = (odValues) => {
-      let floatValues = []
-      var i;
-      for (i = 0; i < odValues.length; i++) {
-        floatValues[i] = parseFloat(odValues[i])
-      }
-      this.setState({odInputs: floatValues});
+      this.setState({odInputs: odValues});
     }
 
   handleStepOne = () => {
-    let inputOD = JSON.parse(JSON.stringify(this.state.odInputs));
+    let floatValues = []
+    var i;
+    for (i = 0; i < this.state.odInputs.length; i++) {
+      floatValues[i] = parseFloat(this.state.odInputs[i])
+    }
+
+    let inputOD = JSON.parse(JSON.stringify(floatValues));
     let normalizedOD = normalize(inputOD)
-    console.log(this.state.odInputs)
     this.setState({
+      odInputsFloat: floatValues,
       vialOpacities: normalizedOD,
       inputsEntered: true,
       generalSampleOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -117,8 +144,26 @@ class ODcal extends React.Component {
     const { currentStep } = this.state;
 
     let measureButton;
-    if (this.state.inputsEntered) {
-      measureButton = <FaPlay/>
+    if (this.state.readProgress == 0) {
+      measureButton =
+        <button
+          className="measureBtn"
+          onClick = {this.startRead}>
+           <FaPlay/>
+        </button>
+    } else {
+      measureButton =
+      <button
+        className="measureBtn">
+        <CircularProgress
+          className={{}}
+          variant="static"
+          value={this.state.readProgress}
+          color="primary"
+          onClick= {this.stopRead}
+        />
+        <FaStop size={15} className = "readPauseBtn"/>
+      </button>
     }
 
     let progressButtons;
@@ -131,10 +176,7 @@ class ODcal extends React.Component {
             onClick={this.handleBack}>
             <FaArrowLeft/>
           </button>
-          <button
-            className="measureBtn">
           {measureButton}
-          </button>;
           <button
             className="odAdvanceBtn"
             disabled={this.state.disableForward}
@@ -177,7 +219,7 @@ class ODcal extends React.Component {
             ref={this.child}
             vialOpacities = {this.state.vialOpacities}
             generalOpacity = {this.state.generalSampleOpacity}
-            odInputs = {this.state.odInputs}/>
+            odInputs = {this.state.odInputsFloat}/>
 
           <LinearProgress
             classes= {{

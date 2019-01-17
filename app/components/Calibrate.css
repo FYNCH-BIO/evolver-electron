@@ -250,3 +250,8 @@ ul {
 .statusText {
   font-size: 22px;
 }
+
+.readPauseBtn{
+  position: absolute;
+  margin: 13px 0px 0px -28px
+}

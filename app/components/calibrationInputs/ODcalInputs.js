@@ -35,6 +35,9 @@ class ODcalInput extends React.Component {
      if (this.props.onInputsEntered !== prevProps.onInputsEntered) {
        this.setState({ inputsLocked: this.props.onInputsEntered})
      }
+     if (document.activeElement) {
+          document.activeElement.blur();
+      }
    }
 
  onOpenModal = (id) => {
@@ -135,6 +138,9 @@ class ODcalInput extends React.Component {
           <KeyboardEventHandler
             handleKeys={['left']}
             onKeyEvent={() => this.clickBack()} />
+          <KeyboardEventHandler
+            handleKeys={['enter']}
+            onKeyEvent={() => this.clickForward()} />
 
         </Modal>
       </div>

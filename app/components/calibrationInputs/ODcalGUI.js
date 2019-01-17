@@ -133,8 +133,6 @@ export default class ODcalGUI extends Component<Props> {
     let generalSampleOpacity = unzipped[2]
     let odInputs = unzipped[3]
 
-    console.log(newState)
-
     this.setState({
       zipped: newState,
       odState: odState,
