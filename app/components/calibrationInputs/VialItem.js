@@ -10,6 +10,7 @@ const Item = posed.li({
       scale: {
         type: 'spring',
         velocity: .5,
+        stiffness:1000,
       }
     }
   }
