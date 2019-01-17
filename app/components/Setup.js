@@ -26,21 +26,23 @@ export default class Setup extends Component<Props> {
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
-      this.socket = io("http://localhost:8081/dpu-evolver");
+      this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
       this.socket.on('connect', function(){
           console.log("Connected evolver");
           this.socket.emit('getcalibration', {});
-          this.socket.emit('pingdata', {});
       }.bind(this));
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
-      this.socket.on('dataresponse', function(response) {
+
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
+      this.socket.on('databroadcast', function(response) {
+
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
             newVialData[i] = {};
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
-            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]], i).toFixed(3);
-            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'], i).toFixed(2);
+
+            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]][i]).toFixed(3);
+            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'][i]).toFixed(2);
         }
         this.setState({vialData: newVialData});
     }.bind(this));
@@ -75,8 +77,9 @@ export default class Setup extends Component<Props> {
 
   onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
+      var evolverMessage = {};
       if (evolverComponent == "pump") {
-          var evolverMessage = {};
+          evolverMessage = {};
           var vialsToBinary = [];
           for (var i = 0; i < vials.length; i++) {
               if (value.in1) {
@@ -92,24 +95,32 @@ export default class Setup extends Component<Props> {
       }
       else if (evolverComponent == "light") {
           this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});
-
       }
       else {
-        var evolverMessage = Array(16).fill("NaN")
+        evolverMessage = Array(16).fill("NaN")
         for (var i = 0; i < vials.length; i++) {
-            evolverMessage[vials[i]] = value;
+            if (evolverComponent == "temp") {
+              evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCals['default'][i]).toFixed(0);
+            }
+            else {
+              evolverMessage[vials[i]] = value;
+            }
         }
         this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
       this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }
 
-  sigmoidRawToCal = (value, cal, index) => {
-    return (cal[index][2] - ((Math.log10((cal[index][1] - cal[index][0]) / (value - cal[index][0]) - 1)) / cal[index][3]));
+  sigmoidRawToCal = (value, cal) => {
+    return (cal[2] - ((Math.log10((cal[1] - cal[0]) / (value - cal[0]) - 1)) / cal[3]));
   }
 
-  linearRawToCal = (value, cal, index) => {
-    return (value * cal[index][0]) + cal[index][1];
+  linearRawToCal = (value, cal) => {
+    return (value * cal[0]) + cal[1];
+  }
+
+  linearCalToRaw = (value, cal) => {
+    return (value - cal[1])/cal[0];
   }
 
   render() {
