@@ -11,6 +11,18 @@ function isDisabled(currentVial) {
   return disabledVial.includes(currentVial)
 }
 
+function ActiveButtons(state) {
+  const numberSelected = state.selectedItems.length;
+  console.log(numberSelected)
+  if (numberSelected == 0) {
+    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
+  }
+  else {
+    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons">Clear Selection</button></DeselectAll>
+  }
+  return null;
+}
+
 
 const styles = {
   card: {
@@ -44,14 +56,6 @@ class List extends Component {
           {this.props.items.map(item => (
             <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
           ))}
-        </div>
-        <div className="button-position">
-          <SelectAll className="selectable-button">
-            <button  className="btn btn-md vialSelectorButtons">Select All</button>
-          </SelectAll>
-          <DeselectAll className="selectable-button">
-            <button className="btn btn-md vialSelectorButtons">Clear Selection</button>
-          </DeselectAll>
         </div>
       </div>
     )
@@ -144,6 +148,12 @@ class VialSelector extends Component<Props>  {
               ignoreList={['.not-selectable']}
             >
               <List items={orderedItems} />
+
+              <div className="button-position">
+                <ActiveButtons selectedItems={this.state.selectedItems} />
+                <button className = "btn btn-md stopAllButton">FORCE STOP ALL</button>
+              </div>
+
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">

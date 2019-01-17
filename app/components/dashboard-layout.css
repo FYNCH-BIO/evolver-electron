@@ -22,10 +22,16 @@
 }
 
 .buttons-dashboard {
-  margin-left: 0px;
+  margin-left: 45px;
   margin-top: 25px;
 }
 
 .fluidicButtons {
   margin-left: 17px;
+}
+
+.dashboardTitles {
+  position: absolute;
+  margin: 10px 0px 0px 55px;
+  font-weight: bold;
 }

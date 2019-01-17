@@ -44,6 +44,7 @@ const styles = theme => ({
     alignItems: 'center',
     border: '2px solid white',
     padding: '0px 0px 0px 0px',
+    margin: '60px 0px 0px 0px',
   },
   header: {
     display: 'flex',
@@ -178,6 +179,7 @@ class SwipeableTextMobileStepper extends React.Component {
             </Button>
           }
         />
+
       </div>
     );
   }

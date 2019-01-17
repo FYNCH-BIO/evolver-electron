@@ -8,6 +8,8 @@ import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
 import ButtonCards from './SetupButtons/SwipeableViews';
+import {FaArrowLeft} from 'react-icons/fa';
+
 
 type Props = {
 };
@@ -29,13 +31,16 @@ export default class Setup extends Component<Props> {
           console.log("Connected evolver");
           this.socket.emit('getcalibration', {});
       }.bind(this));
+
       this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
       this.socket.on('databroadcast', function(response) {
+
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
             newVialData[i] = {};
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
+
             newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]][i]).toFixed(3);
             newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'][i]).toFixed(2);
         }
@@ -123,14 +128,13 @@ export default class Setup extends Component<Props> {
       <div>
         <div className="col-8.5 centered">
             <div className="row centered">
+              <div className="buttons-dashboard ">
+                <Link className="backCalibrateBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+                <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
+                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+              </div>
               <div>
                 <VialSelector items={this.state.vialData} vialSelectionFinish={this.onSelectVials}/>
-              </div>
-              <div className="buttons-dashboard ">
-                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
-                {/*
-                <SetupButtons arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
-                */}
               </div>
             </div>
         </div>

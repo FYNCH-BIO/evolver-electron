@@ -7,6 +7,7 @@
 @import './components/stylesheet.css';
 @import './components/dashboard-layout.css';
 @import '~@fortawesome/fontawesome-free/css/all.css';
+@import './components/Calibrate.css';
 
 body {
   position: relative;

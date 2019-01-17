@@ -46,7 +46,7 @@
   top: 4px;
   right: 4px;
   font-size: 10px;
-  color: #f58245;
+  color: black;
   font-weight: bold;
   cursor: pointer;
 }
@@ -81,16 +81,19 @@
 button {
   display: inline-block;
   position: relative;
-  width: 121px;
-  height: 32px;
   line-height: 32px;
   border-radius: 6px;
   font-size: 0.9em;
-  background-color: #4285f4;
-  color: #fff;
   border: none;
   outline: none;
   padding: 0;
+  width: 100px;
+  height: 50px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+  font-size: 20px;
 }
 
 /* If you want the content centered horizontally and vertically */
@@ -98,9 +101,6 @@ button {
   text-align: center;
   float: none;
   margin: 0 auto;
-}
-.button-position {
-  text-align: right;
 }
 
 .toggle-button-position {
@@ -127,4 +127,26 @@ button {
   font-size: 15px;
   font-style: italic;
   color: white;
+}
+
+.vialSelectorButtons {
+  width: 178px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+}
+
+.button-position {
+  text-align: right;
+}
+
+.stopAllButton {
+  width: 178px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: white;
+  color: black;
+  border: 2px solid white;
 }
