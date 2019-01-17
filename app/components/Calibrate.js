@@ -132,8 +132,7 @@ class ODcal extends React.Component {
             <FaArrowLeft/>
           </button>
           <button
-            className="measureBtn"
-            onClick={this.handleAdvance}>
+            className="measureBtn">
           {measureButton}
           </button>;
           <button
