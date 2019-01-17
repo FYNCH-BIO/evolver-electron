@@ -34,6 +34,12 @@ const cardStyles = theme => ({
   bar: {
     backgroundColor: '#f58245',
   },
+  circleProgressColor: {
+    color: '#f58245',
+  },
+  circle: {
+    strokeWidth: '3px',
+  }
 });
 
 class ODcal extends React.Component {
@@ -156,13 +162,17 @@ class ODcal extends React.Component {
       <button
         className="measureBtn">
         <CircularProgress
-          className={{}}
+          classes={{
+            colorPrimary: classes.circleProgressColor,
+            circle: classes.circle,
+            }}
           variant="static"
           value={this.state.readProgress}
           color="primary"
+          size= {50}
           onClick= {this.stopRead}
         />
-        <FaStop size={15} className = "readPauseBtn"/>
+        <FaStop size={15} className = "readStopBtn"/>
       </button>
     }
 

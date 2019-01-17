@@ -251,7 +251,7 @@ ul {
   font-size: 22px;
 }
 
-.readPauseBtn{
+.readStopBtn{
   position: absolute;
-  margin: 13px 0px 0px -28px
+  margin: 18px 0px 0px -33px
 }
