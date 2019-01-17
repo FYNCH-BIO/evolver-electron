@@ -14,10 +14,12 @@ body {
 .homeButtons {
   margin: 20px 20px 10px 20px;
   position: relative;
-  width: 160px;
+  width: 180px;
   height: 50px;
   color: black;
   background-color: #f58245;
+  text-align: center;
+  font-weight: 600;
 }
 
 .homeFooter {
@@ -48,6 +50,28 @@ body {
   margin: 0px 0px 0px 0px;
 }
 
-.navBar {
+.backHomeBtn {
   background-color: black;
+  position: absolute;
+  margin: 22px 0px 0px 50px;
+  border: none;
+  font-size: 30px;
+}
+
+.backHomeBtn:hover {
+  color: white;
+
+}
+
+.backCalibrateBtn {
+  background-color: black;
+  position: absolute;
+  margin: 2px 0px 0px -220px;
+  border: none;
+  font-size: 30px;
+}
+
+.backCalibrateBtn:hover {
+  color: white;
+
 }

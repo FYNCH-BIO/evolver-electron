@@ -8,6 +8,8 @@ import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
 import ButtonCards from './SetupButtons/SwipeableViews';
+import {FaArrowLeft} from 'react-icons/fa';
+
 
 type Props = {
 };
@@ -115,11 +117,13 @@ export default class Setup extends Component<Props> {
       <div>
         <div className="col-8.5 centered">
             <div className="row centered">
+              <div className="buttons-dashboard ">
+                <Link className="backCalibrateBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+                <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
+                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+              </div>
               <div>
                 <VialSelector items={this.state.vialData} vialSelectionFinish={this.onSelectVials}/>
-              </div>
-              <div className="buttons-dashboard ">
-                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
               </div>
             </div>
         </div>

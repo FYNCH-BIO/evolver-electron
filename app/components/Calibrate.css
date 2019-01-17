@@ -89,14 +89,22 @@ label {
 .calInputBtns{
   width: 120px;
   height: 45px;
+  background-color: white;
+  color: black;
+}
 
+.calInputBtns:disabled{
+  width: 120px;
+  height: 45px;
+  background-color: #1e1a1b;
+  color: white;
 }
 
 .calInputColumns{
   column-count: 2;
   column-gap: 60px;
   width: 400px;
-  margin: 90px 0px 0px 50px;
+  margin: 90px 0px 0px 35px;
   position: absolute;
 }
 
@@ -107,7 +115,8 @@ label {
 
 .odCalTitles{
   position: absolute;
-  margin: 25px 0px 0px 73px;
+  margin: 30px 0px 0px 105px;
+  font-weight: bold;
 }
 
 .vialItem {
@@ -116,9 +125,40 @@ label {
   background: white;
   width: 90px;
   height: 90px;
+  margin: 25.5px 30px 25.5px 21px;
+  color: black;
+  text-align: center;
+
+}
+
+.vialDensity {
+  position: absolute;
+  display: block;
+  border-radius: 60px;
+  width: 90px;
+  height: 90px;
   margin: 25.5px;
   color: black;
   text-align: center;
+  margin: 0px 0px 0px 0px;
+  background-color: #f58245;
+}
+
+.vialLabels {
+  position: absolute;
+  text-align: center;
+  width: 90px;
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 13px;
+}
+
+.vialODLabel {
+  position: absolute;
+  text-align: center;
+  width: 90px;
+  font-size: 20px;
+  margin-top: 38px;
 }
 
 ul {
@@ -143,7 +183,7 @@ ul {
 
 .outlineWrapper {
   position: absolute;
-  margin: -579px 0px 0px 0px;
+  margin: -579px 0px 0px -10px;
 }
 
 .vialOutlineText {
@@ -158,7 +198,55 @@ ul {
   font-style: italic;
 }
 .odAdvanceBtn {
-  margin: 12px 0px 0px 200px;
-  height: 40px;
-  width: 200px;
+  position: absolute;
+  margin: 540px 0px 0px 348px;
+  height: 80px;
+  width: 120px;
+  background-color: white;
+  color: black;
+  border: none;
+}
+
+.odAdvanceBtn:disabled {
+  background-color: black;
+  border: none;
+}
+
+
+.odBackBtn {
+  position: absolute;
+  margin: 540px 0px 0px 63px;
+  height: 80px;
+  width: 120px;
+  background-color: white;
+  color: black;
+}
+
+.odBackBtn:disabled {
+  background-color: black;
+  border: none;
+}
+
+.stepOneBtn {
+  position: absolute;
+  margin: 540px 0px 0px 63px;
+  height: 80px;
+  width: 410px;
+  background-color: white;
+  color: black;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.measureBtn {
+  position: absolute;
+  margin: 540px 0px 0px 196px;
+  height: 80px;
+  width: 140px;
+  background-color: white;
+  color: black;
+}
+
+.statusText {
+  font-size: 22px;
 }

@@ -20,12 +20,22 @@ const cardStyles = theme => ({
 });
 
 class ODcalInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.child = React.createRef();
+    this.state = {
+       open: false,
+       odValue: Array(16).fill(''),
+       numPadID: 0,
+       inputsLocked: this.props.onInputsEntered,
+     };
+   }
 
-  state = {
-   open: false,
-   odValue: Array(16).fill(''),
-   numPadID: 0,
- };
+   componentDidUpdate(prevProps) {
+     if (this.props.onInputsEntered !== prevProps.onInputsEntered) {
+       this.setState({ inputsLocked: this.props.onInputsEntered})
+     }
+   }
 
  onOpenModal = (id) => {
    this.setState({ open: true, numPadID: id });
@@ -38,6 +48,7 @@ class ODcalInput extends React.Component {
  handleNumChange = (inputValue)  => {
    let newValues = this.state.odValue
    newValues[this.state.numPadID] = inputValue
+   this.props.onChangeOD(newValues);
    this.setState({odValue: newValues})
  }
 
@@ -71,7 +82,7 @@ class ODcalInput extends React.Component {
 
     return (
       <div>
-        <h2 className="odCalTitles"> Enter Calibration Range </h2>
+        <h3 className="odCalTitles"> Optical Denisty Calibration </h3>
         <div className="calInputColumns">
           {densityButtons.map((densityButton, index) => (
             <Card className={classes.cardIndividualInput}>
@@ -81,7 +92,8 @@ class ODcalInput extends React.Component {
                   className ="calInputBtns"
                   onClick={() => this.onOpenModal(index)}
                   key= {index}
-                  id={index}>
+                  id={index}
+                  disabled = {this.state.inputsLocked}>
                   {this.state.odValue[index]}
                 </button>
               </div>

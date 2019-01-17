@@ -9,10 +9,7 @@ const Item = posed.li({
     transition: {
       scale: {
         type: 'spring',
-        velocity: .5
-      },
-      default: {
-        type: 'spring'
+        velocity: .5,
       }
     }
   }
@@ -22,7 +19,7 @@ export default class VialItem extends Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
-      items: this.props.currentValue
+      items: this.props.currentValue,
     };
   }
 
@@ -37,14 +34,22 @@ export default class VialItem extends Component<Props> {
   }
 
   render() {
+
+
     return(
       <ul>
         <PoseGroup>
           {this.state.items.map((items,index) => (
             <Item
               className="vialItem"
-              key={items}>
-              S{items}
+              key={items[0]}
+              style= {{opacity: items[2]}}>
+              <div
+                className="vialDensity"
+                style={{opacity: items[1]}}>
+              </div>
+              <p className="vialLabels"> S{items[0]} </p>
+              <p className="vialODLabel"> {items[3]} </p>
             </Item>
           ))}
         </PoseGroup>
