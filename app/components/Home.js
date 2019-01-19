@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import styles from './Home.css';
-import Navbar from './Navbar'
 
 type Props = {};
 
@@ -19,7 +18,9 @@ export default class Home extends Component<Props> {
             <h1 className="display-2 centered">eVOLVER</h1>
             <p className="font-italic"> Continuous Culture </p>
             <Link to={routes.SETUP}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
-            <Link to={routes.CALIBRATE}><button className = "btn btn-lg homeButtons">CALIBRATION</button></Link>
+            <Link to={routes.CALMENU}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
+            {/*<Link to={routes.GRAPHING}><button className = "btn btn-lg homeButtons">VISUALIZATION</button></Link>
+            */}
         </div>
       </div>
     );

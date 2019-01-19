@@ -51,7 +51,7 @@ class ODcal extends React.Component {
       disableForward: false,
       disableBackward: true,
       progressCompleted: 0,
-      vialOpacities: [1,.11,.12,.13,.14,.15,.16,.2,.3,.4,.5,.6,.7,.8,.9,1],
+      vialOpacities: [],
       odInputs: [],
       generalSampleOpacity: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       inputsEntered: false,
@@ -218,7 +218,7 @@ class ODcal extends React.Component {
 
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={routes.CALMENU}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeOD={this.handleODChange}
           onInputsEntered = {this.state.inputsEntered}/>

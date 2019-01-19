@@ -18,6 +18,7 @@ const styles = {
   thumb: {
     width: '30px',
     height: '30px',
+    opacity: 1,
     backgroundColor: '#f58245',
   },
   card: {
