@@ -2,5 +2,9 @@
   "HOME": "/",
   "COUNTER": "/counter",
   "SETUP": "/setup",
-  "CALIBRATE": "/calibrate"
+  "CALMENU": "/calibrationsmenu",
+  "DENSITYCALIBRATIONS": "/densitycalibrate",
+  "TEMPCALIBRATIONS": "/tempcalibrate",
+  "GRAPHING": "/graph",
+  "EXPTMANAGER": "/exptmanager"
 }

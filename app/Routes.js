@@ -6,14 +6,23 @@ import App from './containers/App';
 import HomePage from './containers/HomePage';
 import CounterPage from './containers/CounterPage';
 import SetupPage from './containers/SetupPage';
-import CalibrationsPage from './containers/CalibrationsPage';
+import DensityCalibrationsPage from './containers/DensityCalibrationsPage';
+import GraphingPage from './containers/GraphingPage';
+import ExptManagerPage from './containers/ExptManagerPage';
+import TempCalibrationsPage from './containers/TempCalibrationsPage';
+import CalibrationsMenuPage from './containers/CalibrationsMenuPage';
+
 
 export default () => (
   <App>
     <Switch>
       <Route exact path={routes.HOME} component={HomePage} />
       <Route exact path={routes.SETUP} component={SetupPage} />
-      <Route exact path={routes.CALIBRATIONS} component={CalibrationsPage} />
+      <Route exact path={routes.CALMENU} component={CalibrationsMenuPage} />
+      <Route exact path={routes.DENSITYCALIBRATIONS} component={DensityCalibrationsPage} />
+      <Route exact path={routes.TEMPCALIBRATIONS} component={TempCalibrationsPage} />
+      <Route exact path={routes.GRAPHING} component={GraphingPage} />
+      <Route exact path={routes.EXPTMANAGER} component={ExptManagerPage} />
     </Switch>
   </App>
 );
