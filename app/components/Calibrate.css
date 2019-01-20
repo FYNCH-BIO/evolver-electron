@@ -150,15 +150,16 @@ label {
   width: 90px;
   font-size: 24px;
   font-weight: bold;
-  margin-top: 13px;
+  margin-top: 5px;
 }
 
-.vialODLabel {
+.vialInput {
   position: absolute;
   text-align: center;
   width: 90px;
   font-size: 20px;
-  margin-top: 38px;
+  margin-top: 36px;
+  line-height: 20px;
 }
 
 ul {

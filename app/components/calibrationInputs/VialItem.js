@@ -26,6 +26,7 @@ export default class VialItem extends Component<Props> {
 
   componentDidUpdate(prevProps) {
     if (this.props.currentValue !== prevProps.currentValue) {
+      console.log(this.props.currentValue)
       this.setState({ items: this.props.currentValue})
     }
   }
@@ -49,8 +50,8 @@ export default class VialItem extends Component<Props> {
                 className="vialDensity"
                 style={{opacity: items[1]}}>
               </div>
-              <p className="vialLabels"> S{items[0]} </p>
-              <p className="vialODLabel"> {items[3]} </p>
+              <p className="vialLabels"> {items[4]} </p>
+              <p className="vialInput"> {items[3]} </p>
             </Item>
           ))}
         </PoseGroup>

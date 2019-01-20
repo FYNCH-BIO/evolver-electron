@@ -3,10 +3,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
-import ODcalInput from './calibrationInputs/ODcalInputs';
+import ODcalInput from './calibrationInputs/CalInputs';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import ODcalGUI from './calibrationInputs/ODcalGUI';
+import ODcalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop } from 'react-icons/fa';
 import normalize from 'array-normalize'
@@ -52,11 +52,14 @@ class ODcal extends React.Component {
       disableBackward: true,
       progressCompleted: 0,
       vialOpacities: [],
-      odInputs: [],
+      inputValue: Array(16).fill(''),
       generalSampleOpacity: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       inputsEntered: false,
-      odInputsFloat: [],
+      inputValueFloat: [],
       readProgress: 0,
+      vialProgress: Array(16).fill(0),
+      initialZipped: [[12,0,0],[13,0,0],[14,0,0],[15,0,0],[8,0,0],[9,0,0],[10,0,0],[11,0,0],[4,0,0],[5,0,0],[6,0,0],[7,0,0],[0,0,0],[1,0,0],[2,0,0],[3,0,0]],
+      vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
     };
   }
 
@@ -66,6 +69,11 @@ class ODcal extends React.Component {
   }
 
   stopRead = () => {
+    this.setState({readProgress: 0})
+    clearInterval(this.timer);
+  }
+
+  componentWillUnmount() {
     this.setState({readProgress: 0})
     clearInterval(this.timer);
   }
@@ -125,20 +133,20 @@ class ODcal extends React.Component {
   };
 
   handleODChange = (odValues) => {
-      this.setState({odInputs: odValues});
+      this.setState({inputValue: odValues});
     }
 
   handleStepOne = () => {
     let floatValues = []
     var i;
-    for (i = 0; i < this.state.odInputs.length; i++) {
-      floatValues[i] = parseFloat(this.state.odInputs[i])
+    for (i = 0; i < this.state.inputValue.length; i++) {
+      floatValues[i] = parseFloat(this.state.inputValue[i])
     }
 
     let inputOD = JSON.parse(JSON.stringify(floatValues));
     let normalizedOD = normalize(inputOD)
     this.setState({
-      odInputsFloat: floatValues,
+      inputValueFloat: floatValues,
       vialOpacities: normalizedOD,
       inputsEntered: true,
       generalSampleOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -160,7 +168,8 @@ class ODcal extends React.Component {
     } else {
       measureButton =
       <button
-        className="measureBtn">
+        className="measureBtn"
+        onClick= {this.stopRead}>
         <CircularProgress
           classes={{
             colorPrimary: classes.circleProgressColor,
@@ -170,7 +179,6 @@ class ODcal extends React.Component {
           value={this.state.readProgress}
           color="primary"
           size= {50}
-          onClick= {this.stopRead}
         />
         <FaStop size={15} className = "readStopBtn"/>
       </button>
@@ -218,10 +226,12 @@ class ODcal extends React.Component {
 
     return (
       <div>
+        <h3 className="odCalTitles"> Optical Denisty Calibration </h3>
         <Link className="backHomeBtn" id="experiments" to={routes.CALMENU}><FaArrowLeft/></Link>
         <ODcalInput
-          onChangeOD={this.handleODChange}
-          onInputsEntered = {this.state.inputsEntered}/>
+          onChangeValue={this.handleODChange}
+          onInputsEntered = {this.state.inputsEntered}
+          inputValue = {this.state.inputValue}/>
         {progressButtons}
 
         <Card className={classes.cardODcalGUI}>
@@ -229,7 +239,10 @@ class ODcal extends React.Component {
             ref={this.child}
             vialOpacities = {this.state.vialOpacities}
             generalOpacity = {this.state.generalSampleOpacity}
-            odInputs = {this.state.odInputsFloat}/>
+            valueInputs = {this.state.inputValueFloat}
+            initialZipped = {this.state.initialZipped}
+            readProgress = {this.state.vialProgress}
+            vialLabels = {this.state.vialLabels}/>
 
           <LinearProgress
             classes= {{
