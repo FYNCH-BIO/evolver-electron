@@ -8,6 +8,6 @@ export default class DensityCalibrationsPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <DensityCalibrate />;
+    return <DensityCalibrate socket={this.props.location.socket} />;
   }
 }

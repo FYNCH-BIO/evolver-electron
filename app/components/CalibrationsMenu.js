@@ -21,12 +21,12 @@ class CalibrationsMenu extends React.Component {
   render() {
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.socket}}><FaArrowLeft/></Link>
 
         <div className="centered">
             <h1 className="display-2 centered">Calibrations Menu</h1>
-            <Link to={routes.DENSITYCALIBRATIONS}><button className = "btn btn-lg homeButtons">O.D</button></Link>
-            <Link to={routes.TEMPCALIBRATIONS}><button className = "btn btn-lg homeButtons">TEMP</button></Link>
+            <Link to={{pathname:routes.DENSITYCALIBRATIONS, socket:this.props.socket}}><button className = "btn btn-lg homeButtons">O.D</button></Link>
+            <Link to={{pathname:routes.TEMPCALIBRATIONS, socket:this.props.socket}}><button className = "btn btn-lg homeButtons">TEMP</button></Link>
         </div>
 
       </div>
