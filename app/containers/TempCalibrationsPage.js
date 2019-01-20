@@ -8,6 +8,6 @@ export default class TempCalibrationsPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <TempCalibrate />;
+    return <TempCalibrate socket={this.props.location.socket}/>;
   }
 }

@@ -45,6 +45,7 @@ const cardStyles = theme => ({
 class ODcal extends React.Component {
   constructor(props) {
     super(props);
+    console.log(this.props.socket);
     this.child = React.createRef();
     this.state = {
       currentStep: 1,
@@ -227,7 +228,7 @@ class ODcal extends React.Component {
     return (
       <div>
         <h3 className="odCalTitles"> Optical Denisty Calibration </h3>
-        <Link className="backHomeBtn" id="experiments" to={routes.CALMENU}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeValue={this.handleODChange}
           onInputsEntered = {this.state.inputsEntered}

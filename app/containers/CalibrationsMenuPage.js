@@ -8,6 +8,6 @@ export default class CalibrationsMenuPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <CalibrationsMenu />;
+    return <CalibrationsMenu socket={this.props.location.socket}/>;
   }
 }

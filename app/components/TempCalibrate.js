@@ -53,6 +53,7 @@ function saveEvolverData(evolverResponse) {
 class TempCal extends React.Component {
   constructor(props) {
     super(props);
+    console.log(this.props.socket);
     this.child = React.createRef();
     this.state = {
       currentStep: 1,
@@ -171,7 +172,7 @@ class TempCal extends React.Component {
     return (
       <div>
         <h3 className="odCalTitles"> Temperature Calibration &deg;C </h3>
-        <Link className="backHomeBtn" id="experiments" to={routes.CALMENU}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <TempcalInput
           onChangeValue={this.handleTempInput}
           onInputsEntered = {this.state.inputsEntered}

@@ -26,15 +26,8 @@ export default class Setup extends Component<Props> {
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
-      this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
-      this.socket.on('connect', function(){
-          console.log("Connected evolver");
-          this.socket.emit('getcalibration', {});
-      }.bind(this));
-
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
-      this.socket.on('databroadcast', function(response) {
-
+      this.props.location.socket.emit('getcalibration', {});
+      this.props.location.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
             newVialData[i] = {};
@@ -46,7 +39,7 @@ export default class Setup extends Component<Props> {
         }
         this.setState({vialData: newVialData});
     }.bind(this));
-    this.socket.on('calibration', function(response) {
+    this.props.location.socket.on('calibration', function(response) {
         var odCals = response.metaData.params.OD.calibrations;
         var tempCals = response.metaData.params.temp.calibrations;
         var newOdCals = {};
@@ -129,7 +122,7 @@ export default class Setup extends Component<Props> {
         <div className="col-8.5 centered">
             <div className="row centered">
               <div className="buttons-dashboard ">
-                <Link className="backCalibrateBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+                <Link className="backCalibrateBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.location.socket}}><FaArrowLeft/></Link>
                 <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
                 <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
               </div>
