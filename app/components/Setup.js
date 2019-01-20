@@ -32,7 +32,7 @@ export default class Setup extends Component<Props> {
           this.socket.emit('getcalibration', {});
       }.bind(this));
 
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});      
+      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
       this.socket.on('databroadcast', function(response) {
 
         var newVialData = Array.apply(null, Array(16)).map(function () {});

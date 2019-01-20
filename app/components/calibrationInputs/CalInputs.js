@@ -19,13 +19,13 @@ const cardStyles = theme => ({
   }
 });
 
-class ODcalInput extends React.Component {
+class CalInput extends React.Component {
   constructor(props) {
     super(props);
     this.child = React.createRef();
     this.state = {
        open: false,
-       odValue: Array(16).fill(''),
+       inputValue: this.props.inputValue,
        numPadID: 0,
        inputsLocked: this.props.onInputsEntered,
      };
@@ -49,10 +49,10 @@ class ODcalInput extends React.Component {
  };
 
  handleNumChange = (inputValue)  => {
-   let newValues = this.state.odValue
+   let newValues = this.state.inputValue
    newValues[this.state.numPadID] = inputValue
-   this.props.onChangeOD(newValues);
-   this.setState({odValue: newValues})
+   this.props.onChangeValue(newValues);
+   this.setState({inputValue: newValues})
  }
 
  clickBack = (event,value) => {
@@ -85,7 +85,6 @@ class ODcalInput extends React.Component {
 
     return (
       <div>
-        <h3 className="odCalTitles"> Optical Denisty Calibration </h3>
         <div className="calInputColumns">
           {densityButtons.map((densityButton, index) => (
             <Card className={classes.cardIndividualInput}>
@@ -97,7 +96,7 @@ class ODcalInput extends React.Component {
                   key= {index}
                   id={index}
                   disabled = {this.state.inputsLocked}>
-                  {this.state.odValue[index]}
+                  {this.state.inputValue[index]}
                 </button>
               </div>
             </Card>
@@ -128,7 +127,7 @@ class ODcalInput extends React.Component {
           </button>
 
           <NumPad
-            currentValue={this.state.odValue[this.state.numPadID]}
+            currentValue={this.state.inputValue[this.state.numPadID]}
             currentID= {this.state.numPadID}
             onNumChange={this.handleNumChange}
           />
@@ -149,4 +148,4 @@ class ODcalInput extends React.Component {
   }
 }
 
-export default withStyles(cardStyles, { withTheme: true })(ODcalInput);
+export default withStyles(cardStyles, { withTheme: true })(CalInput);

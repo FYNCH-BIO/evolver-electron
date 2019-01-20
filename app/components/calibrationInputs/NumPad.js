@@ -25,7 +25,7 @@ const numButtons = [
 
 const styles = theme => ({
   cardNumPad: {
-    width: 400,
+    width: 410,
     height: 500,
     backgroundColor: 'transparent',
   },
@@ -121,6 +121,7 @@ class NumPad extends React.Component {
   };
 
   handleClear = (event, value) => {
+    this.props.onNumChange('');
     this.setState({ inputString: ''});
   };
 
