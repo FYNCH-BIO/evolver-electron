@@ -1,0 +1,21 @@
+.managerFileInput {
+  width: 300px;
+}
+
+.managerFileInput:focus {
+  outline: none;
+}
+
+.scriptSubmitBtn{
+  margin: 100px 0px 0px 100px;
+  width: 200px;
+  height: 40px;
+}
+
+.RunScript{
+  position: absolute;
+  align-items: center;
+  margin: 0px 0px 0px 0px;
+  width: 100vw;
+  bottom: 10px;
+}

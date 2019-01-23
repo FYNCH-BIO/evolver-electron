@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
-import styles from './Home.css';
 
 type Props = {};
 
@@ -21,6 +20,8 @@ export default class Home extends Component<Props> {
             <Link to={routes.CALMENU}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
             {/*<Link to={routes.GRAPHING}><button className = "btn btn-lg homeButtons">VISUALIZATION</button></Link>
             */}
+            <Link to={routes.EXPTMANAGER}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
+
         </div>
       </div>
     );

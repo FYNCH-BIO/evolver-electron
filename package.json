@@ -1,6 +1,6 @@
 {
   "name": "electron-evolver-2",
-  "productName": "ElectronReact",
+  "productName": "eVOLVER",
   "version": "0.14.0",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "scripts": {
@@ -46,8 +46,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "eVOLVER",
+    "appId": "com.fynchbio.evolver",
     "artifactName": "evolver-electron-${version}.${ext}",
     "files": [
       "dist/",
@@ -55,9 +55,11 @@
       "app.html",
       "main.prod.js",
       "main.prod.js.map",
-      "package.json"
+      "package.json",
+      "resources/icon.png"
     ],
     "dmg": {
+      "icon" : "resources/icon.png",
       "contents": [
         {
           "x": 130,
@@ -96,9 +98,8 @@
     "url": "git+https://github.com/chentsulin/electron-react-boilerplate.git"
   },
   "author": {
-    "name": "C. T. Lin",
-    "email": "chentsulin@gmail.com",
-    "url": "https://github.com/chentsulin"
+    "name": "Brandon G. Wong",
+    "email": "brandon@fynchbio.com"
   },
   "license": "MIT",
   "bugs": {
@@ -115,7 +116,7 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/chentsulin/electron-react-boilerplate#readme",
+  "homepage": "www.fynchbio.com",
   "jest": {
     "testURL": "http://localhost/",
     "moduleNameMapper": {
@@ -220,6 +221,9 @@
     "devtron": "^1.4.0",
     "electron-debug": "^2.0.0",
     "history": "^4.7.2",
+    "log4js": "^3.0.6",
+    "parse-filepath": "^1.0.2",
+    "python-shell": "^1.0.7",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-hot-loader": "^4.3.4",
