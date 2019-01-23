@@ -101,7 +101,7 @@ export default class Setup extends Component<Props> {
         }
         this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
-      this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
+      this.props.location.socket.emit("command", {param: evolverComponent, message: evolverMessage});
   }
 
   sigmoidRawToCal = (value, cal) => {
