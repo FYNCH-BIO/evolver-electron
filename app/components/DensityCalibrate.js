@@ -1,4 +1,4 @@
-    // @flow
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import ODcalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight, FaStop } from 'react-icons/fa';
+import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck } from 'react-icons/fa';
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -204,12 +204,23 @@ class ODcal extends React.Component {
 
     let measureButton;
     if (this.state.readProgress === 0) {
-      measureButton =
+        measureButton =
         <button
           className="measureBtn"
           onClick = {this.startRead}>
            <FaPlay/>
-        </button>
+        </button>;
+      for (var i = 0; i < this.state.vialData.length; i++) {
+        if (this.state.currentStep === this.state.vialData[i].step) {
+            measureButton =
+            <button
+              className="measureBtn"
+              onClick = {this.startRead}>
+               <FaCheck/>
+            </button>;
+            break;
+        }
+      }
     } else {
       measureButton =
       <button
@@ -256,7 +267,7 @@ class ODcal extends React.Component {
           Record Sample Densities <FaPlay size={17}/>
         </button>
       </div>;
-    }
+          }
 
     let statusText;
     if (!this.state.inputsEntered) {
