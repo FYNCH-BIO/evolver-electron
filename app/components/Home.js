@@ -14,7 +14,7 @@ export default class Home extends Component<Props> {
         this.socket = this.props.socket;
       }
       else {
-        this.socket = io.connect("http://192.168.1.33:8081/dpu-evolver", {reconnect:true});
+        this.socket = io.connect("http://localhost/dpu-evolver", {reconnect:true});
         this.socket.on('connect', function(){console.log("Connected evolver");}.bind(this));
         this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
         this.socket.on('reconnect', function(){console.log("Reconnected evolver")});
