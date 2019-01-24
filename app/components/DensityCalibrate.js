@@ -62,7 +62,7 @@ class ODcal extends React.Component {
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
       powerLevel: 2125,
-      readInterval: 50
+      timesRead: 3
     };
     this.props.socket.on('dataresponse', function(response) {
         var newVialData = this.state.vialData;
@@ -80,21 +80,23 @@ class ODcal extends React.Component {
             newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
         }
         this.setState({vialData: newVialData}, function() {
-            if (this.state.vialData[newVialData.length - 1].OD[0].length === (Math.ceil(100 / this.state.readInterval) + 1)) {
+
+            if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
                 console.log(this.state.vialData);
+                this.handleUnlockBtns()
                 var readsFinished = this.state.vialData.length;
-                this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished});
+                this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished, readProgress: 0});
                 /*
                  * Once all 16 measurements are made, save to evolver.
                  * TODO: Count by power levels, maybe have a button to trigger
                  * saving instead. If moved to button, delete this
                 */
 
-                if (this.state.vialData.length === 16) {                    
+                if (this.state.vialData.length === 16) {
                     var d = new Date();
                     var currentTime = d.getTime();
                     var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
-                    this.props.socket.emit('setcalibrationraw', saveData);
+                    this.props.socket.emit('calibrationraw', saveData);
                 }
             }
         this.props.socket.emit('data', {power_level: this.state.powerLevel});
@@ -103,6 +105,7 @@ class ODcal extends React.Component {
   }
 
   startRead = () => {
+    this.handleLockBtns()
     this.setState({readProgress: this.state.readProgress + .01});
     var newVialData = this.state.vialData;
 
@@ -120,24 +123,18 @@ class ODcal extends React.Component {
   }
 
   stopRead = () => {
+    this.handleUnlockBtns()
     this.setState({readProgress: 0});
-    clearInterval(this.timer);
   }
 
   componentWillUnmount() {
     this.setState({readProgress: 0});
-    clearInterval(this.timer);
   }
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     if (readProgress < 100 ) {
-       readProgress = readProgress + this.state.readInterval;
-       this.setState({readProgress: readProgress});
-     }
-     else {
-       this.setState({readProgress: 0});
-     }
+     readProgress = readProgress + (100/this.state.timesRead);
+     this.setState({readProgress: readProgress});
    };
 
   handleBack = () => {
@@ -178,6 +175,34 @@ class ODcal extends React.Component {
       });
   };
 
+  handleLockBtns = () => {
+    var disableForward = true;
+    var disableBackward = true;
+
+    this.setState({
+      disableForward: disableForward,
+      disableBackward: disableBackward,
+      });
+  };
+
+  handleUnlockBtns = () => {
+    var disableForward = false;
+    var disableBackward = false;
+
+    if (this.state.currentStep === 1){
+      disableBackward = true;
+      disableForward = false;
+    }
+    if (this.state.currentStep === 15){
+      disableBackward = false;
+      disableForward = true;
+    }
+    this.setState({
+      disableForward: disableForward,
+      disableBackward: disableBackward,
+      });
+  };
+
   handleODChange = (odValues) => {
       this.setState({inputValue: odValues});
     }
@@ -212,12 +237,9 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if (this.state.currentStep === this.state.vialData[i].step) {
-          if (this.state.vialData[i].OD[0].length === 3) {
-            /*
-             * Check if there are the right number of readings.
-             * TODO: Change the "3" to a variable instead of hard coded
-            */
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD) != "undefined")) {
+          if (this.state.vialData[i].OD[0].length === this.state.timesRead){
+
               measureButton =
               <button
                 className="measureBtn"
