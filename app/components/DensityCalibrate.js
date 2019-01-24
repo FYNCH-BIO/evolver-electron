@@ -1,4 +1,4 @@
-// @flow
+    // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
@@ -11,8 +11,6 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop } from 'react-icons/fa';
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
-
-var fs = require("fs");
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -49,6 +47,7 @@ class ODcal extends React.Component {
     this.child = React.createRef();
     this.state = {
       currentStep: 1,
+      readsFinished: 0,
       disableForward: false,
       disableBackward: true,
       progressCompleted: 0,
@@ -83,43 +82,23 @@ class ODcal extends React.Component {
         this.setState({vialData: newVialData}, function() {
             if (this.state.vialData[newVialData.length - 1].OD[0].length === (Math.ceil(100 / this.state.readInterval) + 1)) {
                 console.log(this.state.vialData);
+                var readsFinished = this.state.vialData.length;
+                this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished});
                 /*
-                 * Once all 16 measurements are made, save to file.
+                 * Once all 16 measurements are made, save to evolver.
                  * TODO: Count by power levels, maybe have a button to trigger
                  * saving instead. If moved to button, delete this
                 */
-                if (this.state.vialData.length === 16) {
-                    this.saveVialDataToFile(this.state.vialData);
+                if (this.state.vialData.length === 16) {                    
+                    var d = new Date();
+                    var currentTime = d.getTime();
+                    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
+                    this.props.socket.emit('calibrationraw', saveData);
                 }
             }
-        this.props.socket.emit('data', {});
+        this.props.socket.emit('data', {power_level: this.state.powerLevel});
         });
     }.bind(this));
-  }
-
-  saveVialDataToFile = (vialData) => {
-      var d = new Date();
-      var currentTime = d.getTime();
-      var saveObj = {time: currentTime, vialData: vialData, inputData:this.state.inputValueFloat};
-      var saveText = JSON.stringify(saveObj);
-      var filename = "./calibrations/od_cal_" + currentTime + ".json";
-      fs.mkdir("./calibrations", (err) => {
-          if (err.code !== 'EEXIST') {
-              console.log(err);
-              console.log("Calibration file NOT saved")
-              return;
-          }
-          fs.writeFile(filename, saveText, (err) => {
-             if (err) {
-                 console.log(err);
-                 console.log("Calibration file NOT saved");
-             }
-             else {
-                 console.log("Calibration file saved");
-             }
-          });
-      });
-      console.log(saveText);
   }
 
   startRead = () => {
@@ -164,7 +143,6 @@ class ODcal extends React.Component {
     var disableForward;
     var disableBackward;
     var currentStep = this.state.currentStep - 1;
-    var progressCompleted = 100*(currentStep/16);
 
     if (this.state.currentStep === 16){
       disableForward = false;
@@ -176,8 +154,7 @@ class ODcal extends React.Component {
     this.setState({
       disableForward: disableForward,
       disableBackward: disableBackward,
-      currentStep: currentStep,
-      progressCompleted: progressCompleted
+      currentStep: currentStep
       });
   };
 
@@ -185,7 +162,6 @@ class ODcal extends React.Component {
     var disableForward;
     var disableBackward;
     var currentStep = this.state.currentStep + 1;
-    var progressCompleted = 100*(currentStep/16);
 
     if (this.state.currentStep === 1){
       disableBackward = false;
@@ -197,8 +173,7 @@ class ODcal extends React.Component {
     this.setState({
       disableForward: disableForward,
       disableBackward: disableBackward,
-      currentStep: currentStep,
-      progressCompleted: progressCompleted
+      currentStep: currentStep
       });
   };
 
@@ -220,7 +195,6 @@ class ODcal extends React.Component {
       vialOpacities: normalizedOD,
       inputsEntered: true,
       generalSampleOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      progressCompleted: this.state.progressCompleted + 6.25
     });
   }
 
@@ -292,7 +266,7 @@ class ODcal extends React.Component {
       statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
     }
     else if (this.state.inputsEntered && (this.state.currentStep!=1) && (this.state.currentStep!=16)){
-      statusText = <p className="statusText"> {this.state.currentStep}/16 Measurements Made </p>
+      statusText = <p className="statusText"> {this.state.readsFinished}/16 Measurements Made </p>
     }
 
     return (

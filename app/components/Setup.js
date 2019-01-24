@@ -52,7 +52,6 @@ export default class Setup extends Component<Props> {
         }
         this.setState({tempCals: newTempCals, odCals: newOdCals});
     }.bind(this));
-
   }
   props: Props
 
