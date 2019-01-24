@@ -26,7 +26,6 @@ export default class VialItem extends Component<Props> {
 
   componentDidUpdate(prevProps) {
     if (this.props.currentValue !== prevProps.currentValue) {
-      console.log(this.props.currentValue)
       this.setState({ items: this.props.currentValue})
     }
   }

@@ -89,7 +89,7 @@ class ODcal extends React.Component {
                  * TODO: Count by power levels, maybe have a button to trigger
                  * saving instead. If moved to button, delete this
                 */
-                if (this.state.vialData.length === 16) {                    
+                if (this.state.vialData.length === 16) {
                     var d = new Date();
                     var currentTime = d.getTime();
                     var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
@@ -212,13 +212,19 @@ class ODcal extends React.Component {
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
         if (this.state.currentStep === this.state.vialData[i].step) {
-            measureButton =
-            <button
-              className="measureBtn"
-              onClick = {this.startRead}>
-               <FaCheck/>
-            </button>;
-            break;
+          if (this.state.vialData[i].OD[0].length === 3) {
+            /*
+             * Check if there are the right number of readings.
+             * TODO: Change the "3" to a variable instead of hard coded
+            */
+              measureButton =
+              <button
+                className="measureBtn"
+                onClick = {this.startRead}>
+                 <FaCheck/>
+              </button>;
+              break;
+            }
         }
       }
     } else {
@@ -273,11 +279,14 @@ class ODcal extends React.Component {
     if (!this.state.inputsEntered) {
       statusText = <p className="statusText"> Please enter OD calibration Values. </p>
     }
-    else if (this.state.inputsEntered && (this.state.currentStep==1)){
-      statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
+    else if (this.state.readProgress !== 0){
+      statusText = <p className="statusText"> Collecting raw values from eVOLVER... </p>
     }
-    else if (this.state.inputsEntered && (this.state.currentStep!=1) && (this.state.currentStep!=16)){
+    else if (this.state.inputsEntered && (this.state.vialData.length !== 0)){
       statusText = <p className="statusText"> {this.state.readsFinished}/16 Measurements Made </p>
+    }
+    else if (this.state.inputsEntered){
+      statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
     }
 
     return (
