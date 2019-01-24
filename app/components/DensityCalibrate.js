@@ -89,11 +89,12 @@ class ODcal extends React.Component {
                  * TODO: Count by power levels, maybe have a button to trigger
                  * saving instead. If moved to button, delete this
                 */
-                if (this.state.vialData.length === 16) {
+
+                if (this.state.vialData.length === 16) {                    
                     var d = new Date();
                     var currentTime = d.getTime();
                     var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
-                    this.props.socket.emit('calibrationraw', saveData);
+                    this.props.socket.emit('setcalibrationraw', saveData);
                 }
             }
         this.props.socket.emit('data', {power_level: this.state.powerLevel});
