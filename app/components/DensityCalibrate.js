@@ -62,6 +62,7 @@ class ODcal extends React.Component {
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
       powerLevel: 2125,
+      powerLevels: [2125, 2100, 2200],
       timesRead: 3
     };
     this.props.socket.on('dataresponse', function(response) {
@@ -82,30 +83,40 @@ class ODcal extends React.Component {
         this.setState({vialData: newVialData}, function() {
 
             if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
-                console.log(this.state.vialData);
-                this.handleUnlockBtns()
-                var readsFinished = this.state.vialData.length;
-                this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished, readProgress: 0});
-                /*
-                 * Once all 16 measurements are made, save to evolver.
-                 * TODO: Count by power levels, maybe have a button to trigger
-                 * saving instead. If moved to button, delete this
-                */
+                if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
+                    var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
+                    this.setState({powerLevel: newPowerLevel}, function() {
+                        this.props.socket.emit('data', {power_level: this.state.powerLevel});
+                    });
+                }
+                else {
+                    console.log(this.state.vialData);
+                    this.handleUnlockBtns();
+                    var readsFinished = this.state.vialData.length;
+                    this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished, readProgress: 0});
+                    /*
+                     * Once all 16 measurements are made, save to evolver.
+                     * TODO: Count by power levels, maybe have a button to trigger
+                     * saving instead. If moved to button, delete this
+                    */
 
-                if (this.state.vialData.length === 16) {
-                    var d = new Date();
-                    var currentTime = d.getTime();
-                    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
-                    this.props.socket.emit('calibrationraw', saveData);
+                    if (this.state.vialData.length === 16) {
+                        var d = new Date();
+                        var currentTime = d.getTime();
+                        var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
+                        this.props.socket.emit('setcalibrationraw', saveData);
+                    }                    
                 }
             }
-        this.props.socket.emit('data', {power_level: this.state.powerLevel});
+            else {
+                this.props.socket.emit('data', {power_level: this.state.powerLevel});
+            }
         });
     }.bind(this));
   }
 
   startRead = () => {
-    this.handleLockBtns()
+    this.handleLockBtns();
     this.setState({readProgress: this.state.readProgress + .01});
     var newVialData = this.state.vialData;
 
@@ -133,7 +144,7 @@ class ODcal extends React.Component {
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     readProgress = readProgress + (100/this.state.timesRead);
+     readProgress = readProgress + (100/(this.state.timesRead * this.state.powerLevels.length));
      this.setState({readProgress: readProgress});
    };
 
