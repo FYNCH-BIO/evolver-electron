@@ -52,13 +52,12 @@ class ODcal extends React.Component {
       disableBackward: true,
       progressCompleted: 0,
       vialOpacities: [],
-      inputValue: Array(16).fill(''),
-      generalSampleOpacity: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      enteredValues: Array(16).fill(''),
+      generalOpacity: Array(16).fill(0),
       inputsEntered: false,
-      inputValueFloat: [],
+      enteredValuesFloat: [],
       readProgress: 0,
       vialProgress: Array(16).fill(0),
-      initialZipped: [[12,0,0],[13,0,0],[14,0,0],[15,0,0],[8,0,0],[9,0,0],[10,0,0],[11,0,0],[4,0,0],[5,0,0],[6,0,0],[7,0,0],[0,0,0],[1,0,0],[2,0,0],[3,0,0]],
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
       powerLevel: 2125,
@@ -95,7 +94,7 @@ class ODcal extends React.Component {
                 if (this.state.vialData.length === 16) {
                     var d = new Date();
                     var currentTime = d.getTime();
-                    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
+                    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat};
                     this.props.socket.emit('calibrationraw', saveData);
                 }
             }
@@ -103,6 +102,14 @@ class ODcal extends React.Component {
         });
     }.bind(this));
   }
+
+  componentDidMount() {
+    this.setState({
+      vialOpacities: Array(16).fill(0),
+      })
+
+  };
+
 
   startRead = () => {
     this.handleLockBtns()
@@ -204,23 +211,23 @@ class ODcal extends React.Component {
   };
 
   handleODChange = (odValues) => {
-      this.setState({inputValue: odValues});
+      this.setState({enteredValues: odValues});
     }
 
   handleStepOne = () => {
     let floatValues = [];
     var i;
-    for (i = 0; i < this.state.inputValue.length; i++) {
-      floatValues[i] = parseFloat(this.state.inputValue[i]);
+    for (i = 0; i < this.state.enteredValues.length; i++) {
+      floatValues[i] = parseFloat(this.state.enteredValues[i]);
     }
 
     let inputOD = JSON.parse(JSON.stringify(floatValues));
     let normalizedOD = normalize(inputOD);
     this.setState({
-      inputValueFloat: floatValues,
+      enteredValuesFloat: floatValues,
       vialOpacities: normalizedOD,
       inputsEntered: true,
-      generalSampleOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      generalOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     });
   }
 
@@ -319,15 +326,15 @@ class ODcal extends React.Component {
         <ODcalInput
           onChangeValue={this.handleODChange}
           onInputsEntered = {this.state.inputsEntered}
-          inputValue = {this.state.inputValue}/>
+          enteredValues = {this.state.enteredValues}/>
         {progressButtons}
 
         <Card className={classes.cardODcalGUI}>
           <ODcalGUI
             ref={this.child}
             vialOpacities = {this.state.vialOpacities}
-            generalOpacity = {this.state.generalSampleOpacity}
-            valueInputs = {this.state.inputValueFloat}
+            generalOpacity = {this.state.generalOpacity}
+            valueInputs = {this.state.enteredValuesFloat}
             initialZipped = {this.state.initialZipped}
             readProgress = {this.state.vialProgress}
             vialLabels = {this.state.vialLabels}/>

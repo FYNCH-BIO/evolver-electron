@@ -150,16 +150,17 @@ label {
   width: 90px;
   font-size: 24px;
   font-weight: bold;
-  margin-top: 14px;
+  margin-top: 8px;
 }
 
 .vialInput {
   position: absolute;
   text-align: center;
   width: 90px;
-  font-size: 20px;
-  margin-top: 47px;
+  font-size: 15px;
+  margin-top: 40px;
   line-height: 20px;
+  font-style: italic;
 }
 
 ul {
