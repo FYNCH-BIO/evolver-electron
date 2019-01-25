@@ -84,32 +84,35 @@ class ODcal extends React.Component {
 
             if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
                 if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
+                    newVialData = this.state.vialData;
                     var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
-                    this.setState({powerLevel: newPowerLevel}, function() {
-                        this.props.socket.emit('data', {power_level: this.state.powerLevel});
-                    });
+                    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
+                    this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
+                        this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
+                    }.bind(this));
                 }
                 else {
                     console.log(this.state.vialData);
                     this.handleUnlockBtns();
-                    var readsFinished = this.state.vialData.length;
-                    this.setState({progressCompleted: (100 * (this.state.vialData.length / 16)), readsFinished: readsFinished, readProgress: 0});
+                    var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
+                    this.setState({progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)), readsFinished: readsFinished, readProgress: 0});
                     /*
                      * Once all 16 measurements are made, save to evolver.
                      * TODO: Count by power levels, maybe have a button to trigger
                      * saving instead. If moved to button, delete this
                     */
 
-                    if (this.state.vialData.length === 16) {
+                    if (this.state.vialData.length === (16 * this.state.powerLevels.length)) {
                         var d = new Date();
                         var currentTime = d.getTime();
                         var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
                         this.props.socket.emit('setcalibrationraw', saveData);
+                        return;
                     }                    
                 }
             }
             else {
-                this.props.socket.emit('data', {power_level: this.state.powerLevel});
+                this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
             }
         });
     }.bind(this));
@@ -121,21 +124,32 @@ class ODcal extends React.Component {
     var newVialData = this.state.vialData;
 
     // remove existing data for particular layout
-    for (var i = 0; i < newVialData.length; i++) {
-        if (this.state.currentStep === this.state.vialData[i].step && this.state.powerLevel === this.state.vialData[i].powerLevel) {
+    for (var i = this.state.vialData.length - 1; i >= 0; i--) {
+        if (this.state.currentStep == this.state.vialData[i].step) {
             newVialData.splice(i, 1);
-            break;
         }
     }
 
-    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:2125});
-    this.setState({vialData:newVialData});
-    this.props.socket.emit('data', {});
+    console.log('After delete block');
+    console.log(newVialData);
+
+
+    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
+    this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
+    this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
   }
 
   stopRead = () => {
+    this.props.socket.emit('stopread', {});
     this.handleUnlockBtns()
-    this.setState({readProgress: 0});
+    // remove existing data for particular layout
+    var newVialData = this.state.vialData;
+    for (var i = this.state.vialData.length - 1; i >= 0; i--) {
+        if (this.state.currentStep == this.state.vialData[i].step) {
+            newVialData.splice(i, 1);
+        }
+    }
+    this.setState({readProgress: 0, vialData: newVialData});
   }
 
   componentWillUnmount() {
@@ -172,12 +186,21 @@ class ODcal extends React.Component {
     var disableBackward;
     var currentStep = this.state.currentStep + 1;
 
+    // Just in case. Somehow this can go out of it's bounds and cause weirdness
+    if (currentStep > 16) {
+       currentStep = 16;
+    }
+    if (currentStep < 1) {
+        currentStep = 1;
+    }
+
     if (this.state.currentStep === 1){
       disableBackward = false;
     }
     if (this.state.currentStep === 15){
       disableForward = true;
     }
+
     this.child.current.handleAdvance();
     this.setState({
       disableForward: disableForward,
@@ -248,7 +271,7 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD) != "undefined")) {
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD[0]) != "undefined")) {
           if (this.state.vialData[i].OD[0].length === this.state.timesRead){
 
               measureButton =
@@ -325,7 +348,7 @@ class ODcal extends React.Component {
 
     return (
       <div>
-        <h3 className="odCalTitles"> Optical Denisty Calibration </h3>
+        <h3 className="odCalTitles"> Optical Density Calibration </h3>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeValue={this.handleODChange}
