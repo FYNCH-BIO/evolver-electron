@@ -257,3 +257,47 @@ ul {
   position: absolute;
   margin: 18px 0px 0px -33px
 }
+
+.tempAdvanceBtn {
+  position: absolute;
+  margin: 540px 0px 0px 348px;
+  height: 70px;
+  width: 120px;
+  background-color: white;
+  color: black;
+  border: none;
+}
+
+.tempAdvanceBtn:disabled {
+  background-color: black;
+  border: none;
+}
+
+
+.tempBackBtn {
+  position: absolute;
+  margin: 540px 0px 0px 63px;
+  height: 70px;
+  width: 120px;
+  background-color: white;
+  color: black;
+}
+
+.tempBackBtn:disabled {
+  background-color: black;
+  border: none;
+}
+
+.tempMeasureBtn {
+  position: absolute;
+  margin: 540px 0px 0px 196px;
+  height: 70px;
+  width: 140px;
+  background-color: white;
+  color: black;
+}
+
+.tempDisclaimerText {
+  font-size: 14px;
+  margin: 615px 0px 0px 118px;
+}

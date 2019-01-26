@@ -54,12 +54,18 @@ function generateVialLabel (response, oldTempStream) {
   return [tempStream, valueInputs]
 }
 
+function calculateVialProgress (currentTemp, previousLockedTemp, targetTemp){
+  var percentCompleted = []
+  for (var i = 0; i < currentTemp.length; i++) {
+    percentCompleted[i] = Math.round(5 + (95 *Math.abs(((currentTemp[i] - previousLockedTemp[i])/(targetTemp[i] - previousLockedTemp[i])))));
+  }
+  return percentCompleted
+}
+
 
 class TempCal extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props);
-    console.log(this.props.socket);
     this.state = {
       currentStep: 1,
       disableForward: false,
@@ -70,7 +76,7 @@ class TempCal extends React.Component {
       generalOpacity: Array(16).fill(1),
       tempInputsFloat: [],
       readProgress: 0,
-      vialProgress: Array(16).fill(40),
+      vialProgress: Array(16).fill(0),
       initialZipped: [],
       inputsEntered: true,
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
@@ -83,6 +89,12 @@ class TempCal extends React.Component {
       deltaTempRange: [0, 1000], //slope around 0.02 C per a.u.
       deltaTempSteps: 3,
       equilibrateState: true,
+      roomTempAvg: [],
+      buttonAdvanceText: '',
+      buttonBackText: '',
+      buttonMeasureText: 'RT',
+      slopeEsimate: .02,
+      previousLockedTemp: [],
     };
     this.props.socket.on('dataresponse', function(response) {
 
@@ -97,12 +109,10 @@ class TempCal extends React.Component {
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
-      for (var i = 0; i < response.OD.length; i++) {
-          if (newVialData[newVialData.length - 1].OD.length <= i) {
-              newVialData[newVialData.length - 1].OD.push([]);
+      for (var i = 0; i < response.temp.length; i++) {
+          if (newVialData[newVialData.length - 1].temp.length <= i) {
               newVialData[newVialData.length - 1].temp.push([]);
           }
-          newVialData[newVialData.length - 1].OD[i].push(response.OD[i]);
           newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
       }
       this.setState({
@@ -110,15 +120,29 @@ class TempCal extends React.Component {
         valueInputs: valueInputs,
         vialData: newVialData,
         equilibrateState: true},
+        //Runs when collected enough measurements
         function() {
-        if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
-            this.handleUnlockBtns();
-            console.log(this.state.vialData);
-            var readsFinished = this.state.vialData.length;
-            this.setState({progressCompleted: (100 * (this.state.vialData.length / this.state.deltaTempSteps)), readsFinished: readsFinished , readProgress: 0});
+          var tempArray = this.state.vialData[newVialData.length - 1].temp;
+          if (tempArray[0].length === this.state.timesRead) {
+              var roomTempAvg = this.state.roomTempAvg;
+              if (this.state.currentStep == 1) {
+                for (var i = 0; i < tempArray.length; i++) {
+                  let average = (array) => array.reduce((a, b) => a + b) / array.length;
+                  roomTempAvg[i] = Math.round(average(tempArray[i]));
+                }
+              }
+              this.handleUnlockBtns();
+              console.log(this.state.vialData);
+              var readsFinished = this.state.vialData.length;
+              this.setState({
+                progressCompleted: (100 * (this.state.vialData.length / this.state.deltaTempSteps)),
+                readsFinished: readsFinished,
+                readProgress: 0,
+                roomTempAvg: roomTempAvg,
+                vialProgress: Array(16).fill(0)});
 
-        }
-        this.props.socket.emit('data', {});
+          }
+          this.props.socket.emit('data', {});
       });
     }.bind(this));
 
@@ -127,9 +151,15 @@ class TempCal extends React.Component {
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
+      let percentVialProgress = [];
+      if (this.state.currentStep > 1) {
+        percentVialProgress = calculateVialProgress (tempStream, this.state.previousLockedTemp, this.state.currentPowerLevel);
+      }
+
       this.setState({
         tempStream: tempStream,
-        valueInputs: valueInputs
+        valueInputs: valueInputs,
+        vialProgress: percentVialProgress
          })
     }.bind(this));
 
@@ -137,10 +167,15 @@ class TempCal extends React.Component {
   }
 
   componentDidMount() {
+    var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+    var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
+    var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
     this.setState({
       vialOpacities: Array(16).fill(0),
       generalOpacity: Array(16).fill(1),
       valueInputs: Array(16).fill('...'),
+      buttonAdvanceText: buttonAdvanceText,
+      buttonBackText: buttonBackText,
       })
   };
 
@@ -153,7 +188,18 @@ class TempCal extends React.Component {
 
     if (this.state.equilibrateState){
       this.handleLockBtns();
-      this.setState({equilibrateState: false, inputsEntered: false});
+
+      let percentVialProgress = [];
+      if (this.state.currentStep > 1) {
+        percentVialProgress = calculateVialProgress (this.state.tempStream, this.state.tempStream, this.state.currentPowerLevel);
+      }
+
+      this.setState({
+        equilibrateState: false,
+        inputsEntered: false,
+        previousLockedTemp: this.state.tempStream,
+        vialProgress: percentVialProgress
+        });
     }
     else {
       this.setState({readProgress: this.state.readProgress + .01, inputsEntered: true});
@@ -166,7 +212,12 @@ class TempCal extends React.Component {
               break;
           }
       }
-      newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:this.state.currentPowerLevel, enteredValues:this.state.enteredValues});
+      newVialData.push({
+        temp:[],
+        step: this.state.currentStep,
+        powerLevel:this.state.currentPowerLevel,
+        enteredValues:this.state.enteredValues,
+        });
       this.setState({vialData:newVialData});
       this.props.socket.emit('data', {});
     }
@@ -191,6 +242,15 @@ class TempCal extends React.Component {
    var disableForward;
    var disableBackward;
    var currentStep = this.state.currentStep - 1;
+   var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+   var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
+   var buttonMeasureText = '';
+   if (currentStep - 1 == 0){
+     var buttonMeasureText = "RT"
+   }
+   else{
+    var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+    }
 
    if (this.state.currentStep === this.state.deltaTempSteps){
      disableForward = false;
@@ -202,26 +262,39 @@ class TempCal extends React.Component {
    this.setState({
      disableForward: disableForward,
      disableBackward: disableBackward,
-     currentStep: currentStep
+     currentStep: currentStep,
+     currentPowerLevel: newTempSet,
+     buttonMeasureText: buttonMeasureText
      });
   };
 
   handleAdvance = () => {
-   var disableForward;
-   var disableBackward;
-   var currentStep = this.state.currentStep + 1;
+    var disableForward;
+    var disableBackward;
+    var currentStep = this.state.currentStep + 1;
+    var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+    var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
+    var buttonMeasureText = '';
+    if (currentStep - 1 == 0){
+      var buttonMeasureText = "RT"
+    }
+    else{
+     var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+     }
 
-   if (this.state.currentStep === 1){
+    if (this.state.currentStep === 1){
      disableBackward = false;
-   }
-   if (this.state.currentStep === (this.state.deltaTempSteps - 1)){
+    }
+    if (this.state.currentStep === (this.state.deltaTempSteps - 1)){
      disableForward = true;
-   }
-   this.handleRecordedData(currentStep);
-   this.setState({
+    }
+    this.handleRecordedData(currentStep);
+    this.setState({
      disableForward: disableForward,
      disableBackward: disableBackward,
-     currentStep: currentStep
+     currentStep: currentStep,
+     currentPowerLevel: newTempSet,
+     buttonMeasureText: buttonMeasureText
      });
   };
 
@@ -266,11 +339,7 @@ class TempCal extends React.Component {
   }
 
   handleTempInput = (tempValues) => {
-    var tempValuesFloats = [];
-    for (let i = 0; i < tempValues.length; i++){
-        tempValuesFloats[i] = parseFloat(tempValues[i])
-      }
-    this.setState({enteredValues: tempValuesFloats});
+    this.setState({enteredValues: tempValues});
    }
 
   render() {
@@ -284,7 +353,7 @@ class TempCal extends React.Component {
       statusText = <p className="statusText">Load vessels w/ 15 mL of room temp water. </p>
     }
     else if ((this.state.vialData.length == 0) && (!this.state.equilibrateState)) {
-      statusText = <p className="statusText"> Let equilibrate at RT, then enter measured values. </p>
+      statusText = <p className="statusText"> Heaters turned off. Let equilibrate, then enter values. </p>
     }
     else if ((this.state.vialData.length !== 0) && (this.state.equilibrateState)) {
       statusText = <p className="statusText"> {this.state.readsFinished}/{this.state.deltaTempSteps} Measurements Made </p>
@@ -294,25 +363,23 @@ class TempCal extends React.Component {
     }
 
 
-    //deltaTempRange: [0, 1000], //slope around 0.02 C per a.u.
-    //deltaTempSteps: 3,
 
     if (this.state.readProgress === 0) {
         measureButton =
         <button
-          className="measureBtn"
+          className="tempMeasureBtn"
           onClick = {this.startRead}>
-           <FaPlay/>
+          {this.state.buttonMeasureText} <FaPlay size={13}/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD) != "undefined")) {
-          if (this.state.vialData[i].OD[0].length === this.state.timesRead){
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].temp) != "undefined")) {
+          if (this.state.vialData[i].temp[0].length === this.state.timesRead){
 
               measureButton =
               <button
-                className="measureBtn"
+                className="tempMeasureBtn"
                 onClick = {this.startRead}>
-                 <FaCheck/>
+                 {this.state.buttonMeasureText} <FaCheck size={13}/>
               </button>;
               break;
             }
@@ -321,7 +388,7 @@ class TempCal extends React.Component {
     } else {
       measureButton =
       <button
-        className="measureBtn"
+        className="tempMeasureBtn"
         onClick= {this.stopRead}>
         <CircularProgress
           classes={{
@@ -340,32 +407,46 @@ class TempCal extends React.Component {
     }
 
 
+    let progressButtons;
+    if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
+      progressButtons =
+      <div className="row">
+        <button
+          className="stepOneBtn"
+          onClick={this.startRead}>
+          Start Temperature Calibration <FaPlay size={17}/>
+        </button>
+      </div>;
+    } else {
+      progressButtons =
+      <div className="row" style={{position: 'absolute'}}>
+        <button
+          className="tempBackBtn"
+          disabled={this.state.disableBackward}
+          onClick={this.handleBack}>
+          {this.state.buttonBackText} <FaArrowLeft size={13}/>
+        </button>
+        {measureButton}
+        <button
+          className="tempAdvanceBtn"
+          disabled={this.state.disableForward}
+          onClick={this.handleAdvance}>
+          {this.state.buttonAdvanceText} <FaArrowRight size={13}/>
+        </button>
+        <p className="tempDisclaimerText"> * Indicated temperature steps are estimations only. </p>
+      </div>
+    }
+
 
     return (
       <div>
+        {progressButtons}
         <h3 className="odCalTitles"> Temperature Calibration &deg;C </h3>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <TempcalInput
           onChangeValue={this.handleTempInput}
           onInputsEntered = {this.state.inputsEntered}
           enteredValues = {this.state.enteredValues}/>
-
-        <div className="row" style={{position: 'absolute'}}>
-          <button
-            className="odBackBtn"
-            disabled={this.state.disableBackward}
-            onClick={this.handleBack}>
-            <FaArrowLeft/>
-          </button>
-          {measureButton}
-          <button
-            className="odAdvanceBtn"
-            disabled={this.state.disableForward}
-            onClick={this.handleAdvance}>
-            <FaArrowRight/>
-          </button>
-        </div>
-
         <Card className={classes.cardTempCalGUI}>
           <TempCalGUI
             vialOpacities = {this.state.vialOpacities}

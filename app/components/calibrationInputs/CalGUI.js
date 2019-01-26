@@ -79,6 +79,9 @@ export default class ODcalGUI extends Component<Props> {
         zipped: zippedSamples,
       })
     }
+    if (this.props.readProgress !== prevProps.readProgress) {
+      this.setState({ readProgress: this.props.readProgress})
+    }
   }
 
   handleBack = (event) => {
