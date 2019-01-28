@@ -120,7 +120,7 @@ class ODcal extends React.Component {
 
   startRead = () => {
     this.handleLockBtns();
-    this.setState({readProgress: this.state.readProgress + .01});
+    this.setState({readProgress: this.state.readProgress + .01, powerLevel: this.state.powerLevels[0]});
     var newVialData = this.state.vialData;
 
     // remove existing data for particular layout
@@ -130,13 +130,9 @@ class ODcal extends React.Component {
         }
     }
 
-    console.log('After delete block');
-    console.log(newVialData);
-
-
     newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
     this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
-    this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
+    this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
   }
 
   stopRead = () => {
