@@ -34,6 +34,12 @@ class VialOutline extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.readProgress !== prevProps.readProgress) {
+      this.setState({ readProgress: this.props.readProgress})
+    }
+  }
+
   handleButton = (id) => {
     console.log(id)
   }

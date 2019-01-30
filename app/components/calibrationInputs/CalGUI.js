@@ -14,7 +14,8 @@ function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabe
     valueInputsNew[i] = valueInputs[odState[i]]
     vialOpacitiesNew[i] = vialOpacities[odState[i]]
     vialLabelsNew[i] = vialLabels[odState[i]]
-    if ( isNaN(valueInputsNew[i]) ) {
+
+    if ( isNaN(valueInputsNew[i]) && (typeof valueInputsNew[i] !== 'string')) {
       generalOpacityNew[i] = 0;
     }
     else{
@@ -26,7 +27,7 @@ function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabe
 
   return zippedSamples
 }
-//generalSampleOpacity = newState.map((x, i) => x[2])
+//generalOpacity = newState.map((x, i) => x[2])
 
 function unzipValues(zippedArray) {
   let odState = zippedArray.map((x, i) => x[0])
@@ -58,10 +59,10 @@ export default class ODcalGUI extends Component<Props> {
     this.state = {
       odState: [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3],
       vialOpacities: this.props.vialOpacities,
-      generalSampleOpacity: this.props.generalOpacity,
+      generalOpacity: this.props.generalOpacity,
       valueInputs: this.props.valueInputs,
       vialLabels: this.props.vialLabels,
-      zipped: this.props.initialZipped,
+      zipped: [],
       readProgress: this.props.readProgress,
     };
   }
@@ -69,18 +70,22 @@ export default class ODcalGUI extends Component<Props> {
   componentDidUpdate(prevProps) {
     if ((this.props.generalOpacity !== prevProps.generalOpacity) || this.props.vialOpacities !== prevProps.vialOpacities || this.props.valueInputs !== prevProps.valueInputs || this.props.vialLabels !== prevProps.vialLabels) {
       let zippedSamples = zipValues(this.state.odState, this.props.vialOpacities, this.props.generalOpacity, this.props.valueInputs, this.props.vialLabels)
+      console.log(zippedSamples)
       this.setState({
-        generalSampleOpacity: this.props.generalOpacity,
+        generalOpacity: this.props.generalOpacity,
         vialOpacities: this.props.vialOpacities,
         valueInputs: this.props.valueInputs,
         vialLabels: this.props.vialLabels,
         zipped: zippedSamples,
       })
     }
+    if (this.props.readProgress !== prevProps.readProgress) {
+      this.setState({ readProgress: this.props.readProgress})
+    }
   }
 
   handleBack = (event) => {
-    let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalSampleOpacity, this.state.valueInputs, this.state.vialLabels)
+    let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalOpacity, this.state.valueInputs, this.state.vialLabels)
     let newState = []
     newState[7] = zippedSamples[0]
     newState[0] = zippedSamples[1]
@@ -102,7 +107,7 @@ export default class ODcalGUI extends Component<Props> {
     let unzipped = unzipValues(newState)
     let odState = unzipped[0]
     let vialOpacities = unzipped[1]
-    let generalSampleOpacity = unzipped[2]
+    let generalOpacity = unzipped[2]
     let valueInputs = unzipped[3]
     let vialLabels = unzipped[4]
 
@@ -110,14 +115,14 @@ export default class ODcalGUI extends Component<Props> {
       zipped: newState,
       odState: odState,
       vialOpacities: vialOpacities,
-      generalSampleOpacity: generalSampleOpacity,
+      generalOpacity: generalOpacity,
       valueInputs: valueInputs,
       vialLabels: vialLabels,
     });
   }
 
   handleAdvance = (event) => {
-    let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalSampleOpacity, this.state.valueInputs, this.state.vialLabels)
+    let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalOpacity, this.state.valueInputs, this.state.vialLabels)
     let newState = []
     newState[0] = zippedSamples[7]
     newState[1] = zippedSamples[0]
@@ -139,7 +144,7 @@ export default class ODcalGUI extends Component<Props> {
     let unzipped = unzipValues(newState)
     let odState = unzipped[0]
     let vialOpacities = unzipped[1]
-    let generalSampleOpacity = unzipped[2]
+    let generalOpacity = unzipped[2]
     let valueInputs = unzipped[3]
     let vialLabels = unzipped[4]
 
@@ -147,7 +152,7 @@ export default class ODcalGUI extends Component<Props> {
       zipped: newState,
       odState: odState,
       vialOpacities: vialOpacities,
-      generalSampleOpacity: generalSampleOpacity,
+      generalOpacity: generalOpacity,
       valueInputs: valueInputs,
       vialLabels: vialLabels,
     });
