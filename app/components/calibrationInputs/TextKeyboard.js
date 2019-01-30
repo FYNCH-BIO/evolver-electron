@@ -13,7 +13,7 @@ class TextKeyboard extends React.Component {
   };
 
   onOpenModal = () => {
-    this.setState({ open: true, input: ""});
+    this.setState({ open: true, input:''});
   };
 
   onCloseModal = () => {
@@ -31,6 +31,7 @@ class TextKeyboard extends React.Component {
 
   onKeyPress = button => {
     if (button === "{shift}" || button === "{lock}") this.handleShift();
+    if (button === "{enter}") this.onCloseModal();
   };
 
   handleShift = () => {
@@ -53,21 +54,11 @@ class TextKeyboard extends React.Component {
     );
   };
 
-  finishExperiment = () => {
-    this.props.onFinishedExpt(true)
-  }
-
   render() {
     const { open } = this.state;
 
     return (
       <div>
-        <button
-          className="odAdvanceBtn"
-          onClick={this.onOpenModal}>
-          <FaPen/>
-        </button>
-
         <Modal
           open={open}
           onClose={this.onCloseModal}
@@ -77,12 +68,14 @@ class TextKeyboard extends React.Component {
              modal: styles.customModal,
              overlay: styles.customOverlay,
            }}>
+            <h3 style={{textAlign: 'center', margin: '0px 0px 15px 0px'}}>
+            Please Enter Name of Calibration File
+            </h3>
             <input
-              id = "keyboardInput"
-              ref="keyboardInput"
+              autoFocus
+              ref={input => input && input.focus()}
               className = "keyboardInput"
               value={this.state.input}
-              placeholder={"Enter name for calibration file"}
               onChange={e => this.onChangeInput(e)}
             />
             <Keyboard
@@ -92,13 +85,6 @@ class TextKeyboard extends React.Component {
               onChange={input => this.onChange(input)}
               onKeyPress={button => this.onKeyPress(button)}
               />
-
-              <button
-                type="button"
-                className="btn btn-outline-secondary finishButton"
-                onClick={this.finishExperiment}>
-                Finish and Log Calibration
-              </button>
           </Modal>
         </div>
     );

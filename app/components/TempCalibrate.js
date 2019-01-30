@@ -8,8 +8,9 @@ import TempcalInput from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
 import TempCalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck } from 'react-icons/fa';
+import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import TextKeyboard from './calibrationInputs/TextKeyboard';
 
 const styles = {
   cardTempCalGUI: {
@@ -38,17 +39,19 @@ const styles = {
   }
 };
 
-function generateVialLabel (response, oldTempStream) {
+function generateVialLabel (response, oldTempStream, roomTempAvg) {
   var tempStream = Array(16).fill('...');
   var deltaTempStream = Array(16).fill('...');
   var valueInputs = Array(16).fill('...')
   for (var i = 0; i < response.temp.length; i++) {
-    tempStream[i] = response.temp[i]
-    deltaTempStream[i] = tempStream[i] - oldTempStream[i];
-    if (isNaN(deltaTempStream[i])){
-      deltaTempStream[i] = "0"
+    if (roomTempAvg.length !== 0){
+      tempStream[i] = response.temp[i]
+      deltaTempStream[i] = tempStream[i] - oldTempStream[i];
+      if (isNaN(deltaTempStream[i])){
+        deltaTempStream[i] = "0"
+      }
+      valueInputs[i] = tempStream[i] + " (" + (deltaTempStream[i]<0?"":"+") + deltaTempStream[i] + ")"
     }
-    valueInputs[i] = tempStream[i] + " (" + (deltaTempStream[i]<0?"":"+") + deltaTempStream[i] + ")"
   }
 
   return [tempStream, valueInputs]
@@ -66,6 +69,7 @@ function calculateVialProgress (currentTemp, previousLockedTemp, targetTemp){
 class TempCal extends React.Component {
   constructor(props) {
     super(props);
+    this.keyboard = React.createRef();
     this.state = {
       currentStep: 1,
       disableForward: false,
@@ -95,6 +99,8 @@ class TempCal extends React.Component {
       buttonMeasureText: 'RT',
       slopeEsimate: .02,
       previousLockedTemp: [],
+      experimentName:''
+
     };
     this.props.socket.on('dataresponse', function(response) {
 
@@ -105,7 +111,7 @@ class TempCal extends React.Component {
       }
       this.progress();
 
-      let returnedTemps = generateVialLabel (response, this.state.tempStream)
+      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
@@ -147,7 +153,7 @@ class TempCal extends React.Component {
     }.bind(this));
 
     this.props.socket.on('databroadcast', function(response) {
-      let returnedTemps = generateVialLabel (response, this.state.tempStream)
+      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
@@ -167,6 +173,7 @@ class TempCal extends React.Component {
   }
 
   componentDidMount() {
+    this.keyboard.current.onOpenModal();
     var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
     var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
     var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
@@ -342,6 +349,24 @@ class TempCal extends React.Component {
     this.setState({enteredValues: tempValues});
    }
 
+   handleKeyboardInput = (input) => {
+     var exptName;
+     if (input == ''){
+       exptName = 'Temp-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+     } else {
+       exptName = input
+     }
+     this.setState({experimentName: exptName});
+   }
+
+   handleFinishExpt = (finishFlag) => {
+     console.log("Experiment Finished!")
+   }
+
+   handleKeyboardModal = () => {
+     this.keyboard.current.onOpenModal();
+   }
+
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
@@ -406,6 +431,24 @@ class TempCal extends React.Component {
       statusText = <p className="statusText">Collecting raw values from eVOLVER...</p>;
     }
 
+    let btnRight;
+    if  ((this.state.progressCompleted >= 100) && (this.state.currentStep === this.state.deltaTempSteps)){
+      btnRight =
+        <button
+          className="tempAdvanceBtn"
+          onClick={this.handleFinishExpt}>
+          <FaPen/>
+        </button>
+    } else {
+      btnRight =
+        <button
+          className="tempAdvanceBtn"
+          disabled={this.state.disableForward}
+          onClick={this.handleAdvance}>
+          <FaArrowRight/>
+        </button>
+    }
+
 
     let progressButtons;
     if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
@@ -427,26 +470,20 @@ class TempCal extends React.Component {
           {this.state.buttonBackText} <FaArrowLeft size={13}/>
         </button>
         {measureButton}
-        <button
-          className="tempAdvanceBtn"
-          disabled={this.state.disableForward}
-          onClick={this.handleAdvance}>
-          {this.state.buttonAdvanceText} <FaArrowRight size={13}/>
-        </button>
-        <p className="tempDisclaimerText"> * Indicated temperature steps are estimations only. </p>
+        {btnRight}
       </div>
     }
 
 
     return (
       <div>
-        {progressButtons}
-        <h3 className="odCalTitles"> Temperature Calibration &deg;C </h3>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <TempcalInput
           onChangeValue={this.handleTempInput}
           onInputsEntered = {this.state.inputsEntered}
           enteredValues = {this.state.enteredValues}/>
+        {progressButtons}
+
         <Card className={classes.cardTempCalGUI}>
           <TempCalGUI
             vialOpacities = {this.state.vialOpacities}
@@ -467,8 +504,15 @@ class TempCal extends React.Component {
 
           {statusText}
 
-
         </Card>
+
+        <button
+          className="odCalTitles"
+          onClick={this.handleKeyboardModal}>
+          <h3 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h3>
+        </button>
+        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+
 
 
       </div>
