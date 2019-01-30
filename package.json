@@ -232,6 +232,7 @@
     "react-router-dom": "^4.3.1",
     "react-router-redux": "^5.0.0-alpha.6",
     "react-selectable-fast": "^2.1.1",
+    "react-simple-keyboard": "^1.15.2",
     "react-swipeable-views": "^0.13.0",
     "react-swipeable-views-utils": "^0.13.0",
     "redux": "^4.0.0",
