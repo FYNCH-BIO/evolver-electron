@@ -6,6 +6,13 @@ import { withStyles } from '@material-ui/core/styles';
 import {PythonShell} from 'python-shell';
 import parsePath from 'parse-filepath';
 import log4js from 'log4js';
+import ScriptForm from './ScriptForm'
+
+const {BrowserWindow} = require('electron').remote
+const dialog = require('electron').remote.dialog
+const remote = require('electron').remote
+
+
 
 const styles = {
 
@@ -16,7 +23,7 @@ let pyshell;
 function setupPyShell(filePath, logPath) {
   let options = {
     pythonOptions: ['-u'], // get print results in real-time
-    args: ['value1', 'value2', 'value3', 'value4']
+    args: ['-a', '-b', '-c', '-d']
   };
 
   pyshell = new PythonShell(filePath,options);
@@ -51,20 +58,29 @@ class RunScript extends React.Component {
   }
 
   handleButton = () => {
+    let win= new BrowserWindow({width:400, height:320,resizable: false})
+    win.on('close', function(e){
+      var choice = dialog.showMessageBox (remote.getCurrentWindow (), {
+        message: 'Python Script Stopped.'
+      });
+    });
+    win.show()
 
-    const logger = setupLogger(this.state.logPath);
-    pyshell = setupPyShell(this.state.filePath, this.state.logPath);
 
-    logger.info("Starting Experiment Script");
-    pyshell.on('message', function (message){ logger.info(message) });
 
-    pyshell.end(function (err,code,signal) {
-      if (err) throw err;
-      logger.info("Script Exited");
-      this.setState({scriptStarted: false})
-    }.bind(this));
-
-    this.setState({scriptStarted: true})
+    // const logger = setupLogger(this.state.logPath);
+    // pyshell = setupPyShell(this.state.filePath, this.state.logPath);
+    //
+    // logger.info("Starting Experiment Script");
+    // pyshell.on('message', function (message){ logger.info(message) });
+    //
+    // pyshell.end(function (err,code,signal) {
+    //   if (err) throw err;
+    //   logger.info("Script Exited");
+    //   this.setState({scriptStarted: false})
+    // }.bind(this));
+    //
+    // this.setState({scriptStarted: true})
   }
 
   handleStop = () => {
@@ -96,6 +112,7 @@ class RunScript extends React.Component {
 
     return (
       <div>
+        <ScriptForm />
         {runExptBtns}
         <input className= "managerFileInput" type="file" onChange={this.handleFilePath}/>
 

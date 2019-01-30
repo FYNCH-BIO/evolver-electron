@@ -1,8 +1,8 @@
 {
-  "name": "electron-evolver-2",
+  "name": "eVOLVER",
   "productName": "eVOLVER",
   "version": "0.14.0",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
+  "description": "eVOLVER Electron App",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
     "build-dll": "cross-env NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack/bin/webpack --config webpack.config.renderer.dev.dll.js --colors",
@@ -59,7 +59,7 @@
       "resources/icon.png"
     ],
     "dmg": {
-      "icon" : "resources/icon.png",
+      "icon": "resources/icon.png",
       "contents": [
         {
           "x": 130,
@@ -222,6 +222,7 @@
     "electron-debug": "^2.0.0",
     "history": "^4.7.2",
     "log4js": "^3.0.6",
+    "moment": "^2.24.0",
     "parse-filepath": "^1.0.2",
     "python-shell": "^1.0.7",
     "react": "^16.4.1",
@@ -229,6 +230,7 @@
     "react-hot-loader": "^4.3.4",
     "react-icons": "^3.2.2",
     "react-keyboard-event-handler": "^1.4.1",
+    "react-keyed-file-browser": "^1.4.3",
     "react-pose": "^4.0.5",
     "react-redux": "^5.0.7",
     "react-responsive-modal": "^3.5.1",

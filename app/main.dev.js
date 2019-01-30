@@ -80,6 +80,7 @@ function createWindow () {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    app.quit();
   });
 
   mainWindow.on('close', function(e){
@@ -97,13 +98,6 @@ function createWindow () {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   const template = menuBuilder.buildMenu();
-  template[1].submenu[0] = {
-      label: 'New Window',
-      accelerator: 'Command+N',
-      click: () => {
-        createWindow()
-      }
-    }
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 }
@@ -114,11 +108,7 @@ function createWindow () {
  */
 
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('ready', async () => {

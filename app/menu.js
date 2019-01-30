@@ -44,19 +44,6 @@ export default class MenuBuilder {
 
     var mainFunctions = require('./main.dev');
 
-    const subMenuFile = {
-      label: 'File',
-      submenu: [
-        {
-          label: 'New Window',
-          accelerator: 'Command+N',
-          click: () => {
-
-          }
-        }
-      ]
-    };
-
     const subMenuAbout = {
       label: 'eVOLVER',
       submenu: [
@@ -160,7 +147,7 @@ export default class MenuBuilder {
     const subMenuView =
       process.env.NODE_ENV === 'development' ? subMenuViewDev : subMenuViewProd;
 
-    return [subMenuAbout, subMenuFile, subMenuEdit, subMenuView, subMenuWindow];
+    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow];
   }
 
   buildDefaultTemplate() {

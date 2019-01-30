@@ -22,10 +22,10 @@ class ExptManager extends React.Component {
   render() {
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
         <div className="RunScript centered">
           <RunScript/>
         </div>
+        <Link className="backHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
       </div>
 
     );
