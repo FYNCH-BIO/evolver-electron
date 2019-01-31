@@ -1,6 +1,6 @@
 .simple-keyboard {
-  width: 1000px;
   color: black;
+  font-size: 22px;
 }
 
 .simple-keyboard.hg-theme-default.myTheme {
@@ -22,12 +22,14 @@
 
 
 .keyboardInput {
-  width: 740px;
+  width: 1000px;
   text-align: left;
   background-color: black;
   margin-left: 5px;
   border: black;
   color: white;
+  font-size: 24px;
+  margin-top: -16px;
 }
 
 .keyboardInput:focus {
@@ -52,4 +54,8 @@
   color: white;
   background-color: black;
   border: 2px solid #f58245;
+}
+
+.hg-standardBtn {
+  height:50px;
 }

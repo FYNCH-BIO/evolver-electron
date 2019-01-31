@@ -46,6 +46,7 @@ class ODcal extends React.Component {
   constructor(props) {
     super(props);
     this.child = React.createRef();
+    this.keyboard = React.createRef();
     this.state = {
       currentStep: 1,
       readsFinished: 0,
@@ -120,6 +121,7 @@ class ODcal extends React.Component {
   }
 
   componentDidMount() {
+    this.keyboard.current.onOpenModal();
     this.setState({
       vialOpacities: Array(16).fill(0),
       })
@@ -264,12 +266,21 @@ class ODcal extends React.Component {
   }
 
   handleKeyboardInput = (input) => {
-    console.log(input)
-    this.setState({experimentName: input});
+    var exptName;
+    if (input == ''){
+      exptName = 'ODCal-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+    } else {
+      exptName = input
+    }
+    this.setState({experimentName: exptName});
   }
 
-  handleFinishExpt = (finishFlag) => {
+  handleFinishExpt = () => {
     console.log("Experiment Finished!")
+  }
+
+  handleKeyboardModal = () => {
+    this.keyboard.current.onOpenModal();
   }
 
   render() {
@@ -318,9 +329,13 @@ class ODcal extends React.Component {
     }
 
     let btnRight;
-    if  ((this.state.progressCompleted < 100) && (this.state.currentStep === 16)){
+    if  ((this.state.progressCompleted >= 100) && (this.state.currentStep === 16)){
       btnRight =
-        <TextKeyboard onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+        <button
+          className="odAdvanceBtn"
+          onClick={this.handleFinishExpt}>
+          <FaPen/>
+        </button>
     } else {
       btnRight =
         <button
@@ -371,7 +386,6 @@ class ODcal extends React.Component {
 
     return (
       <div>
-        <h3 className="odCalTitles"> Optical Density Calibration </h3>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeValue={this.handleODChange}
@@ -397,11 +411,16 @@ class ODcal extends React.Component {
             }}
             variant="determinate"
             value={this.state.progressCompleted} />
-
           {statusText}
-
-
         </Card>
+
+        <button
+          className="odCalTitles"
+          onClick={this.handleKeyboardModal}>
+          <h3 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h3>
+        </button>
+        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+
       </div>
 
     );
