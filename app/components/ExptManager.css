@@ -19,3 +19,11 @@
   width: 100vw;
   bottom: 10px;
 }
+
+.expManagerHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 22px 0px 0px 25px;
+  border: none;
+  font-size: 30px;
+}

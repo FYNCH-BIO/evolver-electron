@@ -58,7 +58,7 @@ class RunScript extends React.Component {
   }
 
   handleButton = () => {
-    let win= new BrowserWindow({width:400, height:320,resizable: false})
+    let win= new BrowserWindow({width:400, height:320,resizable: false,})
     win.on('close', function(e){
       var choice = dialog.showMessageBox (remote.getCurrentWindow (), {
         message: 'Python Script Stopped.'
@@ -88,16 +88,6 @@ class RunScript extends React.Component {
     this.setState({scriptStarted: false})
   }
 
-  handleFilePath = () => {
-    let parsedDirectory = parsePath(document.getElementsByTagName('input')[0].files[0].path)
-    const remote = require('electron').remote;
-    const app = remote.app;
-    console.log(app.getPath('userData'));
-
-    this.setState({
-      filePath: document.getElementsByTagName('input')[0].files[0].path,
-      logPath: parsedDirectory.dir})
-  }
 
   render() {
 
@@ -114,7 +104,6 @@ class RunScript extends React.Component {
       <div>
         <ScriptForm />
         {runExptBtns}
-        <input className= "managerFileInput" type="file" onChange={this.handleFilePath}/>
 
       </div>
 

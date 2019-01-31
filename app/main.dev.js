@@ -57,7 +57,8 @@ function createWindow () {
     minWidth: 1110,
     minHeight: 100,
     x: position[0]+20,
-    y: position[1]+20
+    y: position[1]+20,
+    resizable: false
 
   });
   //mainWindow.setFullScreen(true);

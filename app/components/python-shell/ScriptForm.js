@@ -4,8 +4,10 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import FileBrowser, {Icons} from 'react-keyed-file-browser'
+import FileBrowser, {Icons, Sorters} from 'react-keyed-file-browser'
 import moment from 'moment'
+import parsePath from 'parse-filepath';
+
 
 
 const styles = {
@@ -60,78 +62,68 @@ const styles = {
   },
   card: {
     width: 600,
-    height: 600,
+    height: 300,
     backgroundColor: 'black',
-    margin: '100px 0px -165px 100px'
+    position: 'absolute',
+    margin: '-310px 0px 0px 20px',
+    verticalAlign: 'top',
     }
 };
 
-var fs = require('fs');
-var path = require('path');
-var util = require('util');
 
-var diretoryTreeToObj = function(dir, done) {
-    var results = [];
+var fs = require('fs')
+var path = require('path')
+var util = require('util')
 
-    fs.readdir(dir, function(err, list) {
-        if (err)
-            return done(err);
+function dirTree(filename) {
+    var stats = fs.lstatSync(filename),
+        info = {
+            key: path.basename(filename),
+            extname: path.extname(filename)
+        };
 
-        var pending = list.length;
+    var timestamp = new Date(util.inspect(stats.mtime));
+    info.modified = moment(timestamp).valueOf();
+    info.size = stats.size;
 
-        if (!pending)
-            return done(null, {name: path.basename(dir), type: 'folder', children: results});
-
-        list.forEach(function(file) {
-            file = path.resolve(dir, file);
-            fs.stat(file, function(err, stat) {
-                if (stat && stat.isDirectory()) {
-                    diretoryTreeToObj(file, function(err, res) {
-                        results.push({
-                            name: path.basename(file),
-                            type: 'folder',
-                            children: res
-                        });
-                        if (!--pending)
-                            done(null, results);
-                    });
-                }
-                else {
-                    results.push({
-                        type: 'file',
-                        name: path.basename(file),
-                        extension: path.extname(file),
-                        modified: new Date(util.inspect(stat.mtime))
-                    });
-                    if (!--pending)
-                        done(null, results);
-                }
-            });
+    if (stats.isDirectory()) {
+        info.type = "folder";
+        info.children = fs.readdirSync(filename).map(function(child) {
+            return dirTree(filename + '/' + child);
         });
-    });
-};
+    } else {
+        // Assuming it's a file. In real life it could be a symlink or
+        // something else!
+        info.type = "file";
+    }
 
+    return info;
+}
 
 class ScriptForm extends React.Component {
   state = {
-    expt_continue: false,
-    lightBToggle: false,
+    fileJSON: [],
+    test: 'placeholder',
+    logPath: '',
+    filePath: ''
   };
 
   handleTestBtn = () => {
     const remote = require('electron').remote;
+    var dirPath= './app/components/python-shell';
+    var resultJSON = {'data': dirTree(dirPath).children};
+    console.log(resultJSON);
+
+    var jp = require('jsonpath');
+    var filequery = jp.query(resultJSON, '$..data[?(@.extname==".py" && @.type=="file")]');
+
+    console.log(filequery)
+
+    // $..book[?(@.price==8.99),?(@.category=='fiction')]
+
     const app = remote.app;
 
-    var dirTree = ('/Users/brandonwong/Documents/GitHub.noindex/evolver-electron/app/components/python-shell');
-
-    diretoryTreeToObj(dirTree, function(err, res){
-        if(err)
-            console.error(err);
-
-        console.log(JSON.stringify(res));
-    });
-
-    console.log(+moment().subtract(3, 'days'))
+    this.setState({fileJSON: filequery})
   };
 
   handleChange = name => event => {
@@ -143,107 +135,31 @@ class ScriptForm extends React.Component {
       this.props.onSubmitButton("light", values);
   };
 
+  handleFilePath = () => {
+    let parsedDirectory = parsePath(document.getElementsByName('fileinput')[0].files[0].path)
+
+    this.setState({
+      filePath: document.getElementsByName('fileinput')[0].files[0].path,
+      logPath: parsedDirectory.dir})
+  }
+
   render() {
     const { classes } = this.props;
+    const { fileJSON } = this.state;
 
     return (
       <div>
         <Card className={classes.card}>
           <FileBrowser
-            files={[
-              {
-                key: 'cat.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 1.5 * 1024 * 1024,
-              },
-              {
-                key: 'kitten.png',
-                modified: moment('2019-01-26T05:45:10.343Z').fromNow() ,
-                size: 545 * 1024,
-              },
-              {
-                key: 'elephant1.png',
-                modified: moment('November 2000').fromNow(),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant2.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant3.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant4.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant5.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant6.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant7.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-              {
-                key: 'elephant8.png',
-                modified: +moment().subtract(3, 'days'),
-                size: 52 * 1024,
-              },
-
-            ]}
+            files={this.state.fileJSON}
+            sort = {Sorters.SortByModified}
           />
         </Card>
-
-        <FormGroup row>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={this.state.expt_continue}
-                onChange={this.handleChange('expt_continue')}
-                value="expt_continue"
-                color="primary"
-                classes={{root: classes.root, disabled: classes.disabledSwitch, icon: classes.icon, switchBase: classes.switchBase, bar: classes.bar, checked: classes.checked, colorPrimary: classes.colorPrimary}}
-              />
-            }
-            labelPlacement="start"
-            label ="Continue Experiment?"
-            classes = {{
-              label: classes.label,
-              labelPlacementStart: classes.labelPlacementStart,
-            }}
-          />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={this.state.expt_overwrite}
-                onChange={this.handleChange('expt_overwrite')}
-                value="expt_overwrite"
-                color="primary"
-                classes={{root: classes.root, icon: classes.icon, switchBase: classes.switchBase, bar: classes.bar, checked: classes.checked, colorPrimary: classes.colorPrimary}}
-              />
-            }
-            labelPlacement="start"
-            label ="Overwrite Experiment?"
-            classes = {{
-              label: classes.label,
-              labelPlacementStart: classes.labelPlacementStart,
-            }}
-          />
-        </FormGroup>
         <button type="button" className="scriptSubmitBtn" onClick={this.handleTestBtn}> Test Code </button>
+        <p>{this.state.test}</p>
+
+        <input name="fileinput" className= "managerFileInput" type="file" onChange={this.handleFilePath}/>
+
 
       </div>
     );

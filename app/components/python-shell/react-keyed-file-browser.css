@@ -2,19 +2,22 @@ div.rendered-react-keyed-file-browser div.action-bar {
   margin-bottom: 0.5rem;
   flex-wrap: wrap;
   display: flex;
+  width: 380px;
+  margin-left: 50px;
   align-items: flex-start; }
   div.rendered-react-keyed-file-browser div.action-bar input[type="search"] {
     display: block;
     flex-grow: 2;
     min-width: 300px;
+    height: 35px;
     padding: 0.25rem 0.5rem;
-    font-size: 23px;
+    font-size: 20px;
     color: black;
     line-height: 1em;
     margin-bottom: 0.5rem;
     border: 0.1rem solid #ddd; }
   div.rendered-react-keyed-file-browser div.action-bar input[type="search"]::placeholder  {
-    color: black;
+    color: white;
   }
   div.rendered-react-keyed-file-browser div.action-bar .item-actions {
     text-align: right;
@@ -36,6 +39,7 @@ div.rendered-react-keyed-file-browser div.action-bar {
 
 div.files {
   height: 250px;
+  width: 430px;
   display: block;
   overflow: scroll;
 }

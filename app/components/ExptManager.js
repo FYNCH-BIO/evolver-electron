@@ -25,7 +25,7 @@ class ExptManager extends React.Component {
         <div className="RunScript centered">
           <RunScript/>
         </div>
-        <Link className="backHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
       </div>
 
     );
