@@ -8,9 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import ODcalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck } from 'react-icons/fa';
+import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
+import TextKeyboard from './calibrationInputs/TextKeyboard';
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -63,7 +64,8 @@ class ODcal extends React.Component {
       vialData: [],
       powerLevel: 2125,
       powerLevels: [2125, 2100, 2200],
-      timesRead: 3
+      timesRead: 3,
+      experimentName:''
     };
     this.props.socket.on('dataresponse', function(response) {
         var newVialData = this.state.vialData;
@@ -108,7 +110,7 @@ class ODcal extends React.Component {
                         var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
                         this.props.socket.emit('setcalibrationraw', saveData);
                         return;
-                    }                    
+                    }
                 }
             }
             else {
@@ -254,6 +256,15 @@ class ODcal extends React.Component {
     });
   }
 
+  handleKeyboardInput = (input) => {
+    console.log(input)
+    this.setState({experimentName: input});
+  }
+
+  handleFinishExpt = (finishFlag) => {
+    console.log("Experiment Finished!")
+  }
+
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
@@ -299,6 +310,20 @@ class ODcal extends React.Component {
       </button>
     }
 
+    let btnRight;
+    if  ((this.state.progressCompleted < 100) && (this.state.currentStep === 16)){
+      btnRight =
+        <TextKeyboard onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+    } else {
+      btnRight =
+        <button
+          className="odAdvanceBtn"
+          disabled={this.state.disableForward}
+          onClick={this.handleAdvance}>
+          <FaArrowRight/>
+        </button>
+    }
+
     let progressButtons;
     if (this.state.inputsEntered) {
       progressButtons =
@@ -310,12 +335,7 @@ class ODcal extends React.Component {
             <FaArrowLeft/>
           </button>
           {measureButton}
-          <button
-            className="odAdvanceBtn"
-            disabled={this.state.disableForward}
-            onClick={this.handleAdvance}>
-            <FaArrowRight/>
-          </button>
+          {btnRight}
         </div>;
     } else {
       progressButtons =

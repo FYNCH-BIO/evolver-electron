@@ -10179,6 +10179,11 @@ react-selectable-fast@^2.1.1:
   resolved "https://registry.yarnpkg.com/react-selectable-fast/-/react-selectable-fast-2.1.1.tgz#d11f27f1546da8a41f7451723a55ed21ed991069"
   integrity sha512-47VARmW0dhXMejjp05VtujoTp+CNweUckhkd4TAhTUNtKv81w5DUCDRbDN232RTqrTljpGEzHEXGZEq37Ru3Rw==
 
+react-simple-keyboard@^1.15.2:
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/react-simple-keyboard/-/react-simple-keyboard-1.15.2.tgz#729558a6ad79335724c4d81e9be03170a02e6f42"
+  integrity sha512-rCOQco2W+ugSzk6jeWIzryX7Wc2zrTIe8C5vthz58udqBvoAgdcSmrcwSZe2dUCxbVIZSPATShDxRG7XOB1BhQ==
+
 react-swipeable-views-core@^0.13.0:
   version "0.13.0"
   resolved "https://registry.yarnpkg.com/react-swipeable-views-core/-/react-swipeable-views-core-0.13.0.tgz#6bf8a8132a756355444537672a14e84b1e3b53c2"
