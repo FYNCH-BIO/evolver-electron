@@ -63,7 +63,7 @@ class ODcal extends React.Component {
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
       powerLevel: 2125,
-      powerLevels: [2125, 2100, 2200],
+      powerLevels: [2125],
       timesRead: 3,
       experimentName:''
     };
@@ -98,18 +98,12 @@ class ODcal extends React.Component {
                     this.handleUnlockBtns();
                     var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
                     this.setState({progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)), readsFinished: readsFinished, readProgress: 0});
-                    /*
-                     * Once all 16 measurements are made, save to evolver.
-                     * TODO: Count by power levels, maybe have a button to trigger
-                     * saving instead. If moved to button, delete this
-                    */
 
                     if (this.state.vialData.length === (16 * this.state.powerLevels.length)) {
                         var d = new Date();
                         var currentTime = d.getTime();
-                        var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat};
+                        var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat, filename:(this.state.experimentName + '.json')};
                         this.props.socket.emit('setcalibrationraw', saveData);
-                        return;
                     }
                 }
             }
@@ -276,7 +270,11 @@ class ODcal extends React.Component {
   }
 
   handleFinishExpt = () => {
-    console.log("Experiment Finished!")
+      console.log("Experiment Finished!")
+      var d = new Date();
+      var currentTime = d.getTime();
+      var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat, filename:(this.state.experimentName + '.json')};
+      this.props.socket.emit('setcalibrationrawod', saveData);
   }
 
   handleKeyboardModal = () => {
