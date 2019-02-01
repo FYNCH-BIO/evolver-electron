@@ -21,12 +21,13 @@ export default class Setup extends Component<Props> {
             selectedItems: [],
             arduinoMessage: "",
             vialData: data,
-            tempCals: {},
-            odCals: {},
+            tempCal: [],
+            odCal: [],
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
-      this.props.location.socket.emit('getcalibration', {});
+      this.props.location.socket.emit('getcalibrationod', {});
+      this.props.location.socket.emit('getcalibrationotemp', {});
       this.props.location.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
@@ -34,24 +35,35 @@ export default class Setup extends Component<Props> {
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
 
-            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]][i]).toFixed(3);
-            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'][i]).toFixed(2);
+            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCal[i]).toFixed(3);
+            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCal[i]).toFixed(2);
         }
         this.setState({vialData: newVialData});
     }.bind(this));
-    this.props.location.socket.on('calibration', function(response) {
-        var odCals = response.metaData.params.OD.calibrations;
-        var tempCals = response.metaData.params.temp.calibrations;
-        var newOdCals = {};
-        var newTempCals = {};
-        for (var i = 0; i < odCals.length; i++) {
-            newOdCals[odCals[i].cal_name] = odCals[i].cal_data;
+    this.props.location.socket.on('calibrationod', function(response) {
+        var cal_response= response.split("\n");
+        var newOdCal = Array(16).fill([]);
+        for (var i = 0; i < newOdCal.length; i++) {
+            cal_response[i] = cal_response[i].split(",");
+            for (j = 0; j < cal_response[i].lenght; j++) {
+                newOdCal[j][i] = cal_response[i][j];
+            }
         }
-        for (var i = 0; i < tempCals.length; i++) {
-            newTempCals[tempCals[i].cal_name] = tempCals[i].cal_data;
-        }
-        this.setState({tempCals: newTempCals, odCals: newOdCals});
+
+        this.setState({odCal: newOdCal});
     }.bind(this));
+
+    this.props.location.socket.on('calibrationtemp', function(response) {
+        var temp_response= response.split("\n");
+        var newTempCal = Array(16).fill([]);
+        for (var i = 0; i < newTempCal.length; i++) {
+            temp_response[i] = temp_response[i].split(",");
+            for (j = 0; j < temp_response[i].lenght; j++) {
+                newTempCal[j][i] = temp_response[i][j];
+            }
+        }
+
+        this.setState({tempCal: newTempCal});
   }
   props: Props
 
