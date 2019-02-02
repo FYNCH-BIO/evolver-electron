@@ -3,7 +3,6 @@ import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
 import moment from 'moment'
 import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
@@ -15,19 +14,6 @@ const remote = require('electron').remote;
 const app = remote.app;
 
 const styles = {
-  card: {
-    width: 420,
-    height: 220,
-    position: 'absolute',
-    backgroundColor: 'black',
-    verticalAlign: 'bottom',
-    top: '80px',
-    left: '30px',
-    overflowX: 'hidden',
-    overflowY: 'scroll',
-    border: '1.5px solid grey',
-    padding: '5px 0px 15px 15px'
-  },
 
 };
 
@@ -71,7 +57,7 @@ function dirTree(filename) {
 }
 
 function loadFileDir (subFolder){
-  var dirPath= app.getPath('userData') + '/legacy/data/' + subFolder;
+  var dirPath= app.getPath('userData') + subFolder;
   var resultJSON = {'data': dirTree(dirPath).children};
   var searchString = 'data[**]' + '[*type=folder]'
   var filequery = jsonQuery(searchString, {data: resultJSON}).value
@@ -85,11 +71,8 @@ class ScriptFinder extends React.Component {
     this.state = {
       fileJSON:[],
       dirLength: 1,
-      test: 'placeholder',
-      logPath: '',
-      filePath: '',
       selection: 'undefined',
-      subFolder: ''
+      subFolder: this.props.subFolder,
     };
   }
 
@@ -99,24 +82,31 @@ class ScriptFinder extends React.Component {
     this.setState({fileJSON: filequery, dirLength: dirLength})
   }
 
-  handleRefresh = () => {
-    var filequery = loadFileDir(this.state.subFolder);
+  componentDidUpdate(prevProps) {
+    if (this.props.subFolder !== prevProps.subFolder) {
+      console.log('updated subfolder')
+      this.handleRefresh(this.props.subFolder);
+      this.setState({
+        subFolder: this.props.subFolder,
+      })
+    }
+  }
+
+
+  handleRefresh = (newProps) => {
+    console.log(newProps)
+
+    var filequery = loadFileDir(newProps);
     var dirLength = filequery.length
     this.setState({fileJSON: filequery, dirLength: dirLength})
   };
 
-  handleFilePath = () => {
-    let parsedDirectory = parsePath(document.getElementsByName('fileinput')[0].files[0].path)
-
-    this.setState({
-      filePath: document.getElementsByName('fileinput')[0].files[0].path,
-      logPath: parsedDirectory.dir})
-  }
 
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
           console.log(rowInfo.original.key)
+          this.props.onSelectFolder(rowInfo.original.key);
         return true
       }
     }
@@ -128,32 +118,31 @@ class ScriptFinder extends React.Component {
 
     return (
       <div>
-        <Card className={classes.card}>
-          <ReactTable
-            data={fileJSON}
-            columns={columns}
-            showPagination={false}
-            pageSize={dirLength}
-            loading={false}
-            defaultSorted={[{id: "modified",desc: true}]}
-            className="-striped -highlight"
-            getTdProps={(state, rowInfo, column, instance) => {
-              return {
-                onClick: (e, handleOriginal) => {
-                  this.setState({selection: rowInfo.index})
-                  if (handleOriginal) {
-                    handleOriginal()
-                  }
-                },
-                style: {
-                    fontWeight: this.isSelected(rowInfo) ? "bold" : null,
-                    color: this.isSelected(rowInfo) ? "white" : null,
+        <ReactTable
+          data={fileJSON}
+          columns={columns}
+          showPagination={true}
+          pageSize={5}
+          resizable={false}
+          showPageSizeOptions= {false}
+          loading={false}
+          defaultSorted={[{id: "modified",desc: true}]}
+          className="-striped -highlight"
+          getTdProps={(state, rowInfo, column, instance) => {
+            return {
+              onClick: (e, handleOriginal) => {
+                this.setState({selection: rowInfo.index})
+                if (handleOriginal) {
+                  handleOriginal()
                 }
+              },
+              style: {
+                  fontWeight: this.isSelected(rowInfo) ? "bold" : null,
+                  color: this.isSelected(rowInfo) ? "white" : null,
               }
-            }}
-          />
-        </Card>
-        <button type="button" className="refreshBtn" onClick={this.handleRefresh}> <MdCached size={40}/> </button>
+            }
+          }}
+        />
       </div>
     );
   }

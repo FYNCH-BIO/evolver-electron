@@ -8,9 +8,8 @@
 @import './components/dashboard-layout.css';
 @import '~@fortawesome/fontawesome-free/css/all.css';
 @import './components/Calibrate.css';
-@import './components/ExptManager.css';
 @import '~react-table/react-table.css';
-
+@import './components/ExptManager.css';
 
 body {
   position: relative;
