@@ -9,8 +9,7 @@
 @import '~@fortawesome/fontawesome-free/css/all.css';
 @import './components/Calibrate.css';
 @import './components/ExptManager.css';
-@import './components/python-shell/react-keyed-file-browser.css';
-
+@import '~react-table/react-table.css';
 
 
 body {

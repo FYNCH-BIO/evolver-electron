@@ -7,8 +7,11 @@ import Card from '@material-ui/core/Card';
 import FileBrowser, {Icons, Sorters} from 'react-keyed-file-browser'
 import moment from 'moment'
 import parsePath from 'parse-filepath';
+import jsonQuery from 'json-query';
+import {MdCached} from 'react-icons/md';
 
-
+const remote = require('electron').remote;
+const app = remote.app;
 
 const styles = {
   root: {
@@ -64,9 +67,8 @@ const styles = {
     width: 600,
     height: 300,
     backgroundColor: 'black',
-    position: 'absolute',
-    margin: '-310px 0px 0px 20px',
-    verticalAlign: 'top',
+    margin: '-604px 0px 0px 20px',
+    verticalAlign: 'bottom',
     }
 };
 
@@ -100,6 +102,13 @@ function dirTree(filename) {
     return info;
 }
 
+function loadFileDir (){
+  var dirPath= app.getPath('userData') + '/legacy/data';
+  var resultJSON = {'data': dirTree(dirPath).children};
+  var filequery = jsonQuery('data[**][*extname=.py]', {data: resultJSON}).value
+  return filequery
+}
+
 class ScriptForm extends React.Component {
   state = {
     fileJSON: [],
@@ -108,21 +117,13 @@ class ScriptForm extends React.Component {
     filePath: ''
   };
 
+  componentDidMount(){
+    var filequery = loadFileDir ();
+    this.setState({fileJSON: filequery})
+  }
+
   handleTestBtn = () => {
-    const remote = require('electron').remote;
-    var dirPath= './app/components/python-shell';
-    var resultJSON = {'data': dirTree(dirPath).children};
-    console.log(resultJSON);
-
-    var jp = require('jsonpath');
-    var filequery = jp.query(resultJSON, '$..data[?(@.extname==".py" && @.type=="file")]');
-
-    console.log(filequery)
-
-    // $..book[?(@.price==8.99),?(@.category=='fiction')]
-
-    const app = remote.app;
-
+    var filequery = loadFileDir ();
     this.setState({fileJSON: filequery})
   };
 
@@ -130,10 +131,6 @@ class ScriptForm extends React.Component {
     this.setState({ [name]: event.target.checked });
   };
 
-  handleSubmit = value => {
-      var values = {percent: value, lightA: this.state.lightAToggle, lightB: this.state.lightBToggle};
-      this.props.onSubmitButton("light", values);
-  };
 
   handleFilePath = () => {
     let parsedDirectory = parsePath(document.getElementsByName('fileinput')[0].files[0].path)
@@ -143,6 +140,10 @@ class ScriptForm extends React.Component {
       logPath: parsedDirectory.dir})
   }
 
+  handleSelectFile = (fileKey) => {
+    console.log(fileKey)
+  }
+
   render() {
     const { classes } = this.props;
     const { fileJSON } = this.state;
@@ -150,16 +151,13 @@ class ScriptForm extends React.Component {
     return (
       <div>
         <Card className={classes.card}>
+          <button type="button" className="refreshBtn" onClick={this.handleTestBtn}> <MdCached size={30}/> </button>
           <FileBrowser
             files={this.state.fileJSON}
             sort = {Sorters.SortByModified}
+            onSelectFile= {this.handleSelectFile}
           />
         </Card>
-        <button type="button" className="scriptSubmitBtn" onClick={this.handleTestBtn}> Test Code </button>
-        <p>{this.state.test}</p>
-
-        <input name="fileinput" className= "managerFileInput" type="file" onChange={this.handleFilePath}/>
-
 
       </div>
     );

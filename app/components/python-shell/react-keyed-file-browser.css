@@ -2,7 +2,7 @@ div.rendered-react-keyed-file-browser div.action-bar {
   margin-bottom: 0.5rem;
   flex-wrap: wrap;
   display: flex;
-  width: 380px;
+  width: 350px;
   margin-left: 50px;
   align-items: flex-start; }
   div.rendered-react-keyed-file-browser div.action-bar input[type="search"] {
@@ -94,7 +94,7 @@ div.rendered-react-keyed-file-browser div.files table {
         top: 0;
         width: 0.3rem;
         height: 100%;
-        background: #1d4567; }
+        background: #f58245; }
   div.rendered-react-keyed-file-browser div.files table tr.dragover td, div.rendered-react-keyed-file-browser div.files table tr.dragover th {
     background: #eee; }
 

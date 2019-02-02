@@ -6,7 +6,6 @@ import { withStyles } from '@material-ui/core/styles';
 import {PythonShell} from 'python-shell';
 import parsePath from 'parse-filepath';
 import log4js from 'log4js';
-import ScriptForm from './ScriptForm'
 
 const {BrowserWindow} = require('electron').remote
 const dialog = require('electron').remote.dialog
@@ -102,9 +101,6 @@ class RunScript extends React.Component {
 
     return (
       <div>
-        <ScriptForm />
-        {runExptBtns}
-
       </div>
 
     );

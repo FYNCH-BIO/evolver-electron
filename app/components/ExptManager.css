@@ -23,7 +23,64 @@
 .expManagerHomeBtn{
   background-color: black;
   position: absolute;
-  margin: 22px 0px 0px 25px;
+  margin: 22px 0px 0px 40px;
   border: none;
   font-size: 30px;
+}
+
+.expManagerHomeBtn:hover{
+  color: white;
+}
+
+.refreshBtn{
+  position: absolute;
+  width: auto;
+  height: auto;
+  top: 22px;
+  left: 385px;
+  padding: 5px;
+  background-color: black;
+  border: none;
+  color: #f58245;
+
+}
+
+
+.draganddrop{
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+}
+
+.ReactTable {
+  position: absolute;
+  left: -5px;
+  width: 560px;
+  color: white;
+}
+
+.rt-th {
+  font-size:19px;
+  font-weight: bold;
+  text-align: left;
+  font-style: italic;
+  color: #f58245;
+}
+
+.rt-td {
+  height: 30px;
+}
+
+.searchbar{
+  width: 350px;
+  color: black;
+}
+
+.managerTitle{
+  position: absolute;
+  top: 25px;
+  left: 90px;
+  z-index: 10;
 }
