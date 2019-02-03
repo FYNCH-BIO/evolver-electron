@@ -31,22 +31,21 @@ var fs = require('fs')
 var path = require('path')
 var util = require('util')
 
-function dirTree(filename) {
-    var stats = fs.lstatSync(filename),
+function dirTree(dirname) {
+    var folderStats = fs.lstatSync(dirname),
         info = {
-            key: path.basename(filename),
-            extname: path.extname(filename)
+            key: path.basename(dirname),
+            extname: path.extname(dirname)
         };
-
-    var timestamp = new Date(util.inspect(stats.mtime));
+    var timestamp = new Date(util.inspect(folderStats.mtime));
     info.modifiedString = moment(timestamp).fromNow();
-    info.modified = moment(timestamp).valueOf()
-    info.size = stats.size;
+    info.modified = moment(timestamp).valueOf();
+    info.size = folderStats.size;
 
-    if (stats.isDirectory()) {
+    if (folderStats.isDirectory()) {
         info.type = "folder";
-        info.children = fs.readdirSync(filename).map(function(child) {
-            return dirTree(filename + '/' + child);
+        info.children = fs.readdirSync(dirname).map(function(child) {
+            return dirTree(dirname + '/' + child);
         });
     } else {
 
@@ -56,12 +55,35 @@ function dirTree(filename) {
     return info;
 }
 
-function loadFileDir (subFolder){
-  var dirPath= app.getPath('userData') + subFolder;
-  var resultJSON = {'data': dirTree(dirPath).children};
-  var searchString = 'data[**]' + '[*type=folder]'
-  var filequery = jsonQuery(searchString, {data: resultJSON}).value
-  return filequery
+function loadFileDir (subFolder, isScript){
+  if (subFolder == 'undefined'){
+    return []
+  } else{
+
+    var dirPath= app.getPath('userData') + subFolder;
+    var resultJSON = {'data': dirTree(dirPath).children};
+    if (isScript){
+      for (var i = 0; i < resultJSON['data'].length; i++) {
+        if (resultJSON['data'][i]['type'] == 'folder'){
+          var modifiedString;
+          var modified;
+          var scriptName = resultJSON['data'][i]['key'] + '.py';
+          for (var j = 0; j < resultJSON['data'][i]['children'].length; j++) {
+            if (resultJSON['data'][i]['children'][j]['key'] == scriptName) {
+              modifiedString = resultJSON['data'][i]['children'][j]['modifiedString'];
+              modified = resultJSON['data'][i]['children'][j]['modified'];
+            }
+          }
+          resultJSON['data'][i]['modified'] = modified;
+          resultJSON['data'][i]['modifiedString'] = modifiedString;
+        }
+      }
+    };
+
+    var searchString = 'data[**]' + '[*type=folder]'
+    var filequery = jsonQuery(searchString, {data: resultJSON}).value
+    return filequery
+  }
 }
 
 class ScriptFinder extends React.Component {
@@ -70,21 +92,21 @@ class ScriptFinder extends React.Component {
     super(props);
     this.state = {
       fileJSON:[],
-      dirLength: 1,
+      showPagination: false,
       selection: 'undefined',
       subFolder: this.props.subFolder,
+      isScript: this.props.isScript,
     };
   }
 
   componentDidMount(){
-    var filequery = loadFileDir (this.state.subFolder);
-    var dirLength = filequery.length;
-    this.setState({fileJSON: filequery, dirLength: dirLength})
+    var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
+    var showPagination = (filequery.length > 5)
+    this.setState({fileJSON: filequery, showPagination: showPagination})
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.subFolder !== prevProps.subFolder) {
-      console.log('updated subfolder')
       this.handleRefresh(this.props.subFolder);
       this.setState({
         subFolder: this.props.subFolder,
@@ -94,18 +116,15 @@ class ScriptFinder extends React.Component {
 
 
   handleRefresh = (newProps) => {
-    console.log(newProps)
-
-    var filequery = loadFileDir(newProps);
-    var dirLength = filequery.length
-    this.setState({fileJSON: filequery, dirLength: dirLength})
+    var filequery = loadFileDir(newProps, this.state.isScript);
+    var showPagination = (filequery.length > 5)
+    this.setState({fileJSON: filequery, showPagination: showPagination})
   };
 
 
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
-          console.log(rowInfo.original.key)
           this.props.onSelectFolder(rowInfo.original.key);
         return true
       }
@@ -121,7 +140,8 @@ class ScriptFinder extends React.Component {
         <ReactTable
           data={fileJSON}
           columns={columns}
-          showPagination={true}
+          noDataText="Select an Experiment Type"
+          showPagination={this.state.showPagination}
           pageSize={5}
           resizable={false}
           showPageSizeOptions= {false}

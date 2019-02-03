@@ -227,6 +227,7 @@
     "parse-filepath": "^1.0.2",
     "python-shell": "^1.0.7",
     "react": "^16.4.1",
+    "react-ace": "^6.3.2",
     "react-dom": "^16.4.1",
     "react-dropzone": "^8.0.4",
     "react-hot-loader": "^4.3.4",

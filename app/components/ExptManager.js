@@ -6,9 +6,9 @@ import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
 import RunScript from './python-shell/RunScript'
 import {FaArrowLeft} from 'react-icons/fa';
-import DragAndDrop from './python-shell/DragAndDrop';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
+import ScriptEditor from './python-shell/ScriptEditor'
 
 
 const styles = {
@@ -27,8 +27,15 @@ const styles = {
     left: '30px',
   },
   cardExpt:{
-    top: '370px',
+    top: '380px',
     left: '30px'
+  },
+  cardEditor:{
+    width: 670,
+    height: 800,
+    top: '50px',
+    left: '440px',
+    padding: '10px'
   }
 
 };
@@ -39,21 +46,23 @@ class ExptManager extends React.Component {
     super(props);
     this.state = {
       scriptDir: '/legacy/data/',
-      exptDir: ''
+      exptDir: 'undefined',
+      activeScript: '',
     };
   }
 
   handleSelectFolder = (activeFolder) => {
     var exptDir = this.state.scriptDir + activeFolder
-    console.log(exptDir)
+    var activeScript = activeFolder
     if (this.state.exptDir !== exptDir){
-      this.setState({exptDir: exptDir});
+      this.setState({exptDir: exptDir, activeScript: activeScript});
     }
   }
 
   handleSelectExpt = (activeFolder) => {
-    console.log(activeFolder)
-    console.log(this.state.exptDir)
+    if (this.state.activeScript !== activeFolder){
+      console.log(activeFolder)
+    }
   }
 
   render() {
@@ -64,16 +73,19 @@ class ExptManager extends React.Component {
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
-        <DragAndDrop/>
 
         <Card classes={{root:classes.cardRoot}} className={classes.cardScript}>
-          <ScriptFinder subFolder={this.state.scriptDir} onSelectFolder={this.handleSelectFolder}/>
+          <ScriptFinder subFolder={this.state.scriptDir} isScript= {true} onSelectFolder={this.handleSelectFolder}/>
         </Card>
+
+        <h2 className="pastExptTitle"> Past Experiments </h2>
 
         <Card classes={{root:classes.cardRoot}} className={classes.cardExpt}>
-          <ScriptFinder subFolder={this.state.exptDir} onSelectFolder={this.handleSelectExpt}/>
+          <ScriptFinder subFolder={this.state.exptDir} isScript= {false} onSelectFolder={this.handleSelectExpt}/>
         </Card>
-
+        <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
+          <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
+        </Card>
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
       </div>
     );

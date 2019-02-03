@@ -1,3 +1,4 @@
+
 .managerFileInput {
   width: 300px;
 }
@@ -62,7 +63,7 @@
 .ReactTable {
   position: absolute;
   left: -5px;
-  width: 560px;
+  width: 530px;
   color: white;
 }
 
@@ -110,4 +111,20 @@
   font-style: italic;
   font-weight: bold;
   font-size: 18px;
+}
+.ReactTable .rt-noData{
+  position: absolute;
+  top: 100px;
+  left: 185px;
+  font-size: 20px;
+  height: 60px;
+  padding: 15px 20px 15px 20px;
+  color: black;
+}
+
+.pastExptTitle {
+  position: absolute;
+  top: 330px;
+  left: 70px;
+  z-index: 10;
 }
