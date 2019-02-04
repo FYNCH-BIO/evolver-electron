@@ -17,6 +17,7 @@ type Props = {
 export default class Setup extends Component<Props> {
   constructor(props) {
       super(props);
+      props: Props;
       this.state = {
             selectedItems: [],
             arduinoMessage: "",
@@ -27,7 +28,7 @@ export default class Setup extends Component<Props> {
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
       this.props.location.socket.emit('getcalibrationod', {});
-      this.props.location.socket.emit('getcalibrationotemp', {});
+      this.props.location.socket.emit('getcalibrationtemp', {});
       this.props.location.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
@@ -35,37 +36,52 @@ export default class Setup extends Component<Props> {
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
 
-            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCal[i]).toFixed(3);
-            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCal[i]).toFixed(2);
+            try {
+                newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCal[i]).toFixed(3);
+            }
+            catch (err) {
+                console.log(err);
+            }
+            try {
+                newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCal[i]).toFixed(2);
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
         this.setState({vialData: newVialData});
     }.bind(this));
+
     this.props.location.socket.on('calibrationod', function(response) {
-        var cal_response= response.split("\n");
-        var newOdCal = Array(16).fill([]);
-        for (var i = 0; i < newOdCal.length; i++) {
+        var cal_response = response.trim().split("\n");
+        var newOdCal = [];
+        for (var i = 0; i < cal_response.length; i++) {
             cal_response[i] = cal_response[i].split(",");
-            for (j = 0; j < cal_response[i].lenght; j++) {
-                newOdCal[j][i] = cal_response[i][j];
+            for (var j = 0; j < cal_response[i].length; j++) {
+                if (!newOdCal[j]) {
+                    newOdCal.push([]);
+                }
+                newOdCal[j].push(parseFloat(cal_response[i][j]));
             }
         }
-
         this.setState({odCal: newOdCal});
     }.bind(this));
 
     this.props.location.socket.on('calibrationtemp', function(response) {
-        var temp_response= response.split("\n");
-        var newTempCal = Array(16).fill([]);
-        for (var i = 0; i < newTempCal.length; i++) {
+        var temp_response= response.trim().split("\n");
+        var newTempCal = [];
+        for (var i = 0; i < temp_response.length; i++) {
             temp_response[i] = temp_response[i].split(",");
-            for (j = 0; j < temp_response[i].lenght; j++) {
-                newTempCal[j][i] = temp_response[i][j];
+            for (var j = 0; j < temp_response[i].length; j++) {
+                if (!newTempCal[j]) {
+                    newTempCal.push([]);
+                }
+                newTempCal[j].push(parseFloat(temp_response[i][j]));
             }
         }
-
         this.setState({tempCal: newTempCal});
+    }.bind(this));
   }
-  props: Props
 
   getBinaryString = vials => {
       var binaryInteger = 0;
@@ -73,11 +89,11 @@ export default class Setup extends Component<Props> {
           binaryInteger += this.control[vials[i]];
       }
       return binaryInteger.toString(2);
-  }
+  };
 
   onSelectVials = (selectedVials) =>    {
     this.setState({selectedItems: selectedVials});
-  }
+  };
 
   onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
@@ -113,19 +129,23 @@ export default class Setup extends Component<Props> {
         this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
       this.props.location.socket.emit("command", {param: evolverComponent, message: evolverMessage});
-  }
+  };
 
   sigmoidRawToCal = (value, cal) => {
+    console.log(value);
+    console.log(cal);
     return (cal[2] - ((Math.log10((cal[1] - cal[0]) / (value - cal[0]) - 1)) / cal[3]));
-  }
+  };
 
   linearRawToCal = (value, cal) => {
+    console.log(value);
+    console.log(cal);
     return (value * cal[0]) + cal[1];
-  }
+  };
 
   linearCalToRaw = (value, cal) => {
     return (value - cal[1])/cal[0];
-  }
+  };
 
   render() {
     return (
