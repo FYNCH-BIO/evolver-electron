@@ -360,7 +360,11 @@ class TempCal extends React.Component {
    }
 
    handleFinishExpt = (finishFlag) => {
-     console.log("Experiment Finished!")
+      console.log("Experiment Finished!");
+      var d = new Date();
+      var currentTime = d.getTime();
+      var saveData = {time: currentTime, vialData: this.state.vialData, filename:(this.state.experimentName + '.json')};
+      this.props.socket.emit('setcalibrationrawtemp', saveData);
    }
 
    handleKeyboardModal = () => {

@@ -120,7 +120,7 @@ export default class Setup extends Component<Props> {
         evolverMessage = Array(16).fill("NaN")
         for (var i = 0; i < vials.length; i++) {
             if (evolverComponent == "temp") {
-              evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCals['default'][i]).toFixed(0);
+              evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCal[i]).toFixed(0);
             }
             else {
               evolverMessage[vials[i]] = value;
@@ -132,14 +132,10 @@ export default class Setup extends Component<Props> {
   };
 
   sigmoidRawToCal = (value, cal) => {
-    console.log(value);
-    console.log(cal);
     return (cal[2] - ((Math.log10((cal[1] - cal[0]) / (value - cal[0]) - 1)) / cal[3]));
   };
 
   linearRawToCal = (value, cal) => {
-    console.log(value);
-    console.log(cal);
     return (value * cal[0]) + cal[1];
   };
 
