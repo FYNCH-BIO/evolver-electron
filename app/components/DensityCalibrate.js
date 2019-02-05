@@ -98,13 +98,6 @@ class ODcal extends React.Component {
                     this.handleUnlockBtns();
                     var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
                     this.setState({progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)), readsFinished: readsFinished, readProgress: 0});
-
-                    if (this.state.vialData.length === (16 * this.state.powerLevels.length)) {
-                        var d = new Date();
-                        var currentTime = d.getTime();
-                        var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat, filename:(this.state.experimentName + '.json')};
-                        this.props.socket.emit('setcalibrationraw', saveData);
-                    }
                 }
             }
             else {
@@ -270,10 +263,10 @@ class ODcal extends React.Component {
   }
 
   handleFinishExpt = () => {
-      console.log("Experiment Finished!")
+      console.log("Experiment Finished!");
       var d = new Date();
       var currentTime = d.getTime();
-      var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.inputValueFloat, filename:(this.state.experimentName + '.json')};
+      var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
       this.props.socket.emit('setcalibrationrawod', saveData);
   }
 
