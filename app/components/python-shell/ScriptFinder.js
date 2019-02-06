@@ -92,7 +92,7 @@ class ScriptFinder extends React.Component {
     super(props);
     this.state = {
       fileJSON:[],
-      showPagination: false,
+      showPagination: true,
       selection: 'undefined',
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,

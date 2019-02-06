@@ -14,7 +14,7 @@ import ScriptEditor from './python-shell/ScriptEditor'
 const styles = {
   cardRoot: {
     width: 420,
-    height: 290,
+    height: 350,
     position: 'absolute',
     backgroundColor: 'black',
     verticalAlign: 'bottom',
@@ -25,10 +25,6 @@ const styles = {
   cardScript:{
     top: '60px',
     left: '30px',
-  },
-  cardExpt:{
-    top: '380px',
-    left: '30px'
   },
   cardEditor:{
     width: 670,
@@ -46,7 +42,6 @@ class ExptManager extends React.Component {
     super(props);
     this.state = {
       scriptDir: '/legacy/data/',
-      exptDir: 'undefined',
       activeScript: '',
     };
   }
@@ -56,12 +51,6 @@ class ExptManager extends React.Component {
     var activeScript = activeFolder
     if (this.state.exptDir !== exptDir){
       this.setState({exptDir: exptDir, activeScript: activeScript});
-    }
-  }
-
-  handleSelectExpt = (activeFolder) => {
-    if (this.state.activeScript !== activeFolder){
-      console.log(activeFolder)
     }
   }
 
@@ -78,11 +67,6 @@ class ExptManager extends React.Component {
           <ScriptFinder subFolder={this.state.scriptDir} isScript= {true} onSelectFolder={this.handleSelectFolder}/>
         </Card>
 
-        <h2 className="pastExptTitle"> Past Experiments </h2>
-
-        <Card classes={{root:classes.cardRoot}} className={classes.cardExpt}>
-          <ScriptFinder subFolder={this.state.exptDir} isScript= {false} onSelectFolder={this.handleSelectExpt}/>
-        </Card>
         <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
           <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
         </Card>

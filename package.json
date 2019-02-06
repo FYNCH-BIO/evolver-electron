@@ -219,6 +219,7 @@
     "@material-ui/lab": "^3.0.0-alpha.26",
     "array-normalize": "^1.1.3",
     "devtron": "^1.4.0",
+    "download-git-repo": "^1.1.0",
     "electron-debug": "^2.0.0",
     "history": "^4.7.2",
     "json-query": "^2.2.2",
