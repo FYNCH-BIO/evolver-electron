@@ -17,51 +17,71 @@ type Props = {
 export default class Setup extends Component<Props> {
   constructor(props) {
       super(props);
+      props: Props;
       this.state = {
             selectedItems: [],
             arduinoMessage: "",
             vialData: data,
-            tempCals: {},
-            odCals: {},
+            tempCal: [],
+            odCal: [],
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
-      this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
-      this.socket.on('connect', function(){
-          console.log("Connected evolver");
-          this.socket.emit('getcalibration', {});
-      }.bind(this));
-
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
-      this.socket.on('databroadcast', function(response) {
-
+      this.props.location.socket.emit('getcalibrationod', {});
+      this.props.location.socket.emit('getcalibrationtemp', {});
+      this.props.location.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
             newVialData[i] = {};
             newVialData[i].vial = this.state.vialData[i].vial;
             newVialData[i].selected = this.state.vialData[i].selected;
 
-            newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCals[this.state.strain[i]][i]).toFixed(3);
-            newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCals['default'][i]).toFixed(2);
+            try {
+                newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCal[i]).toFixed(3);
+            }
+            catch (err) {
+                console.log(err);
+            }
+            try {
+                newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCal[i]).toFixed(2);
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
         this.setState({vialData: newVialData});
     }.bind(this));
-    this.socket.on('calibration', function(response) {
-        var odCals = response.metaData.params.OD.calibrations;
-        var tempCals = response.metaData.params.temp.calibrations;
-        var newOdCals = {};
-        var newTempCals = {};
-        for (var i = 0; i < odCals.length; i++) {
-            newOdCals[odCals[i].cal_name] = odCals[i].cal_data;
+
+    this.props.location.socket.on('calibrationod', function(response) {
+        var cal_response = response.trim().split("\n");
+        var newOdCal = [];
+        for (var i = 0; i < cal_response.length; i++) {
+            cal_response[i] = cal_response[i].split(",");
+            for (var j = 0; j < cal_response[i].length; j++) {
+                if (!newOdCal[j]) {
+                    newOdCal.push([]);
+                }
+                newOdCal[j].push(parseFloat(cal_response[i][j]));
+            }
         }
-        for (var i = 0; i < tempCals.length; i++) {
-            newTempCals[tempCals[i].cal_name] = tempCals[i].cal_data;
-        }
-        this.setState({tempCals: newTempCals, odCals: newOdCals});
+        this.setState({odCal: newOdCal});
     }.bind(this));
 
+    this.props.location.socket.on('calibrationtemp', function(response) {
+        var temp_response= response.trim().split("\n");
+        var newTempCal = [];
+        for (var i = 0; i < temp_response.length; i++) {
+            temp_response[i] = temp_response[i].split(",");
+            for (var j = 0; j < temp_response[i].length; j++) {
+                if (!newTempCal[j]) {
+                    newTempCal.push([]);
+                }
+                newTempCal[j].push(parseFloat(temp_response[i][j]));
+            }
+        }
+        this.setState({tempCal: newTempCal});
+    }.bind(this));
   }
-  props: Props
 
   getBinaryString = vials => {
       var binaryInteger = 0;
@@ -69,11 +89,11 @@ export default class Setup extends Component<Props> {
           binaryInteger += this.control[vials[i]];
       }
       return binaryInteger.toString(2);
-  }
+  };
 
   onSelectVials = (selectedVials) =>    {
     this.setState({selectedItems: selectedVials});
-  }
+  };
 
   onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
@@ -100,7 +120,7 @@ export default class Setup extends Component<Props> {
         evolverMessage = Array(16).fill("NaN")
         for (var i = 0; i < vials.length; i++) {
             if (evolverComponent == "temp") {
-              evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCals['default'][i]).toFixed(0);
+              evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCal[i]).toFixed(0);
             }
             else {
               evolverMessage[vials[i]] = value;
@@ -108,20 +128,20 @@ export default class Setup extends Component<Props> {
         }
         this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
       }
-      this.socket.emit("command", {param: evolverComponent, message: evolverMessage});
-  }
+      this.props.location.socket.emit("command", {param: evolverComponent, message: evolverMessage});
+  };
 
   sigmoidRawToCal = (value, cal) => {
     return (cal[2] - ((Math.log10((cal[1] - cal[0]) / (value - cal[0]) - 1)) / cal[3]));
-  }
+  };
 
   linearRawToCal = (value, cal) => {
     return (value * cal[0]) + cal[1];
-  }
+  };
 
   linearCalToRaw = (value, cal) => {
     return (value - cal[1])/cal[0];
-  }
+  };
 
   render() {
     return (
@@ -129,7 +149,7 @@ export default class Setup extends Component<Props> {
         <div className="col-8.5 centered">
             <div className="row centered">
               <div className="buttons-dashboard ">
-                <Link className="backCalibrateBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+                <Link className="backCalibrateBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.location.socket}}><FaArrowLeft/></Link>
                 <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
                 <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
               </div>

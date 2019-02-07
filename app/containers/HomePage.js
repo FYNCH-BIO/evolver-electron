@@ -8,6 +8,6 @@ export default class HomePage extends Component<Props> {
   props: Props;
 
   render() {
-    return <Home />;
+    return <Home socket={this.props.location.socket} />;
   }
 }

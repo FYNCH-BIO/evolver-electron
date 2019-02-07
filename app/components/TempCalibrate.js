@@ -8,9 +8,9 @@ import TempcalInput from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
 import TempCalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight, FaStop } from 'react-icons/fa';
+import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
+import TextKeyboard from './calibrationInputs/TextKeyboard';
 
 const styles = {
   cardTempCalGUI: {
@@ -39,150 +39,460 @@ const styles = {
   }
 };
 
-const initialInput = '';
-
-function saveEvolverData(evolverResponse) {
-  var newVialData = Array.apply(null, Array(16)).map(function () {});
-  var parsedResponse = [];
-  for(var i = 0; i < 16; i++) {
-    parsedResponse[i] = evolverResponse.temp[i]
+function generateVialLabel (response, oldTempStream, roomTempAvg) {
+  var tempStream = Array(16).fill('...');
+  var deltaTempStream = Array(16).fill('...');
+  var valueInputs = Array(16).fill('...')
+  for (var i = 0; i < response.temp.length; i++) {
+    if (roomTempAvg.length !== 0){
+      tempStream[i] = response.temp[i]
+      deltaTempStream[i] = tempStream[i] - oldTempStream[i];
+      if (isNaN(deltaTempStream[i])){
+        deltaTempStream[i] = "0"
+      }
+      valueInputs[i] = tempStream[i] + " (" + (deltaTempStream[i]<0?"":"+") + deltaTempStream[i] + ")"
+    }
   }
-  return parsedResponse
+
+  return [tempStream, valueInputs]
 }
+
+function calculateVialProgress (currentTemp, previousLockedTemp, targetTemp){
+  var percentCompleted = []
+  for (var i = 0; i < currentTemp.length; i++) {
+    percentCompleted[i] = Math.round(5 + (95 *Math.abs(((currentTemp[i] - previousLockedTemp[i])/(targetTemp[i] - previousLockedTemp[i])))));
+  }
+  return percentCompleted
+}
+
 
 class TempCal extends React.Component {
   constructor(props) {
     super(props);
-    this.child = React.createRef();
+    this.keyboard = React.createRef();
     this.state = {
       currentStep: 1,
       disableForward: false,
       disableBackward: true,
       progressCompleted: 0,
       vialOpacities: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      inputValue: Array(16).fill('30'),
-      generalSampleOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      inputsEntered: false,
+      enteredValues: Array(16).fill(''),
+      generalOpacity: Array(16).fill(1),
       tempInputsFloat: [],
       readProgress: 0,
-      vialProgress: [100,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
-      initialZipped: [
-            [12,0,1,initialInput,'S12'],
-            [13,0,1,initialInput,'S13'],
-            [14,0,1,initialInput,'S14'],
-            [15,0,1,initialInput,'S15'],
-            [8,0,1,initialInput,'S8'],
-            [9,0,1,initialInput,'S9'],
-            [10,0,1,initialInput,'S10'],
-            [11,0,1,initialInput,'S11'],
-            [4,0,1,initialInput,'S4'],
-            [5,0,1,initialInput,'S5'],
-            [6,0,1,initialInput,'S6'],
-            [7,0,1,initialInput,'S7'],
-            [0,0,1,initialInput,'S0'],
-            [1,0,1,initialInput,'S1'],
-            [2,0,1,initialInput,'S2'],
-            [3,0,1,initialInput,'S3']],
+      vialProgress: Array(16).fill(0),
+      initialZipped: [],
+      inputsEntered: true,
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
+      vialData: [],
+      currentPowerLevel: [4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095],
+      tempRawDelta: 500,
+      timesRead: 3,
+      valueInputs: [],
+      tempStream: [],
+      deltaTempRange: [0, 1000], //slope around 0.02 C per a.u.
+      deltaTempSteps: 3,
+      equilibrateState: true,
+      roomTempAvg: [],
+      buttonAdvanceText: '',
+      buttonBackText: '',
+      buttonMeasureText: 'RT',
+      slopeEsimate: .02,
+      previousLockedTemp: [],
+      experimentName:''
+
     };
+    this.props.socket.on('dataresponse', function(response) {
+
+      var newVialData = this.state.vialData;
+      // if stop was pressed or late response, don't want to continue
+      if (this.state.readProgress === 0) {
+          return;
+      }
+      this.progress();
+
+      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
+      let tempStream = returnedTemps[0];
+      let valueInputs = returnedTemps[1];
+
+      for (var i = 0; i < response.temp.length; i++) {
+          if (newVialData[newVialData.length - 1].temp.length <= i) {
+              newVialData[newVialData.length - 1].temp.push([]);
+          }
+          newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
+      }
+      this.setState({
+        tempStream: tempStream,
+        valueInputs: valueInputs,
+        vialData: newVialData,
+        equilibrateState: true},
+        //Runs when collected enough measurements
+        function() {
+          var tempArray = this.state.vialData[newVialData.length - 1].temp;
+          if (tempArray[0].length === this.state.timesRead) {
+              var roomTempAvg = this.state.roomTempAvg;
+              if (this.state.currentStep == 1) {
+                for (var i = 0; i < tempArray.length; i++) {
+                  let average = (array) => array.reduce((a, b) => a + b) / array.length;
+                  roomTempAvg[i] = Math.round(average(tempArray[i]));
+                }
+              }
+              this.handleUnlockBtns();
+              console.log(this.state.vialData);
+              var readsFinished = this.state.vialData.length;
+              this.setState({
+                progressCompleted: (100 * (this.state.vialData.length / this.state.deltaTempSteps)),
+                readsFinished: readsFinished,
+                readProgress: 0,
+                roomTempAvg: roomTempAvg,
+                vialProgress: Array(16).fill(0)});
+
+          }
+          this.props.socket.emit('data', {});
+      });
+    }.bind(this));
+
+    this.props.socket.on('databroadcast', function(response) {
+      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
+      let tempStream = returnedTemps[0];
+      let valueInputs = returnedTemps[1];
+
+      let percentVialProgress = [];
+      if (this.state.currentStep > 1) {
+        percentVialProgress = calculateVialProgress (tempStream, this.state.previousLockedTemp, this.state.currentPowerLevel);
+      }
+
+      this.setState({
+        tempStream: tempStream,
+        valueInputs: valueInputs,
+        vialProgress: percentVialProgress
+         })
+    }.bind(this));
 
 
   }
 
+  componentDidMount() {
+    this.keyboard.current.onOpenModal();
+    var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+    var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
+    var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
+    this.setState({
+      vialOpacities: Array(16).fill(0),
+      generalOpacity: Array(16).fill(1),
+      valueInputs: Array(16).fill('...'),
+      buttonAdvanceText: buttonAdvanceText,
+      buttonBackText: buttonBackText,
+      })
+  };
+
   startRead = () => {
-    this.timer = setInterval(this.progress, 1000);
-    this.setState({readProgress: this.state.readProgress + .01})
+    var evolverMessage = Array(16).fill("NaN");
+    for (var i = 0; i < this.state.currentPowerLevel.length; i++) {
+      evolverMessage[i] = this.state.currentPowerLevel[i];
+    }
+    this.props.socket.emit("command", {param: "temp", message: evolverMessage});
+
+    if (this.state.equilibrateState){
+      this.handleLockBtns();
+
+      let percentVialProgress = [];
+      if (this.state.currentStep > 1) {
+        percentVialProgress = calculateVialProgress (this.state.tempStream, this.state.tempStream, this.state.currentPowerLevel);
+      }
+
+      this.setState({
+        equilibrateState: false,
+        inputsEntered: false,
+        previousLockedTemp: this.state.tempStream,
+        vialProgress: percentVialProgress
+        });
+    }
+    else {
+      this.setState({readProgress: this.state.readProgress + .01, inputsEntered: true});
+      var newVialData = this.state.vialData;
+
+      // remove existing data for particular layout
+      for (var i = 0; i < newVialData.length; i++) {
+          if (this.state.currentStep === this.state.vialData[i].step) {
+              newVialData.splice(i, 1);
+              break;
+          }
+      }
+      newVialData.push({
+        temp:[],
+        step: this.state.currentStep,
+        powerLevel:this.state.currentPowerLevel,
+        enteredValues:this.state.enteredValues,
+        });
+      this.setState({vialData:newVialData});
+      this.props.socket.emit('data', {});
+    }
   }
 
   stopRead = () => {
-    this.setState({readProgress: 0})
-    clearInterval(this.timer);
+    this.setState({readProgress: 0, equilibrateState: true})
+    this.handleUnlockBtns();
+  }
+
+  componentWillUnmount() {
+    this.setState({readProgress: 0});
   }
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     if (readProgress < 100 ) {
-       readProgress = readProgress + 10
-       this.setState({readProgress: readProgress})
-     }
-     else {
-       this.setState({readProgress: 0})
-       clearInterval(this.timer);
-     }
+     readProgress = readProgress + (100/this.state.timesRead);
+     this.setState({readProgress: readProgress});
    };
 
   handleBack = () => {
-    var disableForward
-    var disableBackward
-    var currentStep = this.state.currentStep - 1
-    var progressCompleted = 100*(currentStep/16)
+   var disableForward;
+   var disableBackward;
+   var currentStep = this.state.currentStep - 1;
+   var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+   var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
+   var buttonMeasureText = '';
+   if (currentStep - 1 == 0){
+     var buttonMeasureText = "RT"
+   }
+   else{
+    var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+    }
 
-    if (this.state.currentStep == 16){
-      disableForward = false
-    }
-    if (this.state.currentStep == 2){
-      disableBackward = true
-    }
-    // this.child.current.handleBack();
-    this.setState({
-      disableForward: disableForward,
-      disableBackward: disableBackward,
-      currentStep: currentStep,
-      progressCompleted: progressCompleted,
-      })
+   if (this.state.currentStep === this.state.deltaTempSteps){
+     disableForward = false;
+   }
+   if (this.state.currentStep === 2){
+     disableBackward = true;
+   }
+   this.handleRecordedData(currentStep);
+   this.setState({
+     disableForward: disableForward,
+     disableBackward: disableBackward,
+     currentStep: currentStep,
+     currentPowerLevel: newTempSet,
+     buttonMeasureText: buttonMeasureText
+     });
   };
 
   handleAdvance = () => {
-    var disableForward
-    var disableBackward
-    var currentStep = this.state.currentStep + 1
-    var progressCompleted = 100*(currentStep/16)
+    var disableForward;
+    var disableBackward;
+    var currentStep = this.state.currentStep + 1;
+    var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
+    var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
+    var buttonMeasureText = '';
+    if (currentStep - 1 == 0){
+      var buttonMeasureText = "RT"
+    }
+    else{
+     var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+     }
 
-    if (this.state.currentStep == 1){
-      disableBackward = false
+    if (this.state.currentStep === 1){
+     disableBackward = false;
     }
-    if (this.state.currentStep == 15){
-      disableForward = true
+    if (this.state.currentStep === (this.state.deltaTempSteps - 1)){
+     disableForward = true;
     }
-    // this.child.current.handleAdvance();
+    this.handleRecordedData(currentStep);
+    this.setState({
+     disableForward: disableForward,
+     disableBackward: disableBackward,
+     currentStep: currentStep,
+     currentPowerLevel: newTempSet,
+     buttonMeasureText: buttonMeasureText
+     });
+  };
+
+  handleLockBtns = () => {
+    var disableForward = true;
+    var disableBackward = true;
+
     this.setState({
       disableForward: disableForward,
       disableBackward: disableBackward,
-      currentStep: currentStep,
-      progressCompleted: progressCompleted,
-      })
+      });
   };
 
-  handleTempInput = (tempValues) => {
-      this.setState({inputValue: tempValues});
-    }
+  handleUnlockBtns = () => {
+    var disableForward = false;
+    var disableBackward = false;
 
+    if (this.state.currentStep === 1){
+      disableBackward = true;
+      disableForward = false;
+    }
+    if (this.state.currentStep === (this.state.deltaTempSteps)){
+      disableBackward = false;
+      disableForward = true;
+    }
+    this.setState({
+      disableForward: disableForward,
+      disableBackward: disableBackward,
+      });
+  };
+
+  handleRecordedData = (currentStep) => {
+    var displayedData = Array(16).fill('');
+    var vialData = this.state.vialData
+    for (var i = 0; i < vialData.length; i++) {
+        if (currentStep === this.state.vialData[i].step) {
+            displayedData = this.state.vialData[i].enteredValues;
+            break;
+        }
+    }
+    this.setState({enteredValues: displayedData})
+  }
+
+  handleTempInput = (tempValues) => {
+    this.setState({enteredValues: tempValues});
+   }
+
+   handleKeyboardInput = (input) => {
+     var exptName;
+     if (input == ''){
+       exptName = 'Temp-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+     } else {
+       exptName = input
+     }
+     this.setState({experimentName: exptName});
+   }
+
+   handleFinishExpt = (finishFlag) => {
+      console.log("Experiment Finished!");
+      var d = new Date();
+      var currentTime = d.getTime();
+      var saveData = {time: currentTime, vialData: this.state.vialData, filename:(this.state.experimentName + '.json')};
+      this.props.socket.emit('setcalibrationrawtemp', saveData);
+   }
+
+   handleKeyboardModal = () => {
+     this.keyboard.current.onOpenModal();
+   }
 
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
 
-
+    let measureButton;
     let statusText;
-    if (!this.state.inputsEntered) {
-      statusText = <p className="statusText"> Please load vessels with 15 mL of room temperature water. </p>
+
+    if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
+      statusText = <p className="statusText">Load vessels w/ 15 mL of room temp water. </p>
     }
+    else if ((this.state.vialData.length == 0) && (!this.state.equilibrateState)) {
+      statusText = <p className="statusText"> Heaters turned off. Let equilibrate, then enter values. </p>
+    }
+    else if ((this.state.vialData.length !== 0) && (this.state.equilibrateState)) {
+      statusText = <p className="statusText"> {this.state.readsFinished}/{this.state.deltaTempSteps} Measurements Made </p>
+    }
+    else if ((this.state.vialData.length !== 0) && (!this.state.equilibrateState)) {
+      statusText = <p className="statusText"> Temperature set! Let equilibrate, then enter values. </p>
+    }
+
+
+
+    if (this.state.readProgress === 0) {
+        measureButton =
+        <button
+          className="tempMeasureBtn"
+          onClick = {this.startRead}>
+          {this.state.buttonMeasureText} <FaPlay size={13}/>
+        </button>;
+      for (var i = 0; i < this.state.vialData.length; i++) {
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].temp) != "undefined")) {
+          if (this.state.vialData[i].temp[0].length === this.state.timesRead){
+
+              measureButton =
+              <button
+                className="tempMeasureBtn"
+                onClick = {this.startRead}>
+                 {this.state.buttonMeasureText} <FaCheck size={13}/>
+              </button>;
+              break;
+            }
+        }
+      }
+    } else {
+      measureButton =
+      <button
+        className="tempMeasureBtn"
+        onClick= {this.stopRead}>
+        <CircularProgress
+          classes={{
+            colorPrimary: classes.circleProgressColor,
+            circle: classes.circle
+            }}
+          variant="static"
+          value={this.state.readProgress}
+          color="primary"
+          size= {50}
+        />
+        <FaStop size={15} className = "readStopBtn"/>
+      </button>;
+
+      statusText = <p className="statusText">Collecting raw values from eVOLVER...</p>;
+    }
+
+    let btnRight;
+    if  ((this.state.progressCompleted >= 100) && (this.state.currentStep === this.state.deltaTempSteps)){
+      btnRight =
+        <button
+          className="tempAdvanceBtn"
+          onClick={this.handleFinishExpt}>
+          <FaPen/>
+        </button>
+    } else {
+      btnRight =
+        <button
+          className="tempAdvanceBtn"
+          disabled={this.state.disableForward}
+          onClick={this.handleAdvance}>
+          <FaArrowRight/>
+        </button>
+    }
+
+
+    let progressButtons;
+    if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
+      progressButtons =
+      <div className="row">
+        <button
+          className="stepOneBtn"
+          onClick={this.startRead}>
+          Start Temperature Calibration <FaPlay size={17}/>
+        </button>
+      </div>;
+    } else {
+      progressButtons =
+      <div className="row" style={{position: 'absolute'}}>
+        <button
+          className="tempBackBtn"
+          disabled={this.state.disableBackward}
+          onClick={this.handleBack}>
+          {this.state.buttonBackText} <FaArrowLeft size={13}/>
+        </button>
+        {measureButton}
+        {btnRight}
+      </div>
+    }
+
 
     return (
       <div>
-        <h3 className="odCalTitles"> Temperature Calibration &deg;C </h3>
-        <Link className="backHomeBtn" id="experiments" to={routes.CALMENU}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
         <TempcalInput
           onChangeValue={this.handleTempInput}
           onInputsEntered = {this.state.inputsEntered}
-          inputValue = {this.state.inputValue}/>
+          enteredValues = {this.state.enteredValues}/>
+        {progressButtons}
 
         <Card className={classes.cardTempCalGUI}>
           <TempCalGUI
-            ref={this.child}
             vialOpacities = {this.state.vialOpacities}
-            generalOpacity = {this.state.generalSampleOpacity}
-            valueInputs = {this.state.tempInputsFloat}
+            generalOpacity = {this.state.generalOpacity}
+            valueInputs = {this.state.valueInputs}
             initialZipped = {this.state.initialZipped}
             readProgress = {this.state.vialProgress}
             vialLabels = {this.state.vialLabels}/>
@@ -198,8 +508,15 @@ class TempCal extends React.Component {
 
           {statusText}
 
-
         </Card>
+
+        <button
+          className="odCalTitles"
+          onClick={this.handleKeyboardModal}>
+          <h3 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h3>
+        </button>
+        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+
 
 
       </div>

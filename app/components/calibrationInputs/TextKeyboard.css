@@ -1,0 +1,61 @@
+.simple-keyboard {
+  color: black;
+  font-size: 22px;
+}
+
+.simple-keyboard.hg-theme-default.myTheme {
+  border: 5px solid rgb(255, 0, 0, 0.7);
+  border-radius: 10px;
+  margin: 10px;
+  width: calc(100% - 20px);
+}
+
+.simple-keyboard.hg-layout-default .hg-button.hg-red {
+  background: rgb(255, 0, 0, 0.7);
+  color: white;
+}
+
+.simple-keyboard.hg-layout-default .hg-button.hg-highlight {
+  box-shadow: 0px 0px 40px 5px rgba(255, 255, 0, 0.5);
+  z-index: 1;
+}
+
+
+.keyboardInput {
+  width: 1000px;
+  text-align: left;
+  background-color: black;
+  margin-left: 5px;
+  border: black;
+  color: white;
+  font-size: 24px;
+  margin-top: -16px;
+}
+
+.keyboardInput:focus {
+  outline: none;
+}
+
+.finishButton{
+  margin: 40px 0px 0px 200px;
+  position: absolute;
+  width: 370px;
+  height: 60px;
+  color: white;
+  background-color: black;
+  border: 2px solid #f58245;
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  border-radius: 10px;
+}
+
+.finishButton:hover {
+  color: white;
+  background-color: black;
+  border: 2px solid #f58245;
+}
+
+.hg-standardBtn {
+  height:50px;
+}

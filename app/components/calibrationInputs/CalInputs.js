@@ -25,7 +25,7 @@ class CalInput extends React.Component {
     this.child = React.createRef();
     this.state = {
        open: false,
-       inputValue: this.props.inputValue,
+       enteredValues: this.props.enteredValues,
        numPadID: 0,
        inputsLocked: this.props.onInputsEntered,
      };
@@ -34,6 +34,9 @@ class CalInput extends React.Component {
    componentDidUpdate(prevProps) {
      if (this.props.onInputsEntered !== prevProps.onInputsEntered) {
        this.setState({ inputsLocked: this.props.onInputsEntered})
+     }
+     if (this.props.enteredValues !== prevProps.enteredValues) {
+       this.setState({ enteredValues: this.props.enteredValues})
      }
      if (document.activeElement) {
           document.activeElement.blur();
@@ -48,11 +51,11 @@ class CalInput extends React.Component {
    this.setState({ open: false });
  };
 
- handleNumChange = (inputValue)  => {
-   let newValues = this.state.inputValue
-   newValues[this.state.numPadID] = inputValue
+ handleNumChange = (enteredValues)  => {
+   let newValues = this.state.enteredValues
+   newValues[this.state.numPadID] = enteredValues
    this.props.onChangeValue(newValues);
-   this.setState({inputValue: newValues})
+   this.setState({enteredValues: newValues})
  }
 
  clickBack = (event,value) => {
@@ -96,7 +99,7 @@ class CalInput extends React.Component {
                   key= {index}
                   id={index}
                   disabled = {this.state.inputsLocked}>
-                  {this.state.inputValue[index]}
+                  {this.state.enteredValues[index]}
                 </button>
               </div>
             </Card>
@@ -127,7 +130,7 @@ class CalInput extends React.Component {
           </button>
 
           <NumPad
-            currentValue={this.state.inputValue[this.state.numPadID]}
+            currentValue={this.state.enteredValues[this.state.numPadID]}
             currentID= {this.state.numPadID}
             onNumChange={this.handleNumChange}
           />
