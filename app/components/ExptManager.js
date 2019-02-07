@@ -9,6 +9,7 @@ import {FaArrowLeft} from 'react-icons/fa';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 import ScriptEditor from './python-shell/ScriptEditor'
+import GitConnections from './python-shell/GitConnections'
 
 
 const styles = {
@@ -71,6 +72,7 @@ class ExptManager extends React.Component {
           <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
         </Card>
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <GitConnections/>
       </div>
     );
   }
