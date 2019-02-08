@@ -10722,10 +10722,10 @@ react-simple-keyboard@^1.15.2:
   resolved "https://registry.yarnpkg.com/react-simple-keyboard/-/react-simple-keyboard-1.15.2.tgz#729558a6ad79335724c4d81e9be03170a02e6f42"
   integrity sha512-rCOQco2W+ugSzk6jeWIzryX7Wc2zrTIe8C5vthz58udqBvoAgdcSmrcwSZe2dUCxbVIZSPATShDxRG7XOB1BhQ==
 
-react-swipeable-views-core@^0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/react-swipeable-views-core/-/react-swipeable-views-core-0.13.0.tgz#6bf8a8132a756355444537672a14e84b1e3b53c2"
-  integrity sha512-MAe119eSN4obiqsIp+qoUWtLbyjz+dWEfz+qPurPvyIFoXxuxpBnsDy36+C7cBaCi5z4dRmfoMlm1dBAdIzvig==
+react-swipeable-views-core@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/react-swipeable-views-core/-/react-swipeable-views-core-0.13.1.tgz#8829a922462a8bdd701709cd1b385393d38f1527"
+  integrity sha512-EP8sCvvD7VDiZLglPt9icMuMNu8qLRLk0ab/fB1HXv7lX8ClnwF3UMCM0ZrN3sguSY7CsX3LevducGGsT1VcDg==
   dependencies:
     "@babel/runtime" "7.0.0"
     warning "^4.0.1"

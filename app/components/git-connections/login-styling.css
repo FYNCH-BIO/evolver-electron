@@ -1,0 +1,12 @@
+.customcloseButton {
+  fill: white;
+  display: none;
+}
+
+.customModal {
+  background-color: black;
+}
+
+.customOverlay {
+  background-color: black;
+}
