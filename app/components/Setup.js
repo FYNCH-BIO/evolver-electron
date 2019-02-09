@@ -7,7 +7,7 @@ import VialSelector from './VialSelector'
 import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import io from 'socket.io-client'
-import ButtonCards from './SetupButtons/SwipeableViews';
+import ButtonCards from './SetupButtons/ButtonCards';
 import {FaArrowLeft} from 'react-icons/fa';
 
 
@@ -22,6 +22,10 @@ export default class Setup extends Component<Props> {
             selectedItems: [],
             arduinoMessage: "",
             vialData: data,
+            tempCalFiles: [],
+            odCalFiles: [],
+            activeTempCal: '',
+            activeODCal: '',
             tempCal: [],
             odCal: [],
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
@@ -29,6 +33,8 @@ export default class Setup extends Component<Props> {
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
       this.props.location.socket.emit('getcalibrationod', {});
       this.props.location.socket.emit('getcalibrationtemp', {});
+      this.props.location.socket.emit('getfittedcalibrationfilenamesod', {});
+      this.props.location.socket.emit('getfittedcalibrationfilenamestemp', {});
       this.props.location.socket.on('databroadcast', function(response) {
         var newVialData = Array.apply(null, Array(16)).map(function () {});
         for(var i = 0; i < this.state.vialData.length; i++) {
@@ -52,7 +58,13 @@ export default class Setup extends Component<Props> {
         this.setState({vialData: newVialData});
     }.bind(this));
 
+    this.props.location.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
+    this.props.location.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
+    this.props.location.socket.on('activecalibrationod', function(response) {this.setState({activeODCal: response})}.bind(this))
+    this.props.location.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
+
     this.props.location.socket.on('calibrationod', function(response) {
+        console.log(response)
         var cal_response = response.trim().split("\n");
         var newOdCal = [];
         for (var i = 0; i < cal_response.length; i++) {
@@ -94,6 +106,17 @@ export default class Setup extends Component<Props> {
   onSelectVials = (selectedVials) =>    {
     this.setState({selectedItems: selectedVials});
   };
+
+  onSelectNewCal = (parameter, filename) => {
+    console.log(parameter)
+    console.log(filename)
+    if (parameter == 'od'){
+      this.props.location.socket.emit("setActiveODCal", {filename: filename});
+    }
+    if (parameter == 'temp'){
+      this.props.location.socket.emit("setActiveTempCal", {filename: filename});
+    }
+  }
 
   onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
@@ -151,10 +174,20 @@ export default class Setup extends Component<Props> {
               <div className="buttons-dashboard ">
                 <Link className="backCalibrateBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.location.socket}}><FaArrowLeft/></Link>
                 <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
-                <ButtonCards arduinoMessage={this.state.arduinoMessage} onSubmitButton={this.onSubmitButton}/>
+                <ButtonCards
+                  arduinoMessage={this.state.arduinoMessage}
+                  onSubmitButton={this.onSubmitButton}
+                  activeTempCal={this.state.activeTempCal}
+                  activeODCal={this.state.activeODCal}
+                  tempCalFiles= {this.state.tempCalFiles}
+                  odCalFiles={this.state.odCalFiles}
+                  onSelectNewCal = {this.onSelectNewCal}
+                   />
               </div>
               <div>
-                <VialSelector items={this.state.vialData} vialSelectionFinish={this.onSelectVials}/>
+                <VialSelector
+                  items={this.state.vialData}
+                  vialSelectionFinish={this.onSelectVials}/>
               </div>
             </div>
         </div>

@@ -13,7 +13,6 @@ function isDisabled(currentVial) {
 
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
-  console.log(numberSelected)
   if (numberSelected == 0) {
     return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
   }
