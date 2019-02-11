@@ -112,8 +112,11 @@ class ODcal extends React.Component {
     this.setState({
       vialOpacities: Array(16).fill(0),
       })
-
   };
+
+  componentWillUnmount() {
+    this.props.socket.removeAllListeners('dataresponse');
+  }
 
 
   startRead = () => {

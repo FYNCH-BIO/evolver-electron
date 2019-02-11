@@ -20,6 +20,11 @@ export default class Home extends Component<Props> {
         this.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
   }
+
+  componentDidMount() {
+    console.log(this.socket)
+  }
+
   props: Props;
 
   render() {

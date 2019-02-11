@@ -6,7 +6,6 @@ import data from './sample-data'
 import VialSelector from './VialSelector'
 import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
-import io from 'socket.io-client'
 import ButtonCards from './SetupButtons/ButtonCards';
 import {FaArrowLeft} from 'react-icons/fa';
 
@@ -46,6 +45,7 @@ export default class Setup extends Component<Props> {
       this.props.location.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
 
       this.props.location.socket.on('calibrationod', function(response) {
+        console.log(response)
           var cal_response = response.trim().split("\n");
           var newOdCal = [];
           for (var i = 0; i < cal_response.length; i++) {
@@ -84,6 +84,16 @@ export default class Setup extends Component<Props> {
     this.setState({vialData: initialData});
   };
 
+  componentWillUnmount() {
+    this.props.location.socket.removeAllListeners('activecalibrationod');
+    this.props.location.socket.removeAllListeners('activecalibrationtemp');
+    this.props.location.socket.removeAllListeners('calibrationod');
+    this.props.location.socket.removeAllListeners('calibrationtemp');
+    this.props.location.socket.removeAllListeners('odfittedfilenames');
+    this.props.location.socket.removeAllListeners('tempfittedfilenames');
+    this.props.location.socket.removeAllListeners('databroadcast');
+  }
+
   handleRawData = (rawData, showRawOD, showRawTemp) => {
     var newVialData = this.handleRawToCal(rawData, showRawOD, showRawTemp);
     if (!showRawOD){
@@ -113,7 +123,7 @@ export default class Setup extends Component<Props> {
     var newVialData = JSON.parse(JSON.stringify(response));
     for(var i = 0; i < newVialData.length; i++) {
         try {
-          if (!showRawOD && this.state.odCal !== []){
+          if ((!showRawOD) && (this.state.odCal.length !== 0)){
             newVialData[i].od = this.sigmoidRawToCal(newVialData[i].od, this.state.odCal[i]).toFixed(3);
           } else{
             newVialData[i].od = newVialData[i].od;
@@ -123,7 +133,7 @@ export default class Setup extends Component<Props> {
             console.log(err);
         }
         try {
-          if (!showRawTemp && this.state.tempCal !== []){
+          if ((!showRawTemp) && (this.state.tempCal.length !== 0)){
             newVialData[i].temp = this.linearRawToCal(newVialData[i].temp, this.state.tempCal[i]).toFixed(2);
           } else {
             newVialData[i].temp = newVialData[i].temp;

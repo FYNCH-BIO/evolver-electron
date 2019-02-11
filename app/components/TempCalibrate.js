@@ -172,6 +172,11 @@ class TempCal extends React.Component {
 
   }
 
+  componentWillUnmount() {
+    this.props.socket.removeAllListeners('dataresponse');
+    this.props.socket.removeAllListeners('databroadcast');
+  }
+
   componentDidMount() {
     this.keyboard.current.onOpenModal();
     var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
