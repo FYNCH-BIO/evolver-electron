@@ -21,6 +21,7 @@ export default class Setup extends Component<Props> {
       this.state = {
             selectedItems: [],
             arduinoMessage: "",
+            rawVialData: data,
             vialData: data,
             tempCalFiles: [],
             odCalFiles: [],
@@ -28,6 +29,8 @@ export default class Setup extends Component<Props> {
             activeODCal: '',
             tempCal: [],
             odCal: [],
+            showRawTemp: false,
+            showRawOD: false,
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
@@ -36,64 +39,102 @@ export default class Setup extends Component<Props> {
       this.props.location.socket.emit('getfittedcalibrationfilenamesod', {});
       this.props.location.socket.emit('getfittedcalibrationfilenamestemp', {});
       this.props.location.socket.on('databroadcast', function(response) {
-        var newVialData = Array.apply(null, Array(16)).map(function () {});
-        for(var i = 0; i < this.state.vialData.length; i++) {
-            newVialData[i] = {};
-            newVialData[i].vial = this.state.vialData[i].vial;
-            newVialData[i].selected = this.state.vialData[i].selected;
+        this.handleRawData(response)}.bind(this));
+      this.props.location.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
+      this.props.location.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
+      this.props.location.socket.on('activecalibrationod', function(response) {this.setState({activeODCal: response})}.bind(this))
+      this.props.location.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
 
-            try {
-                newVialData[i].od = this.sigmoidRawToCal(response.OD[this.state.vialData[i].vial], this.state.odCal[i]).toFixed(3);
-            }
-            catch (err) {
-                console.log(err);
-            }
-            try {
-                newVialData[i].temp = this.linearRawToCal(response.temp[this.state.vialData[i].vial], this.state.tempCal[i]).toFixed(2);
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }
-        this.setState({vialData: newVialData});
-    }.bind(this));
+      this.props.location.socket.on('calibrationod', function(response) {
+          var cal_response = response.trim().split("\n");
+          var newOdCal = [];
+          for (var i = 0; i < cal_response.length; i++) {
+              cal_response[i] = cal_response[i].split(",");
+              for (var j = 0; j < cal_response[i].length; j++) {
+                  if (!newOdCal[j]) {
+                      newOdCal.push([]);
+                  }
+                  newOdCal[j].push(parseFloat(cal_response[i][j]));
+              }
+          }
+          this.setState({odCal: newOdCal});
+      }.bind(this));
 
-    this.props.location.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
-    this.props.location.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
-    this.props.location.socket.on('activecalibrationod', function(response) {this.setState({activeODCal: response})}.bind(this))
-    this.props.location.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
+      this.props.location.socket.on('calibrationtemp', function(response) {
+          var temp_response= response.trim().split("\n");
+          var newTempCal = [];
+          for (var i = 0; i < temp_response.length; i++) {
+              temp_response[i] = temp_response[i].split(",");
+              for (var j = 0; j < temp_response[i].length; j++) {
+                  if (!newTempCal[j]) {
+                      newTempCal.push([]);
+                  }
+                  newTempCal[j].push(parseFloat(temp_response[i][j]));
+              }
+          }
+          this.setState({tempCal: newTempCal});
+      }.bind(this));
+    }
 
-    this.props.location.socket.on('calibrationod', function(response) {
-        console.log(response)
-        var cal_response = response.trim().split("\n");
-        var newOdCal = [];
-        for (var i = 0; i < cal_response.length; i++) {
-            cal_response[i] = cal_response[i].split(",");
-            for (var j = 0; j < cal_response[i].length; j++) {
-                if (!newOdCal[j]) {
-                    newOdCal.push([]);
-                }
-                newOdCal[j].push(parseFloat(cal_response[i][j]));
-            }
-        }
-        this.setState({odCal: newOdCal});
-    }.bind(this));
+  componentDidMount() {
+    var initialData = this.state.rawVialData;
+    initialData = this.handleRawToCal(initialData);
+    initialData = this.formatVialSelectStrings(initialData, 'od');
+    initialData = this.formatVialSelectStrings(initialData, 'temp');
+    this.setState({vialData: initialData});
+  };
 
-    this.props.location.socket.on('calibrationtemp', function(response) {
-        var temp_response= response.trim().split("\n");
-        var newTempCal = [];
-        for (var i = 0; i < temp_response.length; i++) {
-            temp_response[i] = temp_response[i].split(",");
-            for (var j = 0; j < temp_response[i].length; j++) {
-                if (!newTempCal[j]) {
-                    newTempCal.push([]);
-                }
-                newTempCal[j].push(parseFloat(temp_response[i][j]));
-            }
-        }
-        this.setState({tempCal: newTempCal});
-    }.bind(this));
+  handleRawData = (rawData, showRawOD, showRawTemp) => {
+    var newVialData = this.handleRawToCal(rawData, showRawOD, showRawTemp);
+    if (!showRawOD){
+      newVialData = this.formatVialSelectStrings(newVialData, 'od');
+    }
+    if (!showRawTemp){
+      newVialData = this.formatVialSelectStrings(newVialData, 'temp');
+    }
+    this.setState({vialData: newVialData, rawVialData: rawData});
   }
+
+  formatVialSelectStrings = (vialData, parameter) => {
+    var newData = JSON.parse(JSON.stringify(vialData));
+    for(var i = 0; i < newData.length; i++) {
+      if (parameter == 'od'){
+        newData[i].od = 'OD: ' + newData[i].od;
+      }
+      if (parameter == 'temp'){
+        newData[i].temp = newData[i].temp +'\u00b0C';
+      }
+    }
+    return newData
+  }
+
+
+  handleRawToCal = (response, showRawOD, showRawTemp) => {
+    var newVialData = JSON.parse(JSON.stringify(response));
+    for(var i = 0; i < newVialData.length; i++) {
+        try {
+          if (!showRawOD && this.state.odCal !== []){
+            newVialData[i].od = this.sigmoidRawToCal(newVialData[i].od, this.state.odCal[i]).toFixed(3);
+          } else{
+            newVialData[i].od = newVialData[i].od;
+          }
+        }
+        catch (err) {
+            console.log(err);
+        }
+        try {
+          if (!showRawTemp && this.state.tempCal !== []){
+            newVialData[i].temp = this.linearRawToCal(newVialData[i].temp, this.state.tempCal[i]).toFixed(2);
+          } else {
+            newVialData[i].temp = newVialData[i].temp;
+          }
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    return newVialData
+  };
 
   getBinaryString = vials => {
       var binaryInteger = 0;
@@ -112,9 +153,21 @@ export default class Setup extends Component<Props> {
     console.log(filename)
     if (parameter == 'od'){
       this.props.location.socket.emit("setActiveODCal", {filename: filename});
+      this.setState({showRawOD: false});
+      this.handleRawData(this.state.rawVialData, false, this.state.showRawTemp)
     }
     if (parameter == 'temp'){
       this.props.location.socket.emit("setActiveTempCal", {filename: filename});
+      this.setState({showRawTemp: false});
+      this.handleRawData(this.state.rawVialData, this.state.showRawOD, false)
+    }
+    if (parameter == 'rawod'){
+      this.setState({showRawOD: !this.state.showRawOD});
+      this.handleRawData(this.state.rawVialData, !this.state.showRawOD, this.state.showRawTemp)
+    }
+    if (parameter == 'rawtemp'){
+      this.setState({showRawTemp: !this.state.showRawTemp});
+      this.handleRawData(this.state.rawVialData, this.state.showRawOD, !this.state.showRawTemp)
     }
   }
 
@@ -181,6 +234,8 @@ export default class Setup extends Component<Props> {
                   activeODCal={this.state.activeODCal}
                   tempCalFiles= {this.state.tempCalFiles}
                   odCalFiles={this.state.odCalFiles}
+                  showRawTemp= {this.state.showRawTemp}
+                  showRawOD= {this.state.showRawOD}
                   onSelectNewCal = {this.onSelectNewCal}
                    />
               </div>

@@ -39,6 +39,8 @@ class CalibrationButtons extends React.Component {
       odCalFiles: this.props.odCalFiles,
       modalFiles: [],
       modalParameter: '',
+      showRawTemp: this.props.showRawTemp,
+      showRawOD: this.props.showRawOD
     };
   }
   componentDidUpdate(prevProps) {
@@ -53,6 +55,12 @@ class CalibrationButtons extends React.Component {
     }
     if (this.props.odCalFiles !== prevProps.odCalFiles) {
       this.setState({ odCalFiles: this.props.odCalFiles})
+    }
+    if (this.props.showRawOD !== prevProps.showRawOD) {
+      this.setState({ showRawOD: this.props.showRawOD})
+    }
+    if (this.props.showRawTemp !== prevProps.showRawTemp) {
+      this.setState({ showRawTemp: this.props.showRawTemp})
     }
   }
 
@@ -78,6 +86,14 @@ class CalibrationButtons extends React.Component {
     });
   }
 
+  toggleRawTemp = () => {
+    this.props.onSelectNewCal('rawtemp', []);
+  }
+
+  toggleRawOD = () => {
+    this.props.onSelectNewCal('rawod', []);
+  }
+
   selectNewCal = (index) => {
     this.setState({ open: false });
     this.props.onSelectNewCal(this.state.modalParameter, this.state.modalFiles[index]);
@@ -86,18 +102,32 @@ class CalibrationButtons extends React.Component {
   render() {
     const { classes } = this.props;
 
+    let tempRawBtn, odRawBtn;
+    if (this.state.showRawTemp){
+      tempRawBtn = 'rawCalibrationBtnsPushed'
+    } else {
+      tempRawBtn = 'rawCalibrationBtns'
+    }
+
+    if (this.state.showRawOD){
+      odRawBtn = 'rawCalibrationBtnsPushed'
+    } else {
+      odRawBtn = 'rawCalibrationBtns'
+    }
+
+
     return (
       <div>
         <Card className={classes.card}>
           <div className='row centered'>
-            <Typography variant="h5" className={classes.labelText}> OD: </Typography>
-            <button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button>
-            <button className='rawCalibrationBtns'>RAW</button>
-          </div>
-          <div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Temp: </Typography>
             <button className='calibrationBtns' onClick={this.changeActiveTempCal}>{this.state.activeTempCal}</button>
-            <button className='rawCalibrationBtns'>RAW</button>
+            <button className={tempRawBtn} onClick={this.toggleRawTemp}>RAW</button>
+          </div>
+          <div className='row centered'>
+            <Typography variant="h5" className={classes.labelText}> OD: </Typography>
+            <button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button>
+            <button className={odRawBtn} onClick={this.toggleRawOD}>RAW</button>
           </div>
           <div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Pump: </Typography>
@@ -118,6 +148,8 @@ class CalibrationButtons extends React.Component {
 
            {this.state.modalFiles.map((modalFiles, index) => (
              <button
+              key= {index}
+              id={index}
               className='activeCalSelection'
               onClick={() => this.selectNewCal(index)}>
               {modalFiles}

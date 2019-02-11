@@ -21,6 +21,6 @@ const selected = [
 export default Array.from({ length: 16 }).map((item, index) => ({
   vial: index,
   selected: selected[index % selected.length],
-  od: 0,
-  temp: 0
+  od: 'NaN',
+  temp: 'NaN'
 }))

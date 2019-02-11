@@ -74,21 +74,21 @@ class ODcal extends React.Component {
             return;
         }
         this.progress();
-        for (var i = 0; i < response.OD.length; i++) {
-            if (newVialData[newVialData.length - 1].OD.length <= i) {
-                newVialData[newVialData.length - 1].OD.push([]);
+        for (var i = 0; i < response.od.length; i++) {
+            if (newVialData[newVialData.length - 1].od.length <= i) {
+                newVialData[newVialData.length - 1].od.push([]);
                 newVialData[newVialData.length - 1].temp.push([]);
             }
-            newVialData[newVialData.length - 1].OD[i].push(response.OD[i]);
+            newVialData[newVialData.length - 1].od[i].push(response.od[i]);
             newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
         }
         this.setState({vialData: newVialData}, function() {
 
-            if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
+            if (this.state.vialData[newVialData.length - 1].od[0].length === this.state.timesRead) {
                 if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
                     newVialData = this.state.vialData;
                     var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
-                    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
+                    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
                     this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
                         this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
                     }.bind(this));
@@ -128,7 +128,7 @@ class ODcal extends React.Component {
         }
     }
 
-    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
+    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
     this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
     this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
   }
@@ -287,8 +287,8 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD[0]) != "undefined")) {
-          if (this.state.vialData[i].OD[0].length === this.state.timesRead){
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].od[0]) != "undefined")) {
+          if (this.state.vialData[i].od[0].length === this.state.timesRead){
 
               measureButton =
               <button

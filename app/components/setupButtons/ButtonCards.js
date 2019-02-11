@@ -108,7 +108,7 @@ function ActiveButtons(props) {
     return <LightButtons onSubmitButton={props.onSubmitButton}/>;
   }
   if (currentTag == 'calibrate') {
-    return <CalibrationButtons onSelectNewCal={props.onSelectNewCal}  tempCalFiles= {props.tempCalFiles} odCalFiles={props.odCalFiles}activeTempCal={props.activeTempCal} activeODCal={props.activeODCal} />
+    return <CalibrationButtons onSelectNewCal={props.onSelectNewCal}  tempCalFiles= {props.tempCalFiles} odCalFiles={props.odCalFiles}activeTempCal={props.activeTempCal} activeODCal={props.activeODCal} showRawTemp= {props.showRawTemp} showRawOD= {props.showRawOD}/>
   }
   return null;
 }
@@ -121,7 +121,9 @@ class SwipeableTextMobileStepper extends React.Component {
       activeTempCal: this.props.activeTempCal,
       activeODCal: this.props.activeODCal,
       tempCalFiles: this.props.tempCalFiles,
-      odCalFiles: this.props.odCalFiles
+      odCalFiles: this.props.odCalFiles,
+      showRawTemp: this.props.showRawTemp,
+      showRawOD: this.props.showRawOD
     };
   }
 
@@ -137,6 +139,12 @@ class SwipeableTextMobileStepper extends React.Component {
     }
     if (this.props.odCalFiles !== prevProps.odCalFiles) {
       this.setState({ odCalFiles: this.props.odCalFiles})
+    }
+    if (this.props.showRawOD !== prevProps.showRawOD) {
+      this.setState({ showRawOD: this.props.showRawOD})
+    }
+    if (this.props.showRawTemp !== prevProps.showRawTemp) {
+      this.setState({ showRawTemp: this.props.showRawTemp})
     }
   }
 
@@ -190,6 +198,8 @@ class SwipeableTextMobileStepper extends React.Component {
                       activeODCal={this.state.activeODCal}
                       tempCalFiles= {this.state.tempCalFiles}
                       odCalFiles={this.state.odCalFiles}
+                      showRawTemp= {this.state.showRawTemp}
+                      showRawOD= {this.state.showRawOD}
                       currentTag={tutorialSteps[activeStep].outputTag}
                       onSubmitButton={this.props.onSubmitButton}
                       onSelectNewCal = {this.props.onSelectNewCal}/>
