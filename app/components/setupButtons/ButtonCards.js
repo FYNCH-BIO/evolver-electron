@@ -68,7 +68,7 @@ const styles = theme => ({
   },
   card: {
     width: 440,
-    height: 225,
+    height: 235,
     backgroundColor: 'black',
   },
   cardSpacer: {

@@ -99,7 +99,8 @@ class TempCal extends React.Component {
       buttonMeasureText: 'RT',
       slopeEsimate: .02,
       previousLockedTemp: [],
-      experimentName:''
+      experimentName:'',
+      readsFinished: 0
 
     };
     this.props.socket.on('dataresponse', function(response) {
@@ -175,9 +176,11 @@ class TempCal extends React.Component {
   componentWillUnmount() {
     this.props.socket.removeAllListeners('dataresponse');
     this.props.socket.removeAllListeners('databroadcast');
+    this.setState({readProgress: 0});
   }
 
   componentDidMount() {
+    this.props.logger.info('Routed to Temperature Calibration Page.')
     this.keyboard.current.onOpenModal();
     var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
     var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
@@ -238,10 +241,6 @@ class TempCal extends React.Component {
   stopRead = () => {
     this.setState({readProgress: 0, equilibrateState: true})
     this.handleUnlockBtns();
-  }
-
-  componentWillUnmount() {
-    this.setState({readProgress: 0});
   }
 
   progress = () => {
@@ -406,7 +405,7 @@ class TempCal extends React.Component {
           {this.state.buttonMeasureText} <FaPlay size={13}/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].temp) != "undefined")) {
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].temp[0]) !== "undefined")) {
           if (this.state.vialData[i].temp[0].length === this.state.timesRead){
 
               measureButton =
@@ -486,7 +485,7 @@ class TempCal extends React.Component {
 
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
         <TempcalInput
           onChangeValue={this.handleTempInput}
           onInputsEntered = {this.state.inputsEntered}

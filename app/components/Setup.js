@@ -8,6 +8,8 @@ import Navbar from './Navbar'
 import SetupButtons from './SetupButtons/SetupButtons'
 import ButtonCards from './SetupButtons/ButtonCards';
 import {FaArrowLeft} from 'react-icons/fa';
+import SetupLog from './SetupButtons/SetupLog'
+
 
 
 type Props = {
@@ -37,27 +39,26 @@ export default class Setup extends Component<Props> {
       this.props.location.socket.emit('getcalibrationtemp', {});
       this.props.location.socket.emit('getfittedcalibrationfilenamesod', {});
       this.props.location.socket.emit('getfittedcalibrationfilenamestemp', {});
-      this.props.location.socket.on('databroadcast', function(response) {
-        this.handleRawData(response)}.bind(this));
+      this.props.location.socket.on('dataresponse', function(response) {this.handleRawData(this.handlePiIncoming(response), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
+      this.props.location.socket.on('databroadcast', function(response) {this.handleRawData(this.handlePiIncoming(response), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
       this.props.location.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
       this.props.location.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
       this.props.location.socket.on('activecalibrationod', function(response) {this.setState({activeODCal: response})}.bind(this))
       this.props.location.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
 
       this.props.location.socket.on('calibrationod', function(response) {
-        console.log(response)
-          var cal_response = response.trim().split("\n");
-          var newOdCal = [];
-          for (var i = 0; i < cal_response.length; i++) {
-              cal_response[i] = cal_response[i].split(",");
-              for (var j = 0; j < cal_response[i].length; j++) {
-                  if (!newOdCal[j]) {
-                      newOdCal.push([]);
-                  }
-                  newOdCal[j].push(parseFloat(cal_response[i][j]));
-              }
-          }
-          this.setState({odCal: newOdCal});
+        var cal_response = response.trim().split("\n");
+        var newOdCal = [];
+        for (var i = 0; i < cal_response.length; i++) {
+            cal_response[i] = cal_response[i].split(",");
+            for (var j = 0; j < cal_response[i].length; j++) {
+                if (!newOdCal[j]) {
+                    newOdCal.push([]);
+                }
+                newOdCal[j].push(parseFloat(cal_response[i][j]));
+            }
+        }
+        this.setState({odCal: newOdCal});
       }.bind(this));
 
       this.props.location.socket.on('calibrationtemp', function(response) {
@@ -77,6 +78,8 @@ export default class Setup extends Component<Props> {
     }
 
   componentDidMount() {
+    this.props.location.logger.info('Routed to Setup Page.')
+    this.props.location.socket.emit('pingdata', {});
     var initialData = this.state.rawVialData;
     initialData = this.handleRawToCal(initialData);
     initialData = this.formatVialSelectStrings(initialData, 'od');
@@ -92,14 +95,30 @@ export default class Setup extends Component<Props> {
     this.props.location.socket.removeAllListeners('odfittedfilenames');
     this.props.location.socket.removeAllListeners('tempfittedfilenames');
     this.props.location.socket.removeAllListeners('databroadcast');
+    this.props.location.socket.removeAllListeners('dataresponse');
+  }
+
+  handlePiIncoming = (response) => {
+    var responseData = JSON.parse(JSON.stringify(response));
+    var rawData = Array.apply(null, Array(16)).map(function () {});
+    for(var i = 0; i < this.state.vialData.length; i++) {
+      rawData[i] = {};
+      rawData[i].vial = this.state.vialData[i].vial;
+      rawData[i].selected = this.state.vialData[i].selected;
+
+      rawData[i].od = responseData.od[i];
+      rawData[i].temp = responseData.temp[i];
+    }
+    return rawData
   }
 
   handleRawData = (rawData, showRawOD, showRawTemp) => {
+    console.log(rawData)
     var newVialData = this.handleRawToCal(rawData, showRawOD, showRawTemp);
-    if (!showRawOD){
+    if (!showRawOD && (this.state.odCal.length !== 0)){
       newVialData = this.formatVialSelectStrings(newVialData, 'od');
     }
-    if (!showRawTemp){
+    if (!showRawTemp && (this.state.tempCal.length !== 0)){
       newVialData = this.formatVialSelectStrings(newVialData, 'temp');
     }
     this.setState({vialData: newVialData, rawVialData: rawData});
@@ -125,6 +144,8 @@ export default class Setup extends Component<Props> {
         try {
           if ((!showRawOD) && (this.state.odCal.length !== 0)){
             newVialData[i].od = this.sigmoidRawToCal(newVialData[i].od, this.state.odCal[i]).toFixed(3);
+          } else if (this.state.odCal.length == 0) {
+            newVialData[i].od = '--'
           } else{
             newVialData[i].od = newVialData[i].od;
           }
@@ -135,6 +156,8 @@ export default class Setup extends Component<Props> {
         try {
           if ((!showRawTemp) && (this.state.tempCal.length !== 0)){
             newVialData[i].temp = this.linearRawToCal(newVialData[i].temp, this.state.tempCal[i]).toFixed(2);
+          } else if (this.state.tempCal.length == 0) {
+            newVialData[i].temp = '--'
           } else {
             newVialData[i].temp = newVialData[i].temp;
           }
@@ -159,8 +182,6 @@ export default class Setup extends Component<Props> {
   };
 
   onSelectNewCal = (parameter, filename) => {
-    console.log(parameter)
-    console.log(filename)
     if (parameter == 'od'){
       this.props.location.socket.emit("setActiveODCal", {filename: filename});
       this.setState({showRawOD: false});
@@ -235,7 +256,7 @@ export default class Setup extends Component<Props> {
         <div className="col-8.5 centered">
             <div className="row centered">
               <div className="buttons-dashboard ">
-                <Link className="backCalibrateBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.location.socket}}><FaArrowLeft/></Link>
+                <Link className="backCalibrateBtn" id="experiments" to={{pathname:routes.HOME, socket: this.props.location.socket, logger:this.props.location.logger}}><FaArrowLeft/></Link>
                 <h3 className="dashboardTitles"> Experiment Setup Dashboard </h3>
                 <ButtonCards
                   arduinoMessage={this.state.arduinoMessage}
@@ -249,6 +270,7 @@ export default class Setup extends Component<Props> {
                   onSelectNewCal = {this.onSelectNewCal}
                    />
               </div>
+              <SetupLog/>
               <div>
                 <VialSelector
                   items={this.state.vialData}

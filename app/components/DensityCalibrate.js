@@ -108,6 +108,7 @@ class ODcal extends React.Component {
   }
 
   componentDidMount() {
+    this.props.logger.info('Routed to Density Calibration Page.')
     this.keyboard.current.onOpenModal();
     this.setState({
       vialOpacities: Array(16).fill(0),
@@ -116,6 +117,7 @@ class ODcal extends React.Component {
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('dataresponse');
+    this.setState({readProgress: 0});
   }
 
 
@@ -147,10 +149,6 @@ class ODcal extends React.Component {
         }
     }
     this.setState({readProgress: 0, vialData: newVialData});
-  }
-
-  componentWillUnmount() {
-    this.setState({readProgress: 0});
   }
 
   progress = () => {
@@ -380,7 +378,7 @@ class ODcal extends React.Component {
 
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeValue={this.handleODChange}
           onInputsEntered = {this.state.inputsEntered}

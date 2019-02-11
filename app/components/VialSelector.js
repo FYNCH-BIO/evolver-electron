@@ -52,7 +52,7 @@ class List extends Component {
     return (
       <div style={{width: 560}}>
         <div className="centered">
-          {this.props.items.map(item => (
+          {this.props.items.map((item) => (
             <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
           ))}
         </div>
