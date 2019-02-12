@@ -409,7 +409,7 @@ class ODcal extends React.Component {
         <button
           className="odCalTitles"
           onClick={this.handleKeyboardModal}>
-          <h3 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h3>
+          <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
 

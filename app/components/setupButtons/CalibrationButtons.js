@@ -129,11 +129,11 @@ class CalibrationButtons extends React.Component {
             <button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button>
             <button className={odRawBtn} onClick={this.toggleRawOD}>RAW</button>
           </div>
-          <div className='row centered'>
+          {/*<div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Pump: </Typography>
             <button className='calibrationBtns'>CAL</button>
             <button className='rawCalibrationBtns'>RAW</button>
-          </div>
+          </div>*/}
           <p className='calibrationBtnInstruction'> Change active calibration file or view RAW values.</p>
         </Card>
         <Modal
