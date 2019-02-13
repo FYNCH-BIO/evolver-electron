@@ -38,7 +38,10 @@
 
 .commandbroadcast_log{
   left: 7px;
-  top: 30px;
+  top: 35px;
+  overflow-y: scroll;
+  padding-right: 17px; /* Increase/decrease this value for cross-browser compatibility */
+  box-sizing: content-box;
 }
 
 .calibrationBtnInstruction {
@@ -49,4 +52,5 @@
   left: 0px;
   width: 100%;
   text-align: center;
+  margin-bottom: 0px;
 }

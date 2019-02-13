@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import ODcalInput from './calibrationInputs/CalInputs';
@@ -12,6 +13,8 @@ import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
+import ModalAlert from './calibrationInputs/ModalAlert';
+
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -65,7 +68,11 @@ class ODcal extends React.Component {
       powerLevel: 2125,
       powerLevels: [2125],
       timesRead: 3,
-      experimentName:''
+      experimentName:'',
+      alertOpen: false,
+      alertQuestion: 'Logging Values...',
+      alertAnswers: ['Retry', 'Exit'],
+      exiting: false
     };
     this.props.socket.on('dataresponse', function(response) {
         var newVialData = this.state.vialData;
@@ -105,6 +112,12 @@ class ODcal extends React.Component {
             }
         });
     }.bind(this));
+
+    this.props.socket.on('setcalibrationrawod_callback', function(response) {
+      if (response == 'success'){
+        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+      }
+    }.bind(this));
   }
 
   componentDidMount() {
@@ -117,6 +130,7 @@ class ODcal extends React.Component {
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('dataresponse');
+    this.props.socket.removeAllListeners('setcalibrationrawod_callback');
     this.setState({readProgress: 0});
   }
 
@@ -222,7 +236,7 @@ class ODcal extends React.Component {
       disableBackward = true;
       disableForward = false;
     }
-    if (this.state.currentStep === 15){
+    if (this.state.currentStep === 16){
       disableBackward = false;
       disableForward = true;
     }
@@ -264,15 +278,25 @@ class ODcal extends React.Component {
   }
 
   handleFinishExpt = () => {
-      console.log("Experiment Finished!");
-      var d = new Date();
-      var currentTime = d.getTime();
-      var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
-      this.props.socket.emit('setcalibrationrawod', saveData);
+    this.setState({alertOpen: true})
+    console.log("Experiment Finished!");
+    var d = new Date();
+    var currentTime = d.getTime();
+    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
+    this.props.socket.emit('setcalibrationrawod', saveData);
   }
 
   handleKeyboardModal = () => {
     this.keyboard.current.onOpenModal();
+  }
+
+  onAlertAnswer = (answer) => {
+    if (answer == 'Retry'){
+      this.handleFinishExpt();
+    }
+    if (answer == 'Exit'){
+      this.setState({exiting: true});
+    }
   }
 
   render() {
@@ -376,6 +400,10 @@ class ODcal extends React.Component {
       statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
     }
 
+    if (this.state.exiting) {
+      return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
+    }
+
     return (
       <div>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>
@@ -412,7 +440,11 @@ class ODcal extends React.Component {
           <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
-
+        <ModalAlert
+          alertOpen= {this.state.alertOpen}
+          alertQuestion = {this.state.alertQuestion}
+          alertAnswers = {this.state.alertAnswers}
+          onAlertAnswer = {this.onAlertAnswer}/>
       </div>
 
     );

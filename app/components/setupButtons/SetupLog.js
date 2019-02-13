@@ -17,14 +17,14 @@ const styles = theme =>  ({
     top: '396px',
     left: '40px',
     width: 446,
-    height: 223,
+    height: 228,
     backgroundColor: 'transparent',
     outline: '2px white solid '
   },
   header: {
     display: 'flex',
     height: 5,
-    padding: '5px 0px 0px 10px',
+    padding: '10px 0px 0px 10px',
     backgroundColor: 'black',
   },
   headerText: {
@@ -40,47 +40,109 @@ class SetupLog extends React.Component {
     super(props);
     this.state = {
       loggedText: '',
-      command: this.props.command
+      command: this.props.command,
+      linesLogged: 0,
+      activeODCal:this.props.activeODCal,
+      activeTempCal:this.props.activeTempCal
     };
-    this.props.socket.on('commandbroadcast', function(response) {
-      this.setState({
-        loggedText: 'Response: ' + response['param'] + ' command executed.' + '\n' + this.state.loggedText
-      })
-      }.bind(this))
+    this.props.socket.on('connect', function() {this.addLoggedText('eVOLVER Connected', 'notification')}.bind(this))
+    this.props.socket.on('disconnect', function() {this.addLoggedText('eVOLVER Disconnected', 'notification')}.bind(this))
+
+    this.props.socket.on('commandbroadcast', function(response) {this.addLoggedText(response, 'response')}.bind(this))
+  }
+
+  componentWillUnmount() {
+    this.props.socket.removeAllListeners('connect');
+    this.props.socket.removeAllListeners('disconnect');
+    this.props.socket.removeAllListeners('commandbroadcast');
   }
 
   componentDidMount(){
     if (this.props.socket.connected){
-      this.setState({loggedText: 'eVOLVER Connected \n'})
+      this.addLoggedText('eVOLVER Connected', 'notification')
+    } else {
+      this.addLoggedText('eVOLVER Connection Error', 'notification')
     }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.command !== prevProps.command) {
-      this.addLoggedText(this.props.command);
+      this.addLoggedText(this.props.command, 'command');
       this.setState({ command: this.props.command})
+    }
+    if (this.props.activeODCal !== prevProps.activeODCal) {
+      this.addLoggedText('OD Cal set to ' + this.props.activeODCal, 'notification');
+      this.setState({ activeODCal: this.props.activeODCal})
+    }
+    if (this.props.activeTempCal !== prevProps.activeTempCal) {
+      this.addLoggedText('Temp Cal set to ' + this.props.activeTempCal, 'notification');
+      this.setState({ activeTempCal: this.props.activeTempCal})
     }
   }
 
+  addLoggedText = (data, inputType) => {
+    var outputString;
+    if (inputType == 'command'){
+      outputString = 'Command: ' + data['param'] + ' command sent.'
+    } else if (inputType == 'response'){
+      var triggeredVials = '';
+      var value = '';
+      if (data['param'] == 'pump'){
+        var vials = data.value.vials;
+        for (var i = 0; i < vials.length; i++) {
+          triggeredVials = triggeredVials + vials[i] + ',';
+        }
+        triggeredVials = triggeredVials.slice(0, -1);
 
-  addLoggedText = (command) => {
-    var vials = command['message']
-    var triggeredVials = '';
-    for (var i = 0; i < vials.length; i++) {
-      if (vials[i] !== 'NaN'){
-        triggeredVials = triggeredVials + i + ',';
+        if (data.value.in1){value = value + 'in1, '};
+        if (data.value.in2){value = value + 'in2, '};
+        if (data.value.efflux){value = value + 'efflux, '};
+        if (value == ''){
+          outputString= 'Response: Nothing Changed, no pumps selected'
+        } else {
+          value = value.slice(0, -2);
+          value = value + ' pumps'
+          outputString = 'Response: ' + value + ' ON for ' + data.value.time + 's, vials (' + triggeredVials + ')'
+        }
+      } else {
+        var vials = data['message']
+        for (var i = 0; i < vials.length; i++) {
+          if (vials[i] !== 'NaN'){
+            triggeredVials = triggeredVials + i + ',';
+            if (data['param'] == "temp"){
+              value = data['value'] + '\u00b0C';
+            } else {
+              value = data['value']
+            }
+          }
+        }
+        triggeredVials = triggeredVials.slice(0, -1);
+        outputString = 'Response: Set ' + data['param'] + ' to ' + value + ' for vials (' + triggeredVials + ')'
       }
+
+      if(triggeredVials == ''){
+        outputString= 'Response: Nothing Changed, no vials selected'
+      }
+
+    } else if (inputType == 'notification'){
+      outputString = data;
     }
-    triggeredVials = triggeredVials.slice(0, -1)
+    var linesLogged = this.state.linesLogged +1;
+    var loggedText = linesLogged + '. ' + outputString + '\n' + this.state.loggedText;
+    var maxlength=50000;
+    if (loggedText.length > maxlength) {
+      loggedText = loggedText.substring(0, maxlength)
+    }
     this.setState({
-      loggedText:
-        'Command: Set ' + command['param'] + ' for vials (' + triggeredVials +')\n' + this.state.loggedText
+      loggedText: loggedText,
+      linesLogged: linesLogged
     })
   }
 
   elementFocused = () => {
     console.log(this.props.socket)
   }
+
 
   render() {
     const { classes, theme } = this.props;
@@ -95,11 +157,11 @@ class SetupLog extends React.Component {
             ref="ace"
             className='commandbroadcast_log'
             value= {this.state.loggedText}
-            width='440px'
-            height='182px'
+            width='420px'
+            height='172px'
             mode="elixir"
             theme="terminal"
-            fontSize={14}
+            fontSize={16}
             name="commandbroadcast_log"
             showGutter = {false}
             highlightActiveLine = {false}

@@ -54,9 +54,6 @@ export default class Home extends Component<Props> {
   }
 
   componentDidMount() {
-    console.log(process)
-    console.log(this.socket)
-    console.log(this.logger)
   }
 
   props: Props;

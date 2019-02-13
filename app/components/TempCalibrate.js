@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { Redirect } from 'react-router';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
 import TempcalInput from './calibrationInputs/CalInputs';
@@ -11,6 +12,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
+import ModalAlert from './calibrationInputs/ModalAlert';
+
 
 const styles = {
   cardTempCalGUI: {
@@ -44,14 +47,15 @@ function generateVialLabel (response, oldTempStream, roomTempAvg) {
   var deltaTempStream = Array(16).fill('...');
   var valueInputs = Array(16).fill('...')
   for (var i = 0; i < response.temp.length; i++) {
-    if (roomTempAvg.length !== 0){
+    //  To Not show value during RT reading
+    // if (roomTempAvg.length !== 0){
       tempStream[i] = response.temp[i]
       deltaTempStream[i] = tempStream[i] - oldTempStream[i];
       if (isNaN(deltaTempStream[i])){
         deltaTempStream[i] = "0"
       }
       valueInputs[i] = tempStream[i] + " (" + (deltaTempStream[i]<0?"":"+") + deltaTempStream[i] + ")"
-    }
+    // }
   }
 
   return [tempStream, valueInputs]
@@ -100,8 +104,11 @@ class TempCal extends React.Component {
       slopeEsimate: .02,
       previousLockedTemp: [],
       experimentName:'',
-      readsFinished: 0
-
+      readsFinished: 0,
+      alertOpen: false,
+      alertQuestion: 'Logging Values...',
+      alertAnswers: ['Retry', 'Exit'],
+      exiting: false
     };
     this.props.socket.on('dataresponse', function(response) {
 
@@ -170,12 +177,18 @@ class TempCal extends React.Component {
          })
     }.bind(this));
 
+    this.props.socket.on('setcalibrationrawtemp_callback', function(response) {
+      if (response == 'success'){
+        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+      }
+    }.bind(this));
 
   }
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('dataresponse');
     this.props.socket.removeAllListeners('databroadcast');
+    this.props.socket.removeAllListeners('setcalibrationrawtemp_callback');
     this.setState({readProgress: 0});
   }
 
@@ -364,6 +377,7 @@ class TempCal extends React.Component {
    }
 
    handleFinishExpt = (finishFlag) => {
+      this.setState({alertOpen: true})
       console.log("Experiment Finished!");
       var d = new Date();
       var currentTime = d.getTime();
@@ -373,6 +387,15 @@ class TempCal extends React.Component {
 
    handleKeyboardModal = () => {
      this.keyboard.current.onOpenModal();
+   }
+
+   onAlertAnswer = (answer) => {
+     if (answer == 'Retry'){
+       this.handleFinishExpt();
+     }
+     if (answer == 'Exit'){
+       this.setState({exiting: true});
+     }
    }
 
   render() {
@@ -482,6 +505,10 @@ class TempCal extends React.Component {
       </div>
     }
 
+    if (this.state.exiting) {
+      return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
+    }
+
 
     return (
       <div>
@@ -520,8 +547,11 @@ class TempCal extends React.Component {
           <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
-
-
+        <ModalAlert
+          alertOpen= {this.state.alertOpen}
+          alertQuestion = {this.state.alertQuestion}
+          alertAnswers = {this.state.alertAnswers}
+          onAlertAnswer = {this.onAlertAnswer}/>
 
       </div>
 

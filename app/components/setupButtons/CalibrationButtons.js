@@ -12,7 +12,6 @@ import Modal from 'react-responsive-modal';
 const materialStyles = {
   card: {
     width: 450,
-    height: 200,
     backgroundColor: 'black',
     padding: '0px 0px 0px 25px',
   },

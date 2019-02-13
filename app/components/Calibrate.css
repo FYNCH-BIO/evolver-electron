@@ -333,3 +333,13 @@ ul {
   height: 40px;
   margin: 5px 5px 5px 5px;
 }
+
+.alertBtns {
+  background-color: #f58245;
+  color: black;
+  border: black;
+  margin: 5px 15px 0px 15px;
+}
+ .alertBtnRow {
+   text-align: center;
+ }

@@ -8,3 +8,8 @@
 
 .customOverlay {
 }
+
+.alertModal {
+  background-color: black;
+  border-radius: 20px;
+}
