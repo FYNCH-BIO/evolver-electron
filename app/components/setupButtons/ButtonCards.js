@@ -15,8 +15,14 @@ import TempSlider from './TempSlider'
 import StirSlider from './StirSlider'
 import FluidicsButtons from './FluidicsButtons'
 import LightButtons from './LightButtons'
+import CalibrationButtons from './CalibrationButtons'
+
 
 const tutorialSteps = [
+  {
+    label: 'Active Calibrations',
+    outputTag: 'calibrate'
+  },
   {
     label: 'Stir Rate',
     outputTag: 'stir',
@@ -32,7 +38,7 @@ const tutorialSteps = [
   {
     label: 'Light Input',
     outputTag: 'light',
-  },
+  }
 ];
 
 const styles = theme => ({
@@ -44,7 +50,7 @@ const styles = theme => ({
     alignItems: 'center',
     border: '2px solid white',
     padding: '0px 0px 0px 0px',
-    margin: '60px 0px 0px 0px',
+    margin: '45px 0px 0px 0px',
   },
   header: {
     display: 'flex',
@@ -62,11 +68,11 @@ const styles = theme => ({
   },
   card: {
     width: 440,
-    height: 205,
+    height: 190,
     backgroundColor: 'black',
   },
   cardSpacer: {
-    height: 30,
+    height: 15,
     backgroundColor: 'black',
   },
   stepperStyle: {
@@ -101,13 +107,50 @@ function ActiveButtons(props) {
   if (currentTag == 'light') {
     return <LightButtons onSubmitButton={props.onSubmitButton}/>;
   }
+  if (currentTag == 'calibrate') {
+    return <CalibrationButtons onSelectNewCal={props.onSelectNewCal}  tempCalFiles= {props.tempCalFiles} odCalFiles={props.odCalFiles}activeTempCal={props.activeTempCal} activeODCal={props.activeODCal} showRawTemp= {props.showRawTemp} showRawOD= {props.showRawOD}/>
+  }
   return null;
 }
 
 class SwipeableTextMobileStepper extends React.Component {
-  state = {
-    activeStep: 0,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeStep: 0,
+      activeTempCal: this.props.activeTempCal,
+      activeODCal: this.props.activeODCal,
+      tempCalFiles: this.props.tempCalFiles,
+      odCalFiles: this.props.odCalFiles,
+      showRawTemp: this.props.showRawTemp,
+      showRawOD: this.props.showRawOD
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.activeTempCal !== prevProps.activeTempCal) {
+      this.setState({ activeTempCal: this.props.activeTempCal})
+    }
+    if (this.props.activeODCal !== prevProps.activeODCal) {
+      this.setState({ activeODCal: this.props.activeODCal})
+    }
+    if (this.props.tempCalFiles !== prevProps.tempCalFiles) {
+      this.setState({ tempCalFiles: this.props.tempCalFiles})
+    }
+    if (this.props.odCalFiles !== prevProps.odCalFiles) {
+      this.setState({ odCalFiles: this.props.odCalFiles})
+    }
+    if (this.props.showRawOD !== prevProps.showRawOD) {
+      this.setState({ showRawOD: this.props.showRawOD})
+    }
+    if (this.props.showRawTemp !== prevProps.showRawTemp) {
+      this.setState({ showRawTemp: this.props.showRawTemp})
+    }
+  }
+
+  updateNewCal = (newCal) =>{
+    console.log(newCal)
+  }
 
   handleNext = () => {
     this.setState(prevState => ({
@@ -123,7 +166,7 @@ class SwipeableTextMobileStepper extends React.Component {
 
   handleStepChange = activeStep => {
     this.setState({ activeStep });
-  };
+  }
 
   render() {
     const { classes, theme } = this.props;
@@ -149,8 +192,17 @@ class SwipeableTextMobileStepper extends React.Component {
             {tutorialSteps.map((step, index) => (
               <Card key={step.label} className={classes.card}>
                   {Math.abs(activeStep - index) <= 2 ? (
-                    <ActiveButtons currentButtons={activeStep}
-                    currentTag={tutorialSteps[activeStep].outputTag} onSubmitButton={this.props.onSubmitButton}/>
+                    <ActiveButtons
+                      currentButtons={activeStep}
+                      activeTempCal={this.state.activeTempCal}
+                      activeODCal={this.state.activeODCal}
+                      tempCalFiles= {this.state.tempCalFiles}
+                      odCalFiles={this.state.odCalFiles}
+                      showRawTemp= {this.state.showRawTemp}
+                      showRawOD= {this.state.showRawOD}
+                      currentTag={tutorialSteps[activeStep].outputTag}
+                      onSubmitButton={this.props.onSubmitButton}
+                      onSelectNewCal = {this.props.onSelectNewCal}/>
                   ) : null}
               </Card>
           ))}

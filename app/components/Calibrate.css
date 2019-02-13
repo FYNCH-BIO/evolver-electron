@@ -29,7 +29,7 @@ label {
   color: white;
 }
 
-.numClearButton{
+.numClearButton {
   height: 100%;
   background-color: transparent;
   width: 80px;
@@ -37,43 +37,43 @@ label {
   margin-top: 0px;
   padding-left: 8px;
   font-size: 35px;
-  border: none
+  border: none;
 }
 
 .numPadInput {
   font-weight: normal;
 }
 
-.numPadPosition{
+.numPadPosition {
   position: absolute;
   min-height: 100vh;
   min-width: 100vw;
   text-align: center;
 }
 
-.numPadButton{
+.numPadButton {
   margin: 2px 2px 2px 2px;
   font-size: 35px;
   width: 32%;
   height: 25%;
-  border: none
+  border: none;
 }
 
-.testText{
+.testText {
   position: absolute;
   margin: 400px 2px 2px 300px;
   color: blue;
 }
 
-.blurBackground{
+.blurBackground {
   position: absolute;
   min-height: 100vh;
   min-width: 100vw;
-  opacity: .5;
+  opacity: 0.5;
   background-color: white;
 }
 
-.numAdvanceLeft{
+.numAdvanceLeft {
   margin: 230px 0px 0px -160px;
   position: absolute;
   border: 2px solid white;
@@ -84,11 +84,10 @@ label {
   border: 2px solid white;
 }
 
-.numAdvanceRight{
+.numAdvanceRight {
   margin: 230px 0px 0px 500px;
   position: absolute;
   border: 2px solid white;
-
 }
 
 .numAdvanceRight:hover {
@@ -96,21 +95,21 @@ label {
   border: 2px solid white;
 }
 
-.calInputBtns{
+.calInputBtns {
   width: 120px;
   height: 45px;
   background-color: white;
   color: black;
 }
 
-.calInputBtns:disabled{
+.calInputBtns:disabled {
   width: 120px;
   height: 45px;
   background-color: #1e1a1b;
   color: white;
 }
 
-.calInputColumns{
+.calInputColumns {
   column-count: 2;
   column-gap: 60px;
   width: 400px;
@@ -118,14 +117,14 @@ label {
   position: absolute;
 }
 
-.calInputName{
+.calInputName {
   padding: 8px 12px 0px 0px;
   width: 70px;
 }
 
-.odCalTitles{
+.odCalTitles {
   position: absolute;
-  margin: 25px 0px 0px 105px;
+  margin: 27px 0px 0px 105px;
   font-weight: bold;
   width: 360px;
   text-align: left;
@@ -142,7 +141,6 @@ label {
   margin: 25.5px 30px 25.5px 21px;
   color: black;
   text-align: center;
-
 }
 
 .vialDensity {
@@ -228,7 +226,6 @@ ul {
   border: none;
 }
 
-
 .odBackBtn {
   position: absolute;
   margin: 540px 0px 0px 63px;
@@ -267,9 +264,9 @@ ul {
   font-size: 22px;
 }
 
-.readStopBtn{
+.readStopBtn {
   position: absolute;
-  margin: 18px 0px 0px -33px
+  margin: 18px 0px 0px -33px;
 }
 
 .tempAdvanceBtn {
@@ -286,7 +283,6 @@ ul {
   background-color: black;
   border: none;
 }
-
 
 .tempBackBtn {
   position: absolute;
@@ -315,3 +311,45 @@ ul {
   font-size: 14px;
   margin: 615px 0px 0px 118px;
 }
+
+.calibrationBtns {
+  margin: 0px 10px 20px 5px;
+  width: 205px;
+  height: 40px;
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.rawCalibrationBtns {
+  margin: 0px 10px 20px 5px;
+  width: 90px;
+  height: 40px;
+  font-size: 16px;
+}
+
+.rawCalibrationBtnsPushed {
+  margin: 0px 10px 20px 5px;
+  width: 90px;
+  height: 40px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 3px solid #f58245;
+  color: #f58245;
+}
+
+.activeCalSelection {
+  font-size: 16px;
+  width: 200px;
+  height: 40px;
+  margin: 5px 5px 5px 5px;
+}
+
+.alertBtns {
+  background-color: #f58245;
+  color: black;
+  border: black;
+  margin: 5px 15px 0px 15px;
+}
+ .alertBtnRow {
+   text-align: center;
+ }

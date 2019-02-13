@@ -66,7 +66,7 @@ body {
 .backCalibrateBtn {
   background-color: black;
   position: absolute;
-  margin: 2px 0px 0px -220px;
+  margin: -10px 0px 0px -220px;
   border: none;
   font-size: 30px;
 }

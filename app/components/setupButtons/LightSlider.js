@@ -7,7 +7,7 @@ import Card from '@material-ui/core/Card';
 const styles = {
   root: {
     alignItems: 'center',
-    margin: '50px 20px 0px 50px',
+    margin: '40px 20px 0px 50px',
     width: '350px'
   },
   track: {

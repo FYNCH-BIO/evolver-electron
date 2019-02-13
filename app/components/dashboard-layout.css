@@ -22,7 +22,7 @@
 }
 
 .buttons-dashboard {
-  margin-left: 45px;
+  margin-left: 38px;
   margin-top: 25px;
 }
 
@@ -32,6 +32,25 @@
 
 .dashboardTitles {
   position: absolute;
-  margin: 10px 0px 0px 55px;
+  margin: 0px 0px 0px 55px;
   font-weight: bold;
+}
+
+.commandbroadcast_log{
+  left: 7px;
+  top: 35px;
+  overflow-y: scroll;
+  padding-right: 17px; /* Increase/decrease this value for cross-browser compatibility */
+  box-sizing: content-box;
+}
+
+.calibrationBtnInstruction {
+  font-size: 16px;
+  font-style: italic;
+  position: absolute;
+  top: 155px;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0px;
 }
