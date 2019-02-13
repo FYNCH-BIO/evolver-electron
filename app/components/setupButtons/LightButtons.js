@@ -8,6 +8,7 @@ import Card from '@material-ui/core/Card';
 
 const styles = {
   root: {
+    marginTop: -20,
     height: 17,
     width: 100,
   },
@@ -33,7 +34,7 @@ const styles = {
   label: {
     color: 'white',
     fontSize: '18px',
-    margin: '30px 0px 0px 0px',
+    margin: '10px 0px 0px 0px',
   },
   labelPlacementStart: {
     margin: '0px 0px 0px 0px',

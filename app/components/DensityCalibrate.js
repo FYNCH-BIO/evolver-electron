@@ -1,6 +1,7 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import ODcalInput from './calibrationInputs/CalInputs';
@@ -12,6 +13,8 @@ import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
+import ModalAlert from './calibrationInputs/ModalAlert';
+
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -65,7 +68,11 @@ class ODcal extends React.Component {
       powerLevel: 2125,
       powerLevels: [2125],
       timesRead: 3,
-      experimentName:''
+      experimentName:'',
+      alertOpen: false,
+      alertQuestion: 'Logging Values...',
+      alertAnswers: ['Retry', 'Exit'],
+      exiting: false
     };
     this.props.socket.on('dataresponse', function(response) {
         var newVialData = this.state.vialData;
@@ -74,21 +81,21 @@ class ODcal extends React.Component {
             return;
         }
         this.progress();
-        for (var i = 0; i < response.OD.length; i++) {
-            if (newVialData[newVialData.length - 1].OD.length <= i) {
-                newVialData[newVialData.length - 1].OD.push([]);
+        for (var i = 0; i < response.od.length; i++) {
+            if (newVialData[newVialData.length - 1].od.length <= i) {
+                newVialData[newVialData.length - 1].od.push([]);
                 newVialData[newVialData.length - 1].temp.push([]);
             }
-            newVialData[newVialData.length - 1].OD[i].push(response.OD[i]);
+            newVialData[newVialData.length - 1].od[i].push(response.od[i]);
             newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
         }
         this.setState({vialData: newVialData}, function() {
 
-            if (this.state.vialData[newVialData.length - 1].OD[0].length === this.state.timesRead) {
+            if (this.state.vialData[newVialData.length - 1].od[0].length === this.state.timesRead) {
                 if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
                     newVialData = this.state.vialData;
                     var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
-                    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
+                    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
                     this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
                         this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
                     }.bind(this));
@@ -105,15 +112,27 @@ class ODcal extends React.Component {
             }
         });
     }.bind(this));
+
+    this.props.socket.on('setcalibrationrawod_callback', function(response) {
+      if (response == 'success'){
+        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+      }
+    }.bind(this));
   }
 
   componentDidMount() {
+    this.props.logger.info('Routed to Density Calibration Page.')
     this.keyboard.current.onOpenModal();
     this.setState({
       vialOpacities: Array(16).fill(0),
       })
-
   };
+
+  componentWillUnmount() {
+    this.props.socket.removeAllListeners('dataresponse');
+    this.props.socket.removeAllListeners('setcalibrationrawod_callback');
+    this.setState({readProgress: 0});
+  }
 
 
   startRead = () => {
@@ -128,7 +147,7 @@ class ODcal extends React.Component {
         }
     }
 
-    newVialData.push({OD:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
+    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
     this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
     this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
   }
@@ -144,10 +163,6 @@ class ODcal extends React.Component {
         }
     }
     this.setState({readProgress: 0, vialData: newVialData});
-  }
-
-  componentWillUnmount() {
-    this.setState({readProgress: 0});
   }
 
   progress = () => {
@@ -221,7 +236,7 @@ class ODcal extends React.Component {
       disableBackward = true;
       disableForward = false;
     }
-    if (this.state.currentStep === 15){
+    if (this.state.currentStep === 16){
       disableBackward = false;
       disableForward = true;
     }
@@ -263,15 +278,25 @@ class ODcal extends React.Component {
   }
 
   handleFinishExpt = () => {
-      console.log("Experiment Finished!");
-      var d = new Date();
-      var currentTime = d.getTime();
-      var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
-      this.props.socket.emit('setcalibrationrawod', saveData);
+    this.setState({alertOpen: true})
+    console.log("Experiment Finished!");
+    var d = new Date();
+    var currentTime = d.getTime();
+    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
+    this.props.socket.emit('setcalibrationrawod', saveData);
   }
 
   handleKeyboardModal = () => {
     this.keyboard.current.onOpenModal();
+  }
+
+  onAlertAnswer = (answer) => {
+    if (answer == 'Retry'){
+      this.handleFinishExpt();
+    }
+    if (answer == 'Exit'){
+      this.setState({exiting: true});
+    }
   }
 
   render() {
@@ -287,8 +312,8 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].OD[0]) != "undefined")) {
-          if (this.state.vialData[i].OD[0].length === this.state.timesRead){
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].od[0]) != "undefined")) {
+          if (this.state.vialData[i].od[0].length === this.state.timesRead){
 
               measureButton =
               <button
@@ -375,9 +400,13 @@ class ODcal extends React.Component {
       statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
     }
 
+    if (this.state.exiting) {
+      return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
+    }
+
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket}}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>
         <ODcalInput
           onChangeValue={this.handleODChange}
           onInputsEntered = {this.state.inputsEntered}
@@ -408,10 +437,14 @@ class ODcal extends React.Component {
         <button
           className="odCalTitles"
           onClick={this.handleKeyboardModal}>
-          <h3 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h3>
+          <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
-
+        <ModalAlert
+          alertOpen= {this.state.alertOpen}
+          alertQuestion = {this.state.alertQuestion}
+          alertAnswers = {this.state.alertAnswers}
+          onAlertAnswer = {this.onAlertAnswer}/>
       </div>
 
     );

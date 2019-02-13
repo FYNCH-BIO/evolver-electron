@@ -13,7 +13,6 @@ function isDisabled(currentVial) {
 
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
-  console.log(numberSelected)
   if (numberSelected == 0) {
     return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
   }
@@ -38,8 +37,8 @@ const Label = ({ selecting, selected, vial, od, temp}) => (
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="temp-label">{`${temp}`} &deg;C</span><br/>
-    <span className="OD-label">OD: {`${od}`}</span>
+    <span className="temp-label">{`${temp}`}</span><br/>
+    <span className="OD-label">{`${od}`}</span>
     <br />
   </div>
 )
@@ -53,7 +52,7 @@ class List extends Component {
     return (
       <div style={{width: 560}}>
         <div className="centered">
-          {this.props.items.map(item => (
+          {this.props.items.map((item) => (
             <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
           ))}
         </div>

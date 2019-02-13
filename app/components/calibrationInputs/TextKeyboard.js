@@ -9,7 +9,8 @@ class TextKeyboard extends React.Component {
   state = {
     open: false,
     layoutName: "default",
-    input: ""
+    input: "",
+    finalInput: ""
   };
 
   onOpenModal = () => {
@@ -26,7 +27,6 @@ class TextKeyboard extends React.Component {
     this.setState({
       input: input
     });
-    this.props.onKeyboardInput(input)
   };
 
   onKeyPress = button => {
