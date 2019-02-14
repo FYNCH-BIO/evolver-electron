@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import io from 'socket.io-client'
-import GitLogin from './git-connections/GitLogin'
 import log4js from 'log4js';
 import ConfigModal from './evolverConfigs/ConfigModal'
 var fs = require('fs');
@@ -128,8 +127,6 @@ export default class Home extends Component<Props> {
         <div className='homeConfigBtn'>
           <ConfigModal socket= {this.socket} isPi= {this.state.isPi}/>
         </div>
-
-        <GitLogin/>
       </div>
     );
   }
