@@ -110,7 +110,7 @@ class CalInput extends React.Component {
           onClose={this.onCloseModal}
           center
           classNames={{
-             closeButton: styles.customcloseButton,
+             closeButton: styles.calInputCloseBtn,
              modal: styles.customModal,
              overlay: styles.customOverlay,
            }}>

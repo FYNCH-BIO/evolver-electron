@@ -10,6 +10,8 @@
 @import './components/Calibrate.css';
 @import './components/calibrationInputs/TextKeyboard.css';
 @import '~react-simple-keyboard/build/css/index.css';
+@import './components/evolverConfigs/evolver-configs.css';
+
 
 body {
   position: relative;

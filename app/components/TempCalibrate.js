@@ -476,7 +476,7 @@ class TempCal extends React.Component {
           className="tempAdvanceBtn"
           disabled={this.state.disableForward}
           onClick={this.handleAdvance}>
-          <FaArrowRight/>
+          {this.state.buttonAdvanceText} <FaArrowRight size={13}/>
         </button>
     }
 
