@@ -58,7 +58,7 @@ class ModalAlert extends React.Component {
           onClose={this.onCloseModal}
           center
           classNames={{
-             closeButton: styles.customcloseButton,
+             closeButton: styles.alertCloseButton,
              modal: styles.alertModal,
              overlay: styles.customOverlay,
            }}>
