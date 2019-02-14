@@ -1,0 +1,24 @@
+.openConfigBtn {
+  background-color: transparent;
+  width: auto;
+  height: auto;
+  padding: 0px 10px 0px 10px;
+  border: 1px solid white;
+}
+
+.homeConfigBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.openConfigTxt {
+  font-size: 14px;
+  padding: 2px;
+}
+
+.customcloseButton {
+  width: 30px;
+  height: 30px;
+  color: white;
+}

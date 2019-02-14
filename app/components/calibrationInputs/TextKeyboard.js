@@ -64,7 +64,7 @@ class TextKeyboard extends React.Component {
           onClose={this.onCloseModal}
           center
           classNames={{
-             closeButton: styles.customcloseButton,
+             closeButton: styles.keyboardcloseButton,
              modal: styles.customModal,
              overlay: styles.customOverlay,
            }}>
