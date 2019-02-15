@@ -108,7 +108,9 @@ class TempCal extends React.Component {
       alertOpen: false,
       alertQuestion: 'Logging Values...',
       alertAnswers: ['Retry', 'Exit'],
-      exiting: false
+      exiting: false,
+      keyboardPrompt: "Please Enter Name of Calibration File"
+
     };
     this.props.socket.on('dataresponse', function(response) {
 
@@ -546,7 +548,7 @@ class TempCal extends React.Component {
           onClick={this.handleKeyboardModal}>
           <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
-        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertQuestion}

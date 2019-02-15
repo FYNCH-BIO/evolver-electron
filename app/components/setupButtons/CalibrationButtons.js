@@ -140,9 +140,9 @@ class CalibrationButtons extends React.Component {
           onClose={this.onCloseModal}
           center
           classNames={{
-             closeButton: styles.customcloseButton,
-             modal: styles.customModal,
-             overlay: styles.customOverlay,
+             closeButton: styles.calibrationCloseButton,
+             modal: styles.calibrationModal,
+             overlay: styles.calibrationOverlay,
            }}>
 
            {this.state.modalFiles.map((modalFiles, index) => (

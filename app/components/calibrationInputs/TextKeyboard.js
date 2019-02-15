@@ -3,14 +3,17 @@ import { render } from "react-dom";
 import Keyboard from "react-simple-keyboard";
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
-import {FaPen } from 'react-icons/fa';
+import {FaPen} from 'react-icons/fa';
+import KeyboardEventHandler from 'react-keyboard-event-handler';
+
 
 class TextKeyboard extends React.Component {
   state = {
     open: false,
     layoutName: "default",
     input: "",
-    finalInput: ""
+    finalInput: "",
+    keyboardPrompt: this.props.keyboardPrompt
   };
 
   onOpenModal = () => {
@@ -69,7 +72,7 @@ class TextKeyboard extends React.Component {
              overlay: styles.customOverlay,
            }}>
             <h3 style={{textAlign: 'center', margin: '0px 0px 15px 0px'}}>
-            Please Enter Name of Calibration File
+            {this.state.keyboardPrompt}
             </h3>
             <input
               autoFocus

@@ -81,7 +81,7 @@ export default class Home extends Component<Props> {
         if (isPi()){
           this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
         } else {
-          this.socket = io.connect("http://192.168.1.4:8081/dpu-evolver", {reconnect:true});
+          this.socket = io.connect("http://192.168.1.20:8081/dpu-evolver", {reconnect:true});
         }
         this.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
