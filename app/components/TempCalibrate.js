@@ -109,7 +109,7 @@ class TempCal extends React.Component {
       alertQuestion: 'Logging Values...',
       alertAnswers: ['Retry', 'Exit'],
       exiting: false,
-      keyboardPrompt: "Please Enter Name of Calibration File"
+      keyboardPrompt: "Enter File Name or press ESC to autogenerate."
 
     };
     this.props.socket.on('dataresponse', function(response) {

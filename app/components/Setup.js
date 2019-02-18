@@ -85,7 +85,6 @@ export default class Setup extends Component<Props> {
 
   componentDidMount() {
     this.props.logger.info('Routed to Setup Page.')
-    this.props.socket.emit('pingdata', {});
     var initialData = this.state.rawVialData;
     initialData = this.handleRawToCal(initialData);
     initialData = this.formatVialSelectStrings(initialData, 'od');

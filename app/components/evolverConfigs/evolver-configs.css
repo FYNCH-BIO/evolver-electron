@@ -8,8 +8,8 @@
 
 .homeConfigBtn {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 30px;
+  right: 230px;
 }
 
 .openConfigTxt{
@@ -30,4 +30,103 @@
   top: 50px;
   right: 10px;
   padding: 5px;
+}
+
+.selectEvolver{
+  width: 300px;
+  left: 200px;
+  background-color: black;
+  font-size: 20px;
+}
+
+.selectEvolver__control{
+  color: orange;
+  font-size: 20px;
+  border: none !important;
+}
+
+.selectEvolver__menu{
+  color: orange;
+  font-size: 16px;
+}
+
+.selectEvolver__menu-list{
+  background-color: black;
+  border: 2px solid white;
+  border-radius: 5px;
+}
+
+.selectEvolver__input{
+  color: white;
+  margin: 0px 0px 0px 13px;
+  text-align: left;
+}
+
+.selectEvolver__placeholder{
+  color: white;
+  opacity: 1;
+}
+
+
+.selectEvolver__value-container{
+  background-color: black;
+  height: 50px;
+  color: white;
+}
+
+.selectEvolver__indicators {
+  background-color: black;
+  margin-left: -4px;
+}
+
+.selectEvolver__single-value{
+  color: white !important;
+}
+
+.selectEvolver__option{
+  height: 35px;
+}
+
+.selectEvolver__placeholder{
+  color: white !important;
+  margin-left: 27px !important;
+}
+
+.registerEvolverBtn{
+  width: 50px;
+  height: 50px;
+  border-radius: 35px;
+  background-color: #f58245;
+  opacity: 1;
+  border: none;
+  position: absolute;
+  right:-200px;
+  bottom: -540px;
+}
+
+.registerEvolverInput{
+  width: 440px;
+  height: 40px;
+  position: absolute;
+  margin: -2px 0px 0px 190px;
+  text-align: left;
+  background-color: black;
+  color: white;
+  border: 2px solid white;
+}
+
+.registerEvolverInput:focus{
+  outline: none;
+}
+
+.registerEvolverContainer{
+  position: absolute;
+  width: 400px;
+  margin: 15px 0px 0px 0px;
+}
+
+.registerEvolverSubmit{
+  background-color: #f58245;
+  border: none;
+  height: 40px;
 }

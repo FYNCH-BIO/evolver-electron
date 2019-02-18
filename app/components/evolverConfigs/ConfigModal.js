@@ -4,10 +4,11 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Modal from 'react-responsive-modal';
 import styles from './config-modal.css';
-import {FaCircle} from 'react-icons/fa';
+import {FaCircle, FaPlus} from 'react-icons/fa';
 var fs = require('fs');
 import RpiConfig from './RpiConfig'
 import DesktopConfig from './DesktopConfig'
+import EvolverSelect from './EvolverSelect'
 
 const Store = require('electron-store');
 const store = new Store();
@@ -16,21 +17,16 @@ class ConfigModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
+      open: true,
       connected: false,
       activeEvolver: 'loading...',
-      isPi: true//this.props.isPi
+      isPi: this.props.isPi
     };
-    this.props.socket.on('connect', function () {
-      this.setState({connected: true})
-      }.bind(this))
-    this.props.socket.on('disconnect', function () {
-      this.setState({connected: false})
-      }.bind(this))
     this.props.socket.on('broadcastname', function(response) {
         if(this.state.isPi){
           store.set('deviceName', response.deviceName)
-          this.setState({activeEvolver: response.deviceName})
+          this.setState({activeEvolver: response.deviceName}, () => {
+            console.log('Updated name to: ',this.state.activeEvolver)})
         } else {
           //LOOK UP FROM TABLE
         }
@@ -56,8 +52,6 @@ class ConfigModal extends React.Component {
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('broadcastname');
-    this.props.socket.removeAllListeners('connect');
-    this.props.socket.removeAllListeners('disconnect');
   }
 
   onOpenModal = () => {
@@ -85,19 +79,31 @@ class ConfigModal extends React.Component {
           <span style={{fontWeight:'normal'}}> {this.state.activeEvolver}</span>
           <span className= 'openConfigTxt'>  {arrow}</span>
         </button>
-    } else if (this.state.connected){
-      activeBtnLabel =
-        <button className= 'openConfigBtn' onClick={() => this.onOpenModal()} >
-          <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#32CD32'}}/> {this.state.activeEvolver}
-          <span className= 'openConfigTxt'>  {arrow}</span>
-        </button>
     } else {
       activeBtnLabel =
-        <button className= 'openConfigBtn' onClick={() => this.onOpenModal()}>
-          <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#DC143C'}}/> {this.state.activeEvolver}
-          <span className= 'openConfigTxt'>  {arrow}</span>
-        </button>
+        <EvolverSelect />
     }
+
+    // if (this.state.isPi){
+    //   activeBtnLabel =
+    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()} >
+    //       <span style={{fontWeight:'bold', fontSize: '24px'}}>MY NAME IS: </span>
+    //       <span style={{fontWeight:'normal'}}> {this.state.activeEvolver}</span>
+    //       <span className= 'openConfigTxt'>  {arrow}</span>
+    //     </button>
+    // } else if (this.state.connected){
+    //   activeBtnLabel =
+    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()} >
+    //       <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#32CD32'}}/> {this.state.activeEvolver}
+    //       <span className= 'openConfigTxt'>  {arrow}</span>
+    //     </button>
+    // } else {
+    //   activeBtnLabel =
+    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()}>
+    //       <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#DC143C'}}/> {this.state.activeEvolver}
+    //       <span className= 'openConfigTxt'>  {arrow}</span>
+    //     </button>
+    // }
 
     let configForm;
     if (this.state.isPi){
@@ -117,10 +123,11 @@ class ConfigModal extends React.Component {
              modal: styles.configModal,
              overlay: styles.customOverlay,
            }}>
-
            {configForm}
-
         </Modal>
+        <button className= 'registerEvolverBtn' onClick={() => this.onOpenModal()} >
+          <FaPlus size={24} style={{color:'#ffd9b2', margin:'0px 0px 2px 0px'}}/>
+        </button>
       </div>
 
     );
