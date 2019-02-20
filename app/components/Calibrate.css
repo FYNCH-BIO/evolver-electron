@@ -1,14 +1,4 @@
-.ODcalInput input {
-  height: 50px;
-  width: 130px;
-  border-radius: 6px;
-  padding: 0px 5px 0px 5px;
-  margin: 0px 10px 0px 10px;
-  font-size: 20px;
-  text-align: center;
-}
-
-.TempcalInput input {
+input {
   height: 50px;
   width: 130px;
   border-radius: 6px;
@@ -345,6 +335,6 @@ ul {
   border: black;
   margin: 5px 15px 0px 15px;
 }
-.alertBtnRow {
-  text-align: center;
-}
+ .alertBtnRow {
+   text-align: center;
+ }
