@@ -10,7 +10,7 @@
  *
  * @flow
  */
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu } from 'electron';
 import MenuBuilder from './menu';
 
 let mainWindow = null;
@@ -42,13 +42,23 @@ const installExtensions = async () => {
 
 
 function createWindow () {
+  var position = []
+  if (mainWindow) {
+    position = mainWindow.getPosition()
+  }
+  else {
+    position = [0,0]
+  }
   mainWindow = new BrowserWindow({
     show: false,
     width: 1110,
     height: 666,
     backgroundColor: '#F7F7F7',
     minWidth: 1110,
-    minHeight: 666
+    minHeight: 100,
+    x: position[0]+20,
+    y: position[1]+20,
+    resizable: false
 
   });
   if (process.env.START_FULLSCREEN) {
@@ -74,10 +84,26 @@ function createWindow () {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    app.quit();
   });
 
-  // const menuBuilder = new MenuBuilder(mainWindow);
-  // menuBuilder.buildMenu();
+  mainWindow.on('close', function(e){
+   var choice = require('electron').dialog.showMessageBox(this,
+       {
+         type: 'question',
+         buttons: ['Yes', 'No'],
+         title: 'Confirm',
+         message: 'Are you sure you want to quit? Any running scripts will be terminated.'
+      });
+      if(choice == 1){
+        e.preventDefault();
+      }
+   });
+
+  const menuBuilder = new MenuBuilder(mainWindow);
+  const template = menuBuilder.buildMenu();
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
 }
 
 
@@ -86,11 +112,7 @@ function createWindow () {
  */
 
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('ready', async () => {
@@ -108,4 +130,8 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
+});
+
+app.setAboutPanelOptions({
+  copyright: "Copyright © 2019 Fynch Biosciences Inc."
 });
