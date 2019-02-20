@@ -8,12 +8,10 @@
 @import './components/dashboard-layout.css';
 @import '~@fortawesome/fontawesome-free/css/all.css';
 @import './components/Calibrate.css';
-@import '~react-table/react-table.css';
-@import './components/ExptManager.css';
 @import './components/calibrationInputs/TextKeyboard.css';
-@import './components/git-connections/git-styling.css';
 @import '~react-simple-keyboard/build/css/index.css';
 @import './components/evolverConfigs/evolver-configs.css';
+
 
 body {
   position: relative;

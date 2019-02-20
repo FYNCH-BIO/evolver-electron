@@ -1,13 +1,13 @@
 {
-  "name": "eVOLVER",
-  "productName": "eVOLVER-App",
+  "name": "electron-react-boilerplate",
+  "productName": "electron-react-boilerplate",
   "version": "1.0.0",
-  "description": "Application for control of eVOLVER",
+  "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "main": "./main.prod.js",
   "author": {
-    "name": "Fynch Biosciences Inc.",
-    "email": "brandon@fynchbio.com",
-    "url": "https://fynchbio.com"
+    "name": "C. T. Lin",
+    "email": "chentsulin@gmail.com",
+    "url": "https://github.com/chentsulin"
   },
   "scripts": {
     "electron-rebuild": "node -r babel-register ../internals/scripts/ElectronRebuild.js",

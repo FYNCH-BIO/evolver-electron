@@ -131,7 +131,7 @@ export default class Home extends Component<Props> {
             <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
             {/*<Link to={routes.GRAPHING}><button className = "btn btn-lg homeButtons">VISUALIZATION</button></Link>
             */}
-            <Link to={routes.EXPTMANAGER}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
+
         </div>
         <div className='homeConfigBtn'>
           <ConfigModal socket= {this.state.socket} isPi= {this.state.isPi}  onSelectEvolver={this.handleSelectEvolver}/>
