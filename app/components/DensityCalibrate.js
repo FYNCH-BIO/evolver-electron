@@ -14,7 +14,8 @@ import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
-
+const Store = require('electron-store');
+const store = new Store(); //runningODCal
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -73,6 +74,9 @@ class ODcal extends React.Component {
       alertQuestion: 'Logging Values...',
       alertAnswers: ['Retry', 'Exit'],
       exiting: false,
+      resumeOpen: false,
+      resumeQuestion: 'Start new calibration or resume?',
+      resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate."
     };
     this.props.socket.on('dataresponse', function(response) {
@@ -105,7 +109,13 @@ class ODcal extends React.Component {
                     console.log(this.state.vialData);
                     this.handleUnlockBtns();
                     var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
-                    this.setState({progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)), readsFinished: readsFinished, readProgress: 0});
+                    this.setState({
+                      progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)),
+                      readsFinished: readsFinished,
+                      readProgress: 0},
+                      function() {
+                        store.set('runningODCal', this.state)
+                      }); //callback
                 }
             }
             else {
@@ -123,7 +133,11 @@ class ODcal extends React.Component {
 
   componentDidMount() {
     this.props.logger.info('Routed to Density Calibration Page.')
-    this.keyboard.current.onOpenModal();
+    if (store.has('runningODCal')){
+      this.setState({resumeOpen:true})
+    } else {
+      this.keyboard.current.onOpenModal();
+    }
     this.setState({
       vialOpacities: Array(16).fill(0),
       })
@@ -296,8 +310,21 @@ class ODcal extends React.Component {
       this.handleFinishExpt();
     }
     if (answer == 'Exit'){
+      store.delete('runningODCal');
       this.setState({exiting: true});
     }
+  }
+
+  onResumeAnswer = (answer) => {
+    if (answer == 'New'){
+      this.keyboard.current.onOpenModal();
+      store.delete('runningODCal');
+    }
+    if (answer == 'Resume'){
+      var previousState = store.get('runningODCal');
+      this.setState(previousState);
+    }
+    this.setState({resumeOpen:false})
   }
 
   render() {
@@ -446,6 +473,11 @@ class ODcal extends React.Component {
           alertQuestion = {this.state.alertQuestion}
           alertAnswers = {this.state.alertAnswers}
           onAlertAnswer = {this.onAlertAnswer}/>
+        <ModalAlert
+          alertOpen= {this.state.resumeOpen}
+          alertQuestion = {this.state.resumeQuestion}
+          alertAnswers = {this.state.resumeAnswers}
+          onAlertAnswer = {this.onResumeAnswer}/>
       </div>
 
     );

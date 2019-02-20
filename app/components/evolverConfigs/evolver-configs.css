@@ -4,6 +4,7 @@
   height: auto;
   padding: 7px 10px 5px 10px;
   border: 1px solid white;
+  right: -200px;
 }
 
 .homeConfigBtn {
@@ -33,7 +34,7 @@
 }
 
 .selectEvolver{
-  width: 300px;
+  width: 400px;
   left: 200px;
   background-color: black;
   font-size: 20px;
@@ -129,4 +130,18 @@
   background-color: #f58245;
   border: none;
   height: 40px;
+  color: black;
+  width:130px;
+}
+
+.logEvolverRegistration{
+  position: absolute;
+  right: -130px;
+  bottom: 90px;
+  width: auto;
+  height: auto;
+  font-size: 40px;
+  padding: 30px 40px 30px 40px;
+  background-color: #f58245;
+  color: black;
 }

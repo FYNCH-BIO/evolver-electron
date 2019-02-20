@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Select from 'react-select';
 import Typography from '@material-ui/core/Typography';
+const Store = require('electron-store');
+const store = new Store();
 
 const isPortReachable = require('is-port-reachable');
 
@@ -15,21 +17,6 @@ const styles = theme => ({
     fontWeight: 'bold',
   }
 })
-
-const options = [
-  { value: '192.168.1.2', label: 'Darwin (192.168.1.2)',  statusColor: '#DC143C'  },
-  { value: '192.168.1.27', label: 'Mendel (192.168.1.27)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.4', label: 'Bernoulli (192.168.1.4)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.201', label: 'Darwin-2 (192.168.1.201)' ,  statusColor: '#DC143C'  },
-  { value: '192.168.1.21', label: 'Mendel-2 (192.168.1.21)' ,  statusColor: '#DC143C'  },
-  { value: '192.168.1.41', label: 'Bernoulli-2 (192.168.1.41)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.202', label: 'Darwin-3 (192.168.1.202)' ,  statusColor: '#DC143C'  },
-  { value: '192.168.1.22', label: 'Mendel-3 (192.168.1.22)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.42', label: 'Bernoulli-3 (192.168.1.42)' ,  statusColor: '#DC143C'  },
-  { value: '192.168.1.203', label: 'Darwin-4 (192.168.1.203)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.20', label: 'Mendel-4 (192.168.1.20)',  statusColor: '#DC143C'   },
-  { value: '192.168.1.43', label: 'Bernoulli-4 (192.168.1.43)',  statusColor: '#DC143C'   }
-];
 
 const customStyles = {
   control: (base, state) => ({
@@ -78,30 +65,44 @@ const dot = (color = "#ccc") => ({
 
 
 class EvolverSelect extends React.Component {
+  _isMounted = false;
+
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: options[2],
-      registeredEvolvers: options
+      selectedOption: null,
+      registeredEvolvers: []
     };
   }
 
   componentDidMount () {
+    this.props.onRef(this)
+    this._isMounted = true;
     var scanTimer = setInterval(this.scanEvolvers, 1000);
-    this.setState({scanTimer: scanTimer});
+    var selectedOption = this.state.selectedOption;
+    var registeredEvolvers = this.state.registeredEvolvers;
+    if (store.has('registeredEvolvers')){
+      selectedOption = store.get('activeEvolver')
+      registeredEvolvers = store.get('registeredEvolvers')
+      console.log(registeredEvolvers)
+    }
+    this.setState({
+      scanTimer: scanTimer,
+      selectedOption: selectedOption,
+      registeredEvolvers: registeredEvolvers},
+      console.log(registeredEvolvers));
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
     clearInterval(this.state.scanTimer);
-    if (this.request) {
-      console.log('aborting callback!')
-      this.request = undefined;
-    }
   }
 
   handleChange = (selectedOption) => {
     this.setState({ selectedOption: selectedOption });
     console.log(`Option selected:`, selectedOption);
+
+    this.props.selectEvolver(selectedOption)
   }
 
   scanEvolvers = () => {
@@ -111,21 +112,35 @@ class EvolverSelect extends React.Component {
   }
 
   callback_scanEvolvers = (index, state) => {
-    var registeredEvolvers = JSON.parse(JSON.stringify(this.state.registeredEvolvers));
-    var selectedOption = JSON.parse(JSON.stringify(this.state.selectedOption));
-    if (state){
-      registeredEvolvers[index]['statusColor'] = '#32CD32';
-    } else {
-      registeredEvolvers[index]['statusColor'] = '#DC143C';
-    }
-    if (registeredEvolvers[index]['value'] == this.state.selectedOption['value']){
+    if (this._isMounted && store.has('activeEvolver')){
+      var registeredEvolvers = JSON.parse(JSON.stringify(this.state.registeredEvolvers));
+      var selectedOption = JSON.parse(JSON.stringify(this.state.selectedOption));
       if (state){
-        selectedOption['statusColor'] = '#32CD32';
+        registeredEvolvers[index]['statusColor'] = '#32CD32';
       } else {
-        selectedOption['statusColor'] = '#DC143C';
+        registeredEvolvers[index]['statusColor'] = '#DC143C';
       }
+      if (registeredEvolvers[index]['value'] == this.state.selectedOption['value']){
+        if (state){
+          selectedOption['statusColor'] = '#32CD32';
+        } else {
+          selectedOption['statusColor'] = '#DC143C';
+        }
+      }
+      store.set('registeredEvolvers', registeredEvolvers)
+      this.setState({registeredEvolvers: registeredEvolvers, selectedOption: selectedOption})
     }
-    this.setState({registeredEvolvers: registeredEvolvers, selectedOption: selectedOption})
+  }
+
+  updateRegistry = () => {
+    var registeredEvolvers = store.get('registeredEvolvers')
+    var activeEvolver;
+    if (store.has('activeEvolver')){
+      activeEvolver = store.get('activeEvolver')
+    } else {
+      activeEvolver = null
+    }
+    this.setState({registeredEvolvers: registeredEvolvers, selectedOption: activeEvolver})
   }
 
   render() {
@@ -139,12 +154,12 @@ class EvolverSelect extends React.Component {
             value={selectedOption}
             className='selectEvolver'
             classNamePrefix='selectEvolver'
+            options= {this.state.registeredEvolvers}
             onChange={this.handleChange}
-            options={this.state.registeredEvolvers}
             styles={customStyles}
             placeholder={<div>No Registered Devices</div>}
           />
-          <div style={{position:'absolute',right:'-74px',top:'-10px'}}>
+          <div style={{position:'absolute',right:'26px',top:'-10px'}}>
             <Typography className={classes.title}> ACTIVE EVOLVER </Typography>
           </div>
       </div>

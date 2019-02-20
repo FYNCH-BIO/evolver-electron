@@ -17,7 +17,7 @@ class ConfigModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: true,
+      open: false,
       connected: false,
       activeEvolver: 'loading...',
       isPi: this.props.isPi
@@ -60,11 +60,16 @@ class ConfigModal extends React.Component {
 
   onCloseModal = () => {
     this.setState({ open: false});
+    this.selector.updateRegistry()
   };
 
   handleNameChange = (deviceName) => {
     this.setState({ activeEvolver: deviceName});
   };
+
+  handleSelectEvolver = (selectedEvolver) => {
+    this.props.onSelectEvolver(selectedEvolver);
+  }
 
   render() {
     const { open } = this.state;
@@ -81,35 +86,20 @@ class ConfigModal extends React.Component {
         </button>
     } else {
       activeBtnLabel =
-        <EvolverSelect />
+        <div>
+          <EvolverSelect onRef={ref => (this.selector = ref)} selectEvolver = {this.handleSelectEvolver}/>
+          <button className= 'registerEvolverBtn' onClick={() => this.onOpenModal()} >
+            <FaPlus size={24} style={{color:'#ffd9b2', margin:'0px 0px 2px 0px'}}/>
+          </button>
+        </div>
     }
-
-    // if (this.state.isPi){
-    //   activeBtnLabel =
-    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()} >
-    //       <span style={{fontWeight:'bold', fontSize: '24px'}}>MY NAME IS: </span>
-    //       <span style={{fontWeight:'normal'}}> {this.state.activeEvolver}</span>
-    //       <span className= 'openConfigTxt'>  {arrow}</span>
-    //     </button>
-    // } else if (this.state.connected){
-    //   activeBtnLabel =
-    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()} >
-    //       <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#32CD32'}}/> {this.state.activeEvolver}
-    //       <span className= 'openConfigTxt'>  {arrow}</span>
-    //     </button>
-    // } else {
-    //   activeBtnLabel =
-    //     <button className= 'openConfigBtn' onClick={() => this.onOpenModal()}>
-    //       <FaCircle size={10} style={{margin:'0px 7px 2px 0px', color:'#DC143C'}}/> {this.state.activeEvolver}
-    //       <span className= 'openConfigTxt'>  {arrow}</span>
-    //     </button>
-    // }
 
     let configForm;
     if (this.state.isPi){
       configForm = <RpiConfig socket= {this.props.socket} deviceNameChange={this.handleNameChange}/>
     } else {
-      configForm = <DesktopConfig socket= {this.props.socket}/>
+      configForm =
+        <DesktopConfig socket= {this.props.socket}/>
     }
 
     return (
@@ -125,9 +115,6 @@ class ConfigModal extends React.Component {
            }}>
            {configForm}
         </Modal>
-        <button className= 'registerEvolverBtn' onClick={() => this.onOpenModal()} >
-          <FaPlus size={24} style={{color:'#ffd9b2', margin:'0px 0px 2px 0px'}}/>
-        </button>
       </div>
 
     );
