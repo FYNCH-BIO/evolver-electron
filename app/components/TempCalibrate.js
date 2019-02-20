@@ -13,6 +13,8 @@ import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
+const Store = require('electron-store');
+const store = new Store(); //runningTempCal
 
 
 const styles = {
@@ -108,7 +110,12 @@ class TempCal extends React.Component {
       alertOpen: false,
       alertQuestion: 'Logging Values...',
       alertAnswers: ['Retry', 'Exit'],
-      exiting: false
+      exiting: false,
+      resumeOpen: false,
+      resumeQuestion: 'Start new calibration or resume?',
+      resumeAnswers: ['New', 'Resume'],
+      keyboardPrompt: "Enter File Name or press ESC to autogenerate."
+
     };
     this.props.socket.on('dataresponse', function(response) {
 
@@ -153,8 +160,10 @@ class TempCal extends React.Component {
                 readsFinished: readsFinished,
                 readProgress: 0,
                 roomTempAvg: roomTempAvg,
-                vialProgress: Array(16).fill(0)});
-
+                vialProgress: Array(16).fill(0)},
+                function() {
+                  store.set('runningTempCal', this.state)
+                }); //callback
           }
           this.props.socket.emit('data', {});
       });
@@ -194,7 +203,12 @@ class TempCal extends React.Component {
 
   componentDidMount() {
     this.props.logger.info('Routed to Temperature Calibration Page.')
-    this.keyboard.current.onOpenModal();
+    if (store.has('runningTempCal')){
+      this.setState({resumeOpen:true})
+    } else {
+      this.keyboard.current.onOpenModal();
+    }
+
     var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
     var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
     var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
@@ -394,8 +408,21 @@ class TempCal extends React.Component {
        this.handleFinishExpt();
      }
      if (answer == 'Exit'){
+       store.delete('runningTempCal');
        this.setState({exiting: true});
      }
+   }
+
+   onResumeAnswer = (answer) => {
+     if (answer == 'New'){
+       this.keyboard.current.onOpenModal();
+       store.delete('runningTempCal');
+     }
+     if (answer == 'Resume'){
+       var previousState = store.get('runningTempCal');
+       this.setState(previousState);
+     }
+     this.setState({resumeOpen:false})
    }
 
   render() {
@@ -546,12 +573,17 @@ class TempCal extends React.Component {
           onClick={this.handleKeyboardModal}>
           <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
         </button>
-        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt}/>
+        <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertQuestion}
           alertAnswers = {this.state.alertAnswers}
           onAlertAnswer = {this.onAlertAnswer}/>
+        <ModalAlert
+          alertOpen= {this.state.resumeOpen}
+          alertQuestion = {this.state.resumeQuestion}
+          alertAnswers = {this.state.resumeAnswers}
+          onAlertAnswer = {this.onResumeAnswer}/>
 
       </div>
 

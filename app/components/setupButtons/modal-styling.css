@@ -8,3 +8,22 @@
 
 .customOverlay {
 }
+
+.calibrationCloseButton {
+  width: 30px;
+  height: 30px;
+  fill: white;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
+.calibrationModal{
+  background-color: black;
+  width:900px;
+  text-align: center;
+}
+
+.calibrationOverlay{
+
+}

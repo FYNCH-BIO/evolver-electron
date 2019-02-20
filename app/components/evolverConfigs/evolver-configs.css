@@ -2,14 +2,15 @@
   background-color: transparent;
   width: auto;
   height: auto;
-  padding: 0px 10px 0px 10px;
+  padding: 7px 10px 5px 10px;
   border: 1px solid white;
+  right: -200px;
 }
 
 .homeConfigBtn {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 30px;
+  right: 230px;
 }
 
 .openConfigTxt{
@@ -21,4 +22,126 @@
   width: 30px;
   height: 30px;
   color: white;
+}
+
+.editDeviceName {
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  padding: 5px;
+}
+
+.selectEvolver{
+  width: 400px;
+  left: 200px;
+  background-color: black;
+  font-size: 20px;
+}
+
+.selectEvolver__control{
+  color: orange;
+  font-size: 20px;
+  border: none !important;
+}
+
+.selectEvolver__menu{
+  color: orange;
+  font-size: 16px;
+}
+
+.selectEvolver__menu-list{
+  background-color: black;
+  border: 2px solid white;
+  border-radius: 5px;
+}
+
+.selectEvolver__input{
+  color: white;
+  margin: 0px 0px 0px 13px;
+  text-align: left;
+}
+
+.selectEvolver__placeholder{
+  color: white;
+  opacity: 1;
+}
+
+
+.selectEvolver__value-container{
+  background-color: black;
+  height: 50px;
+  color: white;
+}
+
+.selectEvolver__indicators {
+  background-color: black;
+  margin-left: -4px;
+}
+
+.selectEvolver__single-value{
+  color: white !important;
+}
+
+.selectEvolver__option{
+  height: 35px;
+}
+
+.selectEvolver__placeholder{
+  color: white !important;
+  margin-left: 27px !important;
+}
+
+.registerEvolverBtn{
+  width: 50px;
+  height: 50px;
+  border-radius: 35px;
+  background-color: #f58245;
+  opacity: 1;
+  border: none;
+  position: absolute;
+  right:-200px;
+  bottom: -540px;
+}
+
+.registerEvolverInput{
+  width: 440px;
+  height: 40px;
+  position: absolute;
+  margin: -2px 0px 0px 190px;
+  text-align: left;
+  background-color: black;
+  color: white;
+  border: 2px solid white;
+}
+
+.registerEvolverInput:focus{
+  outline: none;
+}
+
+.registerEvolverContainer{
+  position: absolute;
+  width: 400px;
+  margin: 15px 0px 0px 0px;
+}
+
+.registerEvolverSubmit{
+  background-color: #f58245;
+  border: none;
+  height: 40px;
+  color: black;
+  width:130px;
+}
+
+.logEvolverRegistration{
+  position: absolute;
+  right: -130px;
+  bottom: 90px;
+  width: auto;
+  height: auto;
+  font-size: 40px;
+  padding: 30px 40px 30px 40px;
+  background-color: #f58245;
+  color: black;
 }
