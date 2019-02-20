@@ -6,7 +6,8 @@ import io from 'socket.io-client'
 import log4js from 'log4js';
 import ConfigModal from './evolverConfigs/ConfigModal'
 var fs = require('fs');
-
+const Store = require('electron-store');
+const store = new Store();
 
 const remote = require('electron').remote;
 const app = remote.app;
@@ -74,20 +75,22 @@ export default class Home extends Component<Props> {
       this.state = {
         isPi: false
       }
-      if (this.props.socket) {
-        this.socket = this.props.socket;
+      if (this.props.socket && store.has('activeEvolver')) {
+        this.state.socket = this.props.socket;
       }
       else {
-        if (isPi()){
-          this.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
+        if (!isPi() && store.has('activeEvolver')){
+          var ip = store.get('activeEvolver').value;
+          var socketString = "http://" + ip + ":8081/dpu-evolver";
+          this.state.socket = io.connect(socketString, {reconnect:true});
         } else {
-          this.socket = io.connect("http://192.168.1.4:8081/dpu-evolver", {reconnect:true});
+          this.state.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
         }
-        this.socket.on('reconnect', function(){console.log("Reconnected evolver")});
+        this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
 
-      this.socket.on('connect', function(){console.log("Connected evolver");}.bind(this));
-      this.socket.on('disconnect', function(){console.log("Disconnected evolver")});
+      this.state.socket.on('connect', function(){console.log("Connected evolver");}.bind(this));
+      this.state.socket.on('disconnect', function(){console.log("Disconnected evolver")});
 
       if (this.props.logger){
         this.logger = this.props.logger;
@@ -100,15 +103,21 @@ export default class Home extends Component<Props> {
   props: Props;
 
   componentDidMount() {
-    console.log(isPi())
+    console.log(this.state.socket)
     this.setState({isPi:isPi()})
   }
 
+  handleSelectEvolver = (selectedEvolver) => {
+    var socketString = "http://" + selectedEvolver.value + ":8081/dpu-evolver";
+    var socket = io.connect(socketString, {reconnect:true});
+    this.state.socket.on('connect', function(){console.log("Connected evolver")});
+    this.state.socket.on('disconnect', function(){console.log("Disconnected evolver")});
+    this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
+    this.setState({socket: socket})
+    store.set('activeEvolver', selectedEvolver)
+  }
+
   render() {
-
-
-
-
 
     return (
       <div>
@@ -118,14 +127,14 @@ export default class Home extends Component<Props> {
             <h1 className="display-2 centered">eVOLVER</h1>
             <p className="font-italic"> Continuous Culture </p>
 
-            <Link to={{pathname:routes.SETUP, socket:this.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
-            <Link to={{pathname:routes.CALMENU, socket:this.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
+            <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
+            <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
             {/*<Link to={routes.GRAPHING}><button className = "btn btn-lg homeButtons">VISUALIZATION</button></Link>
             */}
             <Link to={routes.EXPTMANAGER}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
         </div>
         <div className='homeConfigBtn'>
-          <ConfigModal socket= {this.socket} isPi= {this.state.isPi}/>
+          <ConfigModal socket= {this.state.socket} isPi= {this.state.isPi}  onSelectEvolver={this.handleSelectEvolver}/>
         </div>
       </div>
     );

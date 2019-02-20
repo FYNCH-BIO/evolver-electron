@@ -61,7 +61,9 @@ function createWindow () {
     resizable: false
 
   });
-  //mainWindow.setFullScreen(true);
+  if (process.env.START_FULLSCREEN) {
+    mainWindow.setFullScreen(true);
+  }
   mainWindow.setMenu(null);
   mainWindow.loadURL(`file://${__dirname}/app.html`);
   // mainWindow.webContents.openDevTools()

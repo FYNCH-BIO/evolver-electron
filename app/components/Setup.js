@@ -9,6 +9,8 @@ import SetupButtons from './SetupButtons/SetupButtons'
 import ButtonCards from './SetupButtons/ButtonCards';
 import {FaArrowLeft} from 'react-icons/fa';
 import SetupLog from './SetupButtons/SetupLog'
+const Store = require('electron-store');
+const store = new Store();
 
 
 export default class Setup extends Component<Props> {
@@ -40,8 +42,14 @@ export default class Setup extends Component<Props> {
       this.props.socket.on('databroadcast', function(response) {this.handleRawData(this.handlePiIncoming(response), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
       this.props.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
       this.props.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
-      this.props.socket.on('activecalibrationod', function(response) {this.setState({activeODCal: response})}.bind(this))
-      this.props.socket.on('activecalibrationtemp', function(response) {this.setState({activeTempCal: response})}.bind(this))
+      this.props.socket.on('activecalibrationod', function(response) {
+        this.setState({activeODCal: response})
+        store.set('activeODCal', response)
+        }.bind(this))
+      this.props.socket.on('activecalibrationtemp', function(response) {
+        this.setState({activeTempCal: response})
+        store.set('activeTempCal', response)
+        }.bind(this))
 
 
       this.props.socket.on('calibrationod', function(response) {
@@ -76,13 +84,17 @@ export default class Setup extends Component<Props> {
     }
 
   componentDidMount() {
+    console.log(this.props.socket)
     this.props.logger.info('Routed to Setup Page.')
-    this.props.socket.emit('pingdata', {});
     var initialData = this.state.rawVialData;
     initialData = this.handleRawToCal(initialData);
     initialData = this.formatVialSelectStrings(initialData, 'od');
     initialData = this.formatVialSelectStrings(initialData, 'temp');
-    this.setState({vialData: initialData});
+    this.setState({
+      vialData: initialData,
+      activeODCal:store.get('activeODCal'),
+      activeTempCal:store.get('activeTempCal'),
+      });
   };
 
   componentWillUnmount() {
