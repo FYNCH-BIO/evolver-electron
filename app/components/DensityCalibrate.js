@@ -66,8 +66,10 @@ class ODcal extends React.Component {
       vialProgress: Array(16).fill(0),
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
-      powerLevel: 2125,
-      powerLevels: [2125],
+      powerLevel: 4095,
+      powerLevels: [4095],
+      lxmlLevel: 4095,
+      lxmlLevels: [4095, 1500, 500, 0],
       timesRead: 3,
       experimentName:'',
       alertOpen: false,
@@ -97,28 +99,52 @@ class ODcal extends React.Component {
         this.setState({vialData: newVialData}, function() {
 
             if (this.state.vialData[newVialData.length - 1].od[0].length === this.state.timesRead) {
-                if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
+                // Finished reading this state and now checking to see if should progress to next power level
+                if (this.state.lxmlLevel !== this.state.lxmlLevels[this.state.lxmlLevels.length - 1]) {
+                    // Change Power Level for IR LED
                     newVialData = this.state.vialData;
-                    var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
-                    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
-                    this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
-                        this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
+                    var newlxmlLevel = this.state.lxmlLevels[this.state.lxmlLevels.indexOf(this.state.lxmlLevel) + 1];
+                    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: this.state.powerLevel, lxmlLevel: newlxmlLevel});
+                    this.setState({lxmlLevel: newlxmlLevel, vialData: newVialData}, function() {
+                      // Turning ON LXML LED
+                      console.log('changing lxml intensities')
+                      var evolverMessage = Array(32).fill("NaN");
+                      var intensitySet = this.state.lxmlLevel;
+                      for (var i = 0; i < 16; i++) {
+                        evolverMessage[i] = intensitySet;
+                        if (intensitySet !== 4095){
+                          evolverMessage[i+16] = 0;
+                        } else {
+                          evolverMessage[i+16] = 4095;
+                        }
+                      }
+                      this.props.socket.emit("command", {param: "lxml", message: evolverMessage});
+                      this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
                     }.bind(this));
                 }
+                // Read last power level, proceed to unlock buttons
                 else {
                     console.log(this.state.vialData);
                     this.handleUnlockBtns();
-                    var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
+                    var readsFinished = this.state.vialData.length / this.state.lxmlLevels.length;
                     this.setState({
-                      progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)),
+                      progressCompleted: (100 * ((this.state.vialData.length / this.state.lxmlLevels.length) / 16)),
                       readsFinished: readsFinished,
                       readProgress: 0},
                       function() {
                         store.set('runningODCal', this.state)
                       }); //callback
+
+                    // Turning OFF LXML LED
+                    var evolverMessage = Array(32).fill("NaN");
+                    for (var i = 0; i < 32; i++) {
+                      evolverMessage[i] = 4095;
+                    }
+                    this.props.socket.emit("command", {param: "lxml", message: evolverMessage});
                 }
             }
             else {
+              // Reading for this particular power setting not done yet.
                 this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
             }
         });
@@ -152,7 +178,7 @@ class ODcal extends React.Component {
 
   startRead = () => {
     this.handleLockBtns();
-    this.setState({readProgress: this.state.readProgress + .01, powerLevel: this.state.powerLevels[0]});
+    this.setState({readProgress: this.state.readProgress + .01, lxmlLevel: this.state.lxmlLevels[0]});
     var newVialData = this.state.vialData;
 
     // remove existing data for particular layout
@@ -162,8 +188,16 @@ class ODcal extends React.Component {
         }
     }
 
-    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
-    this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
+    // Turning OFF LXML LED
+    var evolverMessage = Array(32).fill("NaN");
+    for (var i = 0; i < 32; i++) {
+      evolverMessage[i] = 4095;
+    }
+    this.props.socket.emit("command", {param: "lxml", message: evolverMessage});
+
+
+    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0], lxmlLevel:this.state.lxmlLevels[0]});
+    this.setState({vialData:newVialData, lxmlLevel: this.state.lxmlLevels[0]});
     this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
   }
 
@@ -182,7 +216,7 @@ class ODcal extends React.Component {
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     readProgress = readProgress + (100/(this.state.timesRead * this.state.powerLevels.length));
+     readProgress = readProgress + (100/(this.state.timesRead * this.state.lxmlLevels.length));
      this.setState({readProgress: readProgress});
    };
 

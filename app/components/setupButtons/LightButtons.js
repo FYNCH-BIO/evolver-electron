@@ -67,8 +67,7 @@ const styles = {
 
 class LightButtons extends React.Component {
   state = {
-    lightAToggle: false,
-    lightBToggle: false,
+
   };
 
   handleChange = name => event => {
@@ -76,8 +75,8 @@ class LightButtons extends React.Component {
   };
 
   handleSubmit = value => {
-      var values = {percent: value, lightA: this.state.lightAToggle, lightB: this.state.lightBToggle};
-      this.props.onSubmitButton("light", values);
+      var values = {percent: value};
+      this.props.onSubmitButton("lxml", values);
   };
 
   render() {
@@ -86,59 +85,6 @@ class LightButtons extends React.Component {
     return (
       <div>
         <LightSlider handleSubmit={this.handleSubmit}/>
-        <Card className={classes.card}>
-          <FormGroup row className="lightButtons">
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={this.state.lightAToggle}
-                  onChange={this.handleChange('lightAToggle')}
-                  value="lightAToggle"
-                  color="primary"
-                  classes={{
-                    root: classes.root,
-                    icon: classes.icon,
-                    switchBase: classes.switchBase,
-                    bar: classes.bar,
-                    checked: classes.checked,
-                    colorPrimary: classes.colorPrimary,
-                  }}
-                />
-              }
-              labelPlacement="start"
-              label ="A"
-              classes = {{
-                label: classes.label,
-                labelPlacementStart: classes.labelPlacementStart,
-              }}
-            />
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={this.state.lightBToggle}
-                  onChange={this.handleChange('lightBToggle')}
-                  value="lightBToggle"
-                  color="primary"
-                  classes={{
-                    root: classes.root,
-                    icon: classes.icon,
-                    switchBase: classes.switchBase,
-                    bar: classes.bar,
-                    checked: classes.checked,
-                    colorPrimary: classes.colorPrimary,
-                  }}
-                />
-              }
-              labelPlacement="start"
-              label ="B"
-              classes = {{
-                label: classes.label,
-                labelPlacementStart: classes.labelPlacementStart,
-              }}
-            />
-          </FormGroup>
-        </Card>
       </div>
     );
   }

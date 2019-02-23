@@ -232,8 +232,19 @@ export default class Setup extends Component<Props> {
         this.setState({arduinoMessage: "Running pump for Vials: " + vials});
         value['vials'] = vials;
     }
-    else if (evolverComponent == "light") {
+    else if (evolverComponent == "lxml") {
+        evolverMessage = Array(32).fill("NaN")
         this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});
+        var intensitySet = 4095 - ((value.percent/100)*4095);
+        for (var i = 0; i < (vials.length); i++) {
+              evolverMessage[vials[i]] = intensitySet;
+              if (intensitySet !== 4095){
+                evolverMessage[vials[i]+16] = 0;
+              } else {
+                evolverMessage[vials[i]+16] = 4095;
+              }
+        }
+        value = value.percent;
     }
     else {
       evolverMessage = Array(16).fill("NaN")
