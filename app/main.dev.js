@@ -94,17 +94,21 @@ function createWindow () {
        }
     });
 
-   const menuBuilder = new MenuBuilder(mainWindow);
-   const template = menuBuilder.buildMenu();
-   // template[1].submenu[0] = {
-   //     label: 'New Window',
-   //     accelerator: 'Command+N',
-   //     click: () => {
-   //       createWindow()
-   //     }
-   //   }
-   const menu = Menu.buildFromTemplate(template);
-   Menu.setApplicationMenu(menu);
+
+   if (!process.env.START_FULLSCREEN) {
+     const menuBuilder = new MenuBuilder(mainWindow);
+     const template = menuBuilder.buildMenu();
+     // template[1].submenu[0] = {
+     //     label: 'New Window',
+     //     accelerator: 'Command+N',
+     //     click: () => {
+     //       createWindow()
+     //     }
+     //   }
+     const menu = Menu.buildFromTemplate(template);
+     
+     Menu.setApplicationMenu(menu);
+   }
  }
 
 

@@ -14,10 +14,10 @@ function isDisabled(currentVial) {
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
   if (numberSelected == 0) {
-    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
+    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons vialSelectorButtonsClearSelection">Select All</button></SelectAll>
   }
   else {
-    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons">Clear Selection</button></DeselectAll>
+    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons vialSelectorButtonsClearSelection">Clear Selection</button></DeselectAll>
   }
   return null;
 }
@@ -90,6 +90,7 @@ class VialSelector extends Component<Props>  {
     buttonBack: "Device Map",
     selectedItems: [],
     selectingItems: [],
+    reversed: true
   }
 
   handleSelecting = selectingItems => {
@@ -150,13 +151,12 @@ class VialSelector extends Component<Props>  {
 
               <div className="button-position">
                 <ActiveButtons selectedItems={this.state.selectedItems} />
-                <button className = "btn btn-md stopAllButton">FORCE STOP ALL</button>
               </div>
 
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+            <button className = "btn btn-md vialSelectorButtons vialSelectorButtonsOrder" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
         </Card>
     )

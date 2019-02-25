@@ -87,22 +87,28 @@ class SetupLog extends React.Component {
     } else if (inputType == 'response'){
       var triggeredVials = '';
       var value = '';
+      console.log(data)
       if (data['param'] == 'pump'){
-        var vials = data.value.vials;
-        for (var i = 0; i < vials.length; i++) {
-          triggeredVials = triggeredVials + vials[i] + ',';
+        if (data.message == 'stop') {
+          outputString = 'Response: ALL pumps stopped.'
         }
-        triggeredVials = triggeredVials.slice(0, -1);
+        else{
+          var vials = data.value.vials;
+          for (var i = 0; i < vials.length; i++) {
+            triggeredVials = triggeredVials + vials[i] + ',';
+          }
+          triggeredVials = triggeredVials.slice(0, -1);
 
-        if (data.value.in1){value = value + 'in1, '};
-        if (data.value.in2){value = value + 'in2, '};
-        if (data.value.efflux){value = value + 'efflux, '};
-        if (value == ''){
-          outputString= 'Response: Nothing Changed, no pumps selected'
-        } else {
-          value = value.slice(0, -2);
-          value = value + ' pumps'
-          outputString = 'Response: ' + value + ' ON for ' + data.value.time + 's, vials (' + triggeredVials + ')'
+          if (data.value.in1){value = value + 'in1, '};
+          if (data.value.in2){value = value + 'in2, '};
+          if (data.value.efflux){value = value + 'efflux, '};
+          if (value == ''){
+            outputString= 'Response: Nothing Changed, no pumps selected'
+          } else {
+            value = value.slice(0, -2);
+            value = value + ' pumps'
+            outputString = 'Response: ' + value + ' ON for ' + data.value.time + 's, vials (' + triggeredVials + ')'
+          }
         }
       } else {
         var vials = data['message']
@@ -120,7 +126,7 @@ class SetupLog extends React.Component {
         outputString = 'Response: Set ' + data['param'] + ' to ' + value + ' for vials (' + triggeredVials + ')'
       }
 
-      if(triggeredVials == ''){
+      if(triggeredVials == '' && data.message !== 'stop'){
         outputString= 'Response: Nothing Changed, no vials selected'
       }
 

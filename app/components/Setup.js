@@ -31,6 +31,7 @@ export default class Setup extends Component<Props> {
             command: {},
             showRawTemp: false,
             showRawOD: false,
+            lightSetting: [],
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
@@ -81,6 +82,23 @@ export default class Setup extends Component<Props> {
           }
           this.setState({tempCal: newTempCal});
       }.bind(this));
+
+      this.props.socket.on('commandbroadcast', function(response) {
+          var new_values = this.state.lightSetting;
+          if (response['param'] == 'lxml' ){
+            for (var j = 0; j < response.message.length; j++) {
+              if (response.message[j] !== 'NaN'){
+                new_values[j] = response.message[j]
+              }
+            }
+          }
+          this.setState({lightSetting: new_values});
+      }.bind(this))
+
+      this.props.socket.on('lastcommands', function(response) {
+        this.setState({lightSetting:response.lxml})
+      }.bind(this))
+
     }
 
   componentDidMount() {
@@ -95,6 +113,7 @@ export default class Setup extends Component<Props> {
       activeODCal:store.get('activeODCal'),
       activeTempCal:store.get('activeTempCal'),
       });
+    this.props.socket.emit("getlastcommands", {});
   };
 
   componentWillUnmount() {
@@ -107,6 +126,8 @@ export default class Setup extends Component<Props> {
     this.props.socket.removeAllListeners('databroadcast');
     this.props.socket.removeAllListeners('dataresponse');
     this.props.socket.removeAllListeners('commandbroadcast');
+    this.props.socket.removeAllListeners('lastcommands');
+
   }
 
   handlePiIncoming = (response) => {
@@ -154,7 +175,7 @@ export default class Setup extends Component<Props> {
     for(var i = 0; i < newVialData.length; i++) {
         try {
           if ((!showRawOD) && (this.state.odCal.length !== 0)){
-            newVialData[i].od = this.sigmoidRawToCal(newVialData[i].od, this.state.odCal[i]).toFixed(3);
+            newVialData[i].od = this.multiQuadRawToCal(newVialData[i].od, this.state.lightSetting[i] ,this.state.odCal[i]).toFixed(3);
           } else if (this.state.odCal.length == 0) {
             newVialData[i].od = '--'
           } else{
@@ -218,19 +239,24 @@ export default class Setup extends Component<Props> {
     var evolverMessage = {};
     if (evolverComponent == "pump") {
         evolverMessage = {};
-        var vialsToBinary = [];
-        for (var i = 0; i < vials.length; i++) {
-            if (value.in1) {
-              vialsToBinary.push(vials[i]);
-            }
-            if (value.efflux) {
-              vialsToBinary.push(parseInt(vials[i]) + 16);
-            }
+        if (value !== 'stop'){
+          var vialsToBinary = [];
+          for (var i = 0; i < vials.length; i++) {
+              if (value.in1) {
+                vialsToBinary.push(vials[i]);
+              }
+              if (value.efflux) {
+                vialsToBinary.push(parseInt(vials[i]) + 16);
+              }
+          }
+          var binaryString = this.getBinaryString(vialsToBinary);
+          evolverMessage = {pumps_binary: binaryString, pump_time: value.time, efflux_pump_time: 0, delay_interval: 0, times_to_repeat: 0, run_efflux:0};
+          this.setState({arduinoMessage: "Running pump for Vials: " + vials});
+          value['vials'] = vials;
         }
-        var binaryString = this.getBinaryString(vialsToBinary);
-        evolverMessage = {pumps_binary: binaryString, pump_time: value.time, efflux_pump_time: 0, delay_interval: 0, times_to_repeat: 0, run_efflux:0};
-        this.setState({arduinoMessage: "Running pump for Vials: " + vials});
-        value['vials'] = vials;
+        else {
+          evolverMessage = 'stop'
+        }
     }
     else if (evolverComponent == "lxml") {
         evolverMessage = Array(32).fill("NaN")
@@ -262,8 +288,17 @@ export default class Setup extends Component<Props> {
     this.setState({command: {param: evolverComponent, message: evolverMessage, value: value} });
   };
 
+  forceStop = () => {
+    // this.props.socket.emit("command", {param: 'stopall'});
+  }
+
   sigmoidRawToCal = (value, cal) => {
     return (cal[2] - ((Math.log10((cal[1] - cal[0]) / (value - cal[0]) - 1)) / cal[3]));
+  };
+
+  multiQuadRawToCal = (x, y, cal) => {
+    var z = (cal[0] + (cal[1]*x) + (cal[2]*y) + (cal[3]*x*y) + (cal[4]*(Math.pow(x, 2)) + (cal[5]*(Math.pow(y, 2)))))
+    return (z);
   };
 
   linearRawToCal = (value, cal) => {
@@ -304,6 +339,11 @@ export default class Setup extends Component<Props> {
                 <VialSelector
                   items={this.state.vialData}
                   vialSelectionFinish={this.onSelectVials}/>
+                <button
+                  className = "btn btn-md vialSelectorButtons stopAllButton"
+                  onClick={() => this.onSubmitButton('pump', 'stop')}>
+                  STOP ALL PUMPS
+                </button>
               </div>
             </div>
         </div>

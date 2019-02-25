@@ -125,7 +125,7 @@ export default class Home extends Component<Props> {
             <div className="p-5"/>
             <div className="p-5"/>
             <h1 className="display-2 centered">eVOLVER</h1>
-            <p className="font-italic"> Continuous Culture </p>
+            <p className="font-italic"> Algal Growth </p>
 
             <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
             <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
