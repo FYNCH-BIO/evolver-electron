@@ -32,6 +32,7 @@ export default class Setup extends Component<Props> {
             showRawTemp: false,
             showRawOD: false,
             lightSetting: [],
+            prevlightSetting: [],
             strain: ["FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100", "FL100"]
         };
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
@@ -96,7 +97,7 @@ export default class Setup extends Component<Props> {
       }.bind(this))
 
       this.props.socket.on('lastcommands', function(response) {
-        this.setState({lightSetting:response.lxml})
+        this.setState({prevlightSetting:response.lxml, lightSetting: response.lxml})
       }.bind(this))
 
     }
@@ -145,7 +146,6 @@ export default class Setup extends Component<Props> {
   }
 
   handleRawData = (rawData, showRawOD, showRawTemp) => {
-    console.log(rawData)
     var newVialData = this.handleRawToCal(rawData, showRawOD, showRawTemp);
     if (!showRawOD && (this.state.odCal.length !== 0)){
       newVialData = this.formatVialSelectStrings(newVialData, 'od');
@@ -153,7 +153,8 @@ export default class Setup extends Component<Props> {
     if (!showRawTemp && (this.state.tempCal.length !== 0)){
       newVialData = this.formatVialSelectStrings(newVialData, 'temp');
     }
-    this.setState({vialData: newVialData, rawVialData: rawData});
+
+    this.setState({vialData: newVialData, rawVialData: rawData, prevlightSetting: this.state.lightSetting}, () => console.log(rawData));
   }
 
   formatVialSelectStrings = (vialData, parameter) => {
@@ -175,7 +176,7 @@ export default class Setup extends Component<Props> {
     for(var i = 0; i < newVialData.length; i++) {
         try {
           if ((!showRawOD) && (this.state.odCal.length !== 0)){
-            newVialData[i].od = this.multiQuadRawToCal(newVialData[i].od, this.state.lightSetting[i] ,this.state.odCal[i]).toFixed(3);
+            newVialData[i].od = this.multiQuadRawToCal(newVialData[i].od, this.state.prevlightSetting[i] ,this.state.odCal[i]).toFixed(3);
           } else if (this.state.odCal.length == 0) {
             newVialData[i].od = '--'
           } else{
