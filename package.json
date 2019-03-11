@@ -57,10 +57,9 @@
       "main.prod.js.map",
       "package.json",
       "resources/icon.png"
-
     ],
     "dmg": {
-      "icon" : "resources/icon.png",
+      "icon": "resources/icon.png",
       "contents": [
         {
           "x": 130,
@@ -221,10 +220,15 @@
     "electron-store": "^2.0.0",
     "history": "^4.7.2",
     "is-port-reachable": "^2.0.0",
+    "json-query": "^2.2.2",
     "log4js": "^4.0.2",
+    "moment": "^2.24.0",
+    "parse-filepath": "^1.0.2",
+    "python-shell": "^1.0.7",
     "react": "^16.4.1",
     "react-ace": "^6.4.0",
     "react-dom": "^16.4.1",
+    "react-dropzone": "^10.0.0",
     "react-hot-loader": "^4.3.4",
     "react-icons": "^3.2.2",
     "react-keyboard-event-handler": "^1.4.1",
@@ -239,6 +243,7 @@
     "react-simple-keyboard": "^1.15.2",
     "react-swipeable-views": "^0.13.0",
     "react-swipeable-views-utils": "^0.13.0",
+    "react-table": "^6.9.2",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0",
     "socket.io-client": "^2.2.0",
