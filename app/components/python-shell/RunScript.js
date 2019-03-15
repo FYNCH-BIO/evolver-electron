@@ -3,31 +3,39 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import {PythonShell} from 'python-shell';
 import parsePath from 'parse-filepath';
 import log4js from 'log4js';
 
-const {BrowserWindow} = require('electron').remote
-const dialog = require('electron').remote.dialog
-const remote = require('electron').remote
-
-
+const {BrowserWindow} = require('electron').remote;
+const dialog = require('electron').remote.dialog;
+const remote = require('electron').remote;
+const { ipcRenderer } = require('electron');
 
 const styles = {
 
 };
 
-let pyshell;
+ipcRenderer.on('to-renderer', (event, arg) => {
+    console.log(arg);
+});
 
-function setupPyShell(filePath, logPath) {
-  let options = {
-    pythonOptions: ['-u'], // get print results in real-time
-    args: ['-a', '-b', '-c', '-d']
-  };
 
-  pyshell = new PythonShell(filePath,options);
-
-  return pyshell
+function startScript(exptDir) {
+    console.log(exptDir);
+    var temp_input = new Array(16);
+    temp_input.fill(30);
+    var stir_input = new Array(16);
+    stir_input.fill(8);
+    var lower_thresh = new Array(16);
+    lower_thresh.fill(.2);
+    var upper_thresh = new Array(16);
+    upper_thresh.fill(.4);
+    var volume = 20;
+    var parameters = {'temp_input':temp_input, 'stir_input': stir_input, 'lower_thresh': lower_thresh, 'upper_thresh': upper_thresh, 'volume':volume};
+    var evolverIp = '192.168.1.2';
+    var evolverPort = 8081;
+    var name = 'testing_pyshell';
+    ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
 }
 
 
@@ -43,56 +51,35 @@ function setupLogger(logPath) {
   });
 
   const logger = log4js.getLogger('app');
-  return logger
+  return logger;
 }
 
 class RunScript extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      filePath: '',
+      filePath: props.directory,
       scriptStarted: false,
-      logPath: '',
+      logPath: ''
     };
   }
 
   handleButton = () => {
-    let win= new BrowserWindow({width:400, height:320,resizable: false,})
-    win.on('close', function(e){
-      var choice = dialog.showMessageBox (remote.getCurrentWindow (), {
-        message: 'Python Script Stopped.'
-      });
-    });
-    win.show()
-
-
-
-    // const logger = setupLogger(this.state.logPath);
-    // pyshell = setupPyShell(this.state.filePath, this.state.logPath);
-    //
-    // logger.info("Starting Experiment Script");
-    // pyshell.on('message', function (message){ logger.info(message) });
-    //
-    // pyshell.end(function (err,code,signal) {
-    //   if (err) throw err;
-    //   logger.info("Script Exited");
-    //   this.setState({scriptStarted: false})
-    // }.bind(this));
-    //
-    // this.setState({scriptStarted: true})
+    if (!this.state.scriptStarted) {
+        this.setState({scriptStarted: true});        
+        startScript(this.props.directory);        
+    }
   }
 
   handleStop = () => {
-    pyshell.terminate()
-    this.setState({scriptStarted: false})
+    this.setState({scriptStarted: false});
   }
-
 
   render() {
 
     let runExptBtns;
     if (!this.state.scriptStarted) {
-      runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleButton}> Run Code </button>
+        runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleButton}> Run Code </button>
     }
     else {
       runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleStop}> Stop Code </button>
@@ -100,9 +87,7 @@ class RunScript extends React.Component {
     }
 
     return (
-      <div>
-      </div>
-
+        <div>{runExptBtns}</div>
     );
   }
 }

@@ -43,7 +43,7 @@ class ScriptEditor extends React.Component {
   }
 
   readfile = (scriptName) => {
-    var filename = app.getPath('userData') + '/legacy/data/' + scriptName + '/' + scriptName +'.py';
+    var filename = app.getPath('userData') + '/legacy/data/' + scriptName;
     var scriptContent;
     console.log(filename)
     fs.readFile(filename, 'utf8', function(err, data) {

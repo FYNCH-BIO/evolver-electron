@@ -10,6 +10,9 @@ import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 import ScriptEditor from './python-shell/ScriptEditor'
 
+const remote = require('electron').remote;
+const app = remote.app;
+
 const styles = {
   cardRoot: {
     width: 420,
@@ -31,6 +34,10 @@ const styles = {
     top: '50px',
     left: '440px',
     padding: '10px'
+  },
+  cardPyshell: {
+    top: '200px',
+    left:'20px'
   }
 
 };
@@ -40,14 +47,15 @@ class ExptManager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      scriptDir: '/legacy/data/',
-      activeScript: '',
+      scriptDir: '/legacy/data',
+      activeScript: ''
     };
   }
 
   handleSelectFolder = (activeFolder) => {
-    var exptDir = this.state.scriptDir + activeFolder
-    var activeScript = activeFolder
+    var exptDir = app.getPath('userData') + this.state.scriptDir + '/' + activeFolder;
+    console.log(exptDir);
+    var activeScript = activeFolder + '/' + 'custom_script.py';
     if (this.state.exptDir !== exptDir){
       this.setState({exptDir: exptDir, activeScript: activeScript});
     }
@@ -69,6 +77,11 @@ class ExptManager extends React.Component {
         <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
           <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
         </Card>
+        
+        <Card classes={{root:classes.cardRoot}} className={classes.cardPyshell}>
+            <RunScript className='pyshellRunner' directory={this.state.exptDir}/>
+        </Card>
+        
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
       </div>
     );

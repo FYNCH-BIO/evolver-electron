@@ -1,0 +1,37 @@
+<h1>Background</h1>
+
+<script type="text/javascript">
+	const {ipcRenderer} = require('electron');
+        const {PythonShell} = require('python-shell');
+        
+        function ready() {
+            ipcRenderer.send('ready');
+        }
+
+	ipcRenderer.on('message', (event, arg) => {
+            console.log(arg);
+            ipcRenderer.send('for-renderer', 'loud and clear!');
+	});
+        
+        ipcRenderer.on('start', (event, arg) => {
+            console.log(arg);
+            var zero = arg['zero'] ? '-z' : '';
+            var overwrite = arg['overwrite'] ? '-o' : '';
+            var continueExpt = arg['continue'] ? '-c' : '';
+            var scriptName = arg['script'] + '/main_eVOLVER.py';
+            var options = {
+              mode: 'text',
+              pythonPath: '/usr/local/bin/python3.6',
+              args: [zero, overwrite, continueExpt, '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name']]
+            };
+            var pyShell = new PythonShell(scriptName, options);
+            pyShell.on('message', function(message) {
+               console.log(message); 
+            });
+            pyShell.end(function (err) {
+               if (err) console.log(err); 
+               ready();
+            });
+        });
+        ready();
+</script>

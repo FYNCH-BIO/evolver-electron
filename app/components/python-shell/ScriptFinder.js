@@ -25,11 +25,11 @@ const columns = [{
     accessor: 'modified',
     Cell: props => <span> {props.original.modifiedString} </span>
 
-  }]
+  }];
 
-var fs = require('fs')
-var path = require('path')
-var util = require('util')
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
 
 function dirTree(dirname) {
     var folderStats = fs.lstatSync(dirname),
@@ -67,11 +67,11 @@ function loadFileDir (subFolder, isScript){
         if (resultJSON['data'][i]['type'] == 'folder'){
           var modifiedString;
           var modified;
-          var scriptName = resultJSON['data'][i]['key'] + '.py';
+          var scriptName = 'custom_script.py';          
           for (var j = 0; j < resultJSON['data'][i]['children'].length; j++) {
             if (resultJSON['data'][i]['children'][j]['key'] == scriptName) {
               modifiedString = resultJSON['data'][i]['children'][j]['modifiedString'];
-              modified = resultJSON['data'][i]['children'][j]['modified'];
+              modified = resultJSON['data'][i]['children'][j]['modified'];          
             }
           }
           resultJSON['data'][i]['modified'] = modified;
@@ -81,8 +81,8 @@ function loadFileDir (subFolder, isScript){
     };
 
     var searchString = 'data[**]' + '[*type=folder]'
-    var filequery = jsonQuery(searchString, {data: resultJSON}).value
-    return filequery
+    var filequery = jsonQuery(searchString, {data: resultJSON}).value;
+    return filequery;
   }
 }
 
@@ -125,7 +125,9 @@ class ScriptFinder extends React.Component {
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
-          this.props.onSelectFolder(rowInfo.original.key);
+        console.log(this.state.selection);
+        console.log(rowInfo);
+        this.props.onSelectFolder(rowInfo.original.key);
         return true
       }
     }
