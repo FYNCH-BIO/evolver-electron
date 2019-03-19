@@ -32,8 +32,8 @@ function startScript(exptDir) {
     upper_thresh.fill(.4);
     var volume = 20;
     var parameters = {'temp_input':temp_input, 'stir_input': stir_input, 'lower_thresh': lower_thresh, 'upper_thresh': upper_thresh, 'volume':volume};
-    var evolverIp = '192.168.1.2';
-    var evolverPort = 8081;
+    var evolverIp = 'localhost';
+    var evolverPort = 5558;
     var name = 'testing_pyshell';
     ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
 }

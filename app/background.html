@@ -25,12 +25,13 @@
               args: [zero, overwrite, continueExpt, '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name']]
             };
             var pyShell = new PythonShell(scriptName, options);
-            pyShell.on('message', function(message) {
-               console.log(message); 
-            });
+            pyShell.stdout.on('data', function(data) {
+               console.log(data); 
+            }); 
             pyShell.end(function (err) {
                if (err) console.log(err); 
                ready();
+               console.log('done');
             });
         });
         ready();
