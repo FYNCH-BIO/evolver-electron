@@ -34,11 +34,11 @@ const tutorialSteps = [
   {
     label: 'Peristaltic Pump Array',
     outputTag: 'pump',
-  },
-  {
-    label: 'Light Input',
-    outputTag: 'light',
   }
+  // {
+  //   label: 'Light Input',
+  //   outputTag: 'light',
+  // }
 ];
 
 const styles = theme => ({
