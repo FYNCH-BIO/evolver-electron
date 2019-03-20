@@ -102,7 +102,7 @@ class ODcal extends React.Component {
                     var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
                     newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
                     this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
-                        this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
+                        this.props.socket.emit('data', {config: {od:Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN',}});
                     }.bind(this));
                 }
                 else {
@@ -119,7 +119,7 @@ class ODcal extends React.Component {
                 }
             }
             else {
-                this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
+                this.props.socket.emit('data', {config: {od:Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN',}});
             }
         });
     }.bind(this));
@@ -164,7 +164,7 @@ class ODcal extends React.Component {
 
     newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
     this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
-    this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
+    this.props.socket.emit('data', {config: {od:Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN',}});
   }
 
   stopRead = () => {
