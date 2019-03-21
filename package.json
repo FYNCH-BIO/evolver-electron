@@ -57,10 +57,9 @@
       "main.prod.js.map",
       "package.json",
       "resources/icon.png"
-
     ],
     "dmg": {
-      "icon" : "resources/icon.png",
+      "icon": "resources/icon.png",
       "contents": [
         {
           "x": 130,
@@ -222,6 +221,7 @@
     "history": "^4.7.2",
     "is-port-reachable": "^2.0.0",
     "log4js": "^4.0.2",
+    "pondjs": "^0.8.10",
     "react": "^16.4.1",
     "react-ace": "^6.4.0",
     "react-dom": "^16.4.1",
@@ -239,6 +239,7 @@
     "react-simple-keyboard": "^1.15.2",
     "react-swipeable-views": "^0.13.0",
     "react-swipeable-views-utils": "^0.13.0",
+    "react-timeseries-charts": "^0.15.5",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0",
     "socket.io-client": "^2.2.0",
