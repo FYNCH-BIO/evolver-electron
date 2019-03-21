@@ -4,6 +4,8 @@
 	const {ipcRenderer} = require('electron');
         const {PythonShell} = require('python-shell');
         
+        var pyShell;
+        
         function ready() {
             ipcRenderer.send('ready');
         }
@@ -13,6 +15,26 @@
             ipcRenderer.send('for-renderer', 'loud and clear!');
 	});
         
+        ipcRenderer.on('pause-script', (event, arg) => {
+            console.log("Pausing script");    
+            pyShell.send('pause-script');            
+        });
+        
+        ipcRenderer.on('restart-script', (event, arg) => {
+            console.log("Restarting script");    
+            pyShell.send('restart-script');
+        });
+        
+        ipcRenderer.on('stop-script', (event, arg) => {
+            console.log("Stopping script");      
+            pyShell.terminate();
+            pyShell.end(function (err) {
+               if (err) console.log(err); 
+               ready();
+               console.log('done');
+            });
+        });
+
         ipcRenderer.on('start', (event, arg) => {
             console.log(arg);
             var zero = arg['zero'] ? '-z' : '';
@@ -24,15 +46,10 @@
               pythonPath: '/usr/local/bin/python3.6',
               args: [zero, overwrite, continueExpt, '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name']]
             };
-            var pyShell = new PythonShell(scriptName, options);
-            pyShell.stdout.on('data', function(data) {
-               console.log(data); 
+            pyShell = new PythonShell(scriptName, options);
+            pyShell.on('message', function(message) {
+               console.log(message);
             }); 
-            pyShell.end(function (err) {
-               if (err) console.log(err); 
-               ready();
-               console.log('done');
-            });
         });
         ready();
 </script>

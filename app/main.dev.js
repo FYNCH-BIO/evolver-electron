@@ -73,6 +73,21 @@ ipcMain.on('send-message', (event, arg) => {
    recipientShell.send(arg[1], arg[2]);   
 });
 
+ipcMain.on('pause-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('pause-script');
+});
+
+ipcMain.on('restart-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('restart-script');
+});
+
+ipcMain.on('stop-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('stop-script');
+});
+
 ipcMain.on('ready', (event, arg) => {
     if (!backgroundShells.includes(event.sender)) {
         backgroundShells.push(event.sender);

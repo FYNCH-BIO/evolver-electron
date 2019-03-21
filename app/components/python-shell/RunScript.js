@@ -21,7 +21,6 @@ ipcRenderer.on('to-renderer', (event, arg) => {
 
 
 function startScript(exptDir) {
-    console.log(exptDir);
     var temp_input = new Array(16);
     temp_input.fill(30);
     var stir_input = new Array(16);
@@ -64,22 +63,27 @@ class RunScript extends React.Component {
     };
   }
 
-  handleButton = () => {
-    if (!this.state.scriptStarted) {
-        this.setState({scriptStarted: true});        
-        startScript(this.props.directory);        
-    }
+  handleStart = () => {      
+    startScript(this.props.directory);        
   }
 
   handleStop = () => {
-    this.setState({scriptStarted: false});
+      ipcRenderer.send('stop-script', this.props.directory);
+  }
+  
+  handlePause = () => {
+      ipcRenderer.send('pause-script', this.props.directory);
+  }
+  
+  handleRestart = () => {
+      ipcRenderer.send('restart-script', this.props.directory);
   }
 
   render() {
 
     let runExptBtns;
     if (!this.state.scriptStarted) {
-        runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleButton}> Run Code </button>
+        runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleStart}> Run Code </button>
     }
     else {
       runExptBtns = <button type="button" className="scriptSubmitBtn" onClick={this.handleStop}> Stop Code </button>
@@ -87,7 +91,12 @@ class RunScript extends React.Component {
     }
 
     return (
-        <div>{runExptBtns}</div>
+        <div>
+            <button type="button" className="scriptSubmitBtn" onClick={this.handleStart}> Run Code </button>
+            <button type="button" className="scriptSubmitBtn" onClick={this.handleStop}> Stop Code </button>
+            <button type="button" className="scriptSubmitBtn" onClick={this.handlePause}> Pause Code </button>
+            <button type="button" className="scriptSubmitBtn" onClick={this.handleRestart}> Restart Code </button>
+        </div>
     );
   }
 }
