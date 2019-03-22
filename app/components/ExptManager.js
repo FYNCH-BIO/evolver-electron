@@ -64,8 +64,6 @@ class ExptManager extends React.Component {
   render() {
     const { classes } = this.props;
 
-
-
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
