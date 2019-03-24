@@ -419,7 +419,7 @@ class ODcal extends React.Component {
       statusText = <p className="statusText"> Please enter OD calibration Values. </p>
     }
     else if (this.state.readProgress !== 0){
-      statusText = <p className="statusText"> Collecting raw values from eVOLVER... </p>
+      statusText = <p className="statusText"> Collecting raw values from eVOLVER (PWR: {this.state.powerLevel})... </p>
     }
     else if (this.state.inputsEntered && (this.state.vialData.length !== 0)){
       statusText = <p className="statusText"> {this.state.readsFinished}/16 Measurements Made </p>
