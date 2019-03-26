@@ -4,12 +4,12 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
-import RunScript from './python-shell/RunScript'
 import {FaArrowLeft} from 'react-icons/fa';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 import ScriptEditor from './python-shell/ScriptEditor'
-const { ipcRenderer } = require('electron');    
+const { ipcRenderer } = require('electron');
+import ModalClone from './python-shell/ModalClone';
 
 const remote = require('electron').remote;
 const app = remote.app;
@@ -60,7 +60,9 @@ class ExptManager extends React.Component {
       scriptDir: '/legacy/data',
       activeScript: '',
       runningExpts: [],
-      pausedExpts: []
+      pausedExpts: [],
+      alertOpen: false,
+      alertDirections: 'Enter new experiment name',
     };
     
     ipcRenderer.on('to-renderer', (event, arg) => {
@@ -85,7 +87,6 @@ class ExptManager extends React.Component {
 
   handleSelectFolder = (activeFolder) => {
     var exptDir = app.getPath('userData') + this.state.scriptDir + '/' + activeFolder;
-    console.log(exptDir);
     var activeScript = activeFolder + '/' + 'custom_script.py';
     if (this.state.exptDir !== exptDir){
       this.setState({exptDir: exptDir, activeScript: activeScript});
@@ -122,31 +123,53 @@ class ExptManager extends React.Component {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
      });
-  }
+   }
+   
+    handleEdit = (script) => {
+        console.log(script);
+    };
+
+    handleGraph = (script) => {
+         console.log(script);
+    };
+
+    handleClone = (script) => {
+        this.setState({alertOpen: true});
+    };
+
+    onResumeClone = (name) => {
+        this.setState({alertOpen: false});
+        
+    };
 
   render() {
     const { classes } = this.props;
-    
-    /*
-     *         <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
-          <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
-        </Card>
-        
-        <Card classes={{root:classes.cardRoot}} className={classes.cardPyshell}>
-            <RunScript className='pyshellRunner' directory={this.state.exptDir}/>
-        </Card>
-     */
 
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
 
         <Card classes={{root:classes.cardRoot}} className={classes.cardScript}>
-          <ScriptFinder subFolder={this.state.scriptDir} isScript= {true} onSelectFolder={this.handleSelectFolder} onStart={this.handleStart} onStop={this.handleStop} onPause={this.handlePause} onContinue={this.handleContinue} runningExpts={this.state.runningExpts} pausedExpts={this.state.pausedExpts}/>
+          <ScriptFinder subFolder={this.state.scriptDir}
+            isScript= {true} 
+            onSelectFolder={this.handleSelectFolder}
+            onClone={this.handleClone} 
+            onEdit={this.handleEdit} 
+            onGraph={this.handleGraph} 
+            onStart={this.handleStart} 
+            onStop={this.handleStop} 
+            onPause={this.handlePause} 
+            onContinue={this.handleContinue} 
+            runningExpts={this.state.runningExpts} 
+            pausedExpts={this.state.pausedExpts}/>
         </Card>
         
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
-      </div>
+        <ModalClone
+          alertOpen= {this.state.alertOpen}
+          alertQuestion = {this.state.alertDirections}
+          onAlertAnswer = {this.onResumeClone}/>
+      </div>      
     );
   }
 }

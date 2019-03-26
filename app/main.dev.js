@@ -94,6 +94,11 @@ ipcMain.on('stop-script', (event, arg) => {
    var recipientShell = exptMap[arg];
    recipientShell.send('stop-script');
    delete exptMap[arg];
+   for (var i = 0; i < pausedExpts.length; i++) {
+       if (pausedExpts[i] === arg) {
+           pausedExpts.splice(i, 1);
+       }
+   }    
 });
 
 ipcMain.on('running-expts', (event, arg) => {

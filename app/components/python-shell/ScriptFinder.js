@@ -94,7 +94,6 @@ class ScriptFinder extends React.Component {
 
   componentDidMount(){
     var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
-    console.log(filequery);
     var showPagination = (filequery.length > 5) 
     this.setState({fileJSON: filequery, showPagination: showPagination});
   }
@@ -130,8 +129,6 @@ class ScriptFinder extends React.Component {
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
-        console.log(this.state.selection);
-        console.log(rowInfo);
         this.props.onSelectFolder(rowInfo.original.key);
         return true;
       }
@@ -161,15 +158,15 @@ class ScriptFinder extends React.Component {
       },
       {
           Header: '',
-          Cell: (cellInfo) => (<div><button className="tableIconButton" onClick={() => this.props.handleEdit(cellInfo.row.key)}> <FaPen size={13}/> </button>
-                             <button className="tableIconButton" onClick={() => this.props.handleGraphs(cellInfo.row.key)}> <FiActivity size={20}/> </button>
-                             {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onStart(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
-                             {this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onContinue(cellInfo.row.key)}> <FaPlay size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>)}
-                             <button className="tableTextButton" onClick={() => this.props.handleCopy(cellInfo.row.key)}> CLONE </button></div>),
+          Cell: (cellInfo) => (<div>
+            <button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button>
+            <button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FiActivity size={20}/> </button>
+            {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onStart(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
+            {this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onContinue(cellInfo.row.key)}> <FaPlay size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>)}
+            <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
+           </div>),
           width: 400
       }];    
-
-      console.log(this.props.runningExpts);
     return (
                         
       <div>

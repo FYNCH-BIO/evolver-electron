@@ -1,0 +1,35 @@
+.customcloseButton {
+  fill: white;
+}
+
+.customModal {
+  background-color: black;
+}
+
+.alertInput {
+    width: 500px;
+    text-align: center;
+    border: 2px solid white;
+    border-radius: 4px;
+    background-color: black;
+    color: white;
+}
+
+.newExptModal {
+    background-color: black;
+    width: 750px;
+    text-align: center;
+    border-radius: 5px;
+    border-color: white;
+}
+
+.alertCloseButton {
+  position: absolute;
+  right:-60px;
+  top:0px;
+  fill: white;
+}
+
+.alertBtns {
+    top: 30px;
+}
