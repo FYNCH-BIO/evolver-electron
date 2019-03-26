@@ -1,0 +1,18 @@
+.expEditorHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 12px 0px 0px 40px;
+  border: none;
+  font-size: 30px;
+}
+
+.expEditorHomeBtn:hover{
+  color: white;
+}
+
+.editorTitle{
+  position: absolute;
+  top: 15px;
+  left: 90px;
+  z-index: 10;
+}

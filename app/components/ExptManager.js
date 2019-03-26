@@ -7,7 +7,6 @@ import { withStyles } from '@material-ui/core/styles';
 import {FaArrowLeft} from 'react-icons/fa';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
-import ScriptEditor from './python-shell/ScriptEditor'
 const { ipcRenderer } = require('electron');
 import ModalClone from './python-shell/ModalClone';
 
@@ -131,7 +130,6 @@ class ExptManager extends React.Component {
    }
    
     handleEdit = (script) => {
-        console.log(script);
     };
 
     handleGraph = (script) => {

@@ -10,6 +10,8 @@ import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
 import {FaPlay, FaStop, FaPause, FaPen } from 'react-icons/fa';
 import {FiActivity } from 'react-icons/fi'
+import { Link } from 'react-router-dom';
+import routes from '../../constants/routes.json';
 
 
 const remote = require('electron').remote;
@@ -165,7 +167,7 @@ class ScriptFinder extends React.Component {
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button>
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
             <button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FiActivity size={20}/> </button>
             {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onStart(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
             {this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onContinue(cellInfo.row.key)}> <FaPlay size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>)}

@@ -11,6 +11,7 @@ import GraphingPage from './containers/GraphingPage';
 import ExptManagerPage from './containers/ExptManagerPage';
 import TempCalibrationsPage from './containers/TempCalibrationsPage';
 import CalibrationsMenuPage from './containers/CalibrationsMenuPage';
+import ScriptEditorPage from './containers/ScriptEditorPage';
 
 
 export default () => (
@@ -23,6 +24,7 @@ export default () => (
       <Route exact path={routes.TEMPCALIBRATIONS} component={TempCalibrationsPage} />
       <Route exact path={routes.GRAPHING} component={GraphingPage} />
       <Route exact path={routes.EXPTMANAGER} component={ExptManagerPage} />
+      <Route exact path={routes.EDITOR} componenet={ScriptEditorPage} />
     </Switch>
   </App>
 );

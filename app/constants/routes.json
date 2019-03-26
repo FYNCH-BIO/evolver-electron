@@ -6,5 +6,6 @@
   "DENSITYCALIBRATIONS": "/densitycalibrate",
   "TEMPCALIBRATIONS": "/tempcalibrate",
   "GRAPHING": "/graph",
-  "EXPTMANAGER": "/exptmanager"
+  "EXPTMANAGER": "/exptmanager",
+  "EDITOR": "/scripteditor"
 }
