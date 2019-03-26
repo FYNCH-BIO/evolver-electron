@@ -41,9 +41,9 @@
             pyShell.send('pause-script');            
         });
         
-        ipcRenderer.on('restart-script', (event, arg) => {
-            logger.info("Restarting script");    
-            pyShell.send('restart-script');
+        ipcRenderer.on('continue-script', (event, arg) => {
+            logger.info("Continuing script");    
+            pyShell.send('continue-script');
         });
         
         ipcRenderer.on('stop-script', (event, arg) => {

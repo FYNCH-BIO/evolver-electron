@@ -80,24 +80,20 @@ ipcMain.on('pause-script', (event, arg) => {
    pausedExpts.push(arg);
 });
 
-ipcMain.on('restart-script', (event, arg) => {
+ipcMain.on('continue-script', (event, arg) => {
    var recipientShell = exptMap[arg];
-   recipientShell.send('restart-script');
+   recipientShell.send('continue-script');
    for (var i = 0; i < pausedExpts.length; i++) {
        if (pausedExpts[i] === arg) {
            pausedExpts.splice(i, 1);
        }
-   }
+   }    
 });
 
 ipcMain.on('stop-script', (event, arg) => {
    var recipientShell = exptMap[arg];
    recipientShell.send('stop-script');
-   for (var i = 0; i < pausedExpts.length; i++) {
-       if (pausedExpts[i] === arg) {
-           pausedExpts.splice(i, 1);
-       }
-   }   
+   delete exptMap[arg];
 });
 
 ipcMain.on('running-expts', (event, arg) => {

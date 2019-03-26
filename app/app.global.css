@@ -14,6 +14,7 @@
 @import '~react-simple-keyboard/build/css/index.css';
 @import './components/calibrationInputs/TextKeyboard.css';
 @import './components/evolverConfigs/evolver-configs.css';
+@import './components/python-shell/ScriptFinder.css';
 
 
 

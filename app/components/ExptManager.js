@@ -9,38 +9,48 @@ import {FaArrowLeft} from 'react-icons/fa';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 import ScriptEditor from './python-shell/ScriptEditor'
+const { ipcRenderer } = require('electron');    
 
 const remote = require('electron').remote;
 const app = remote.app;
 
 const styles = {
   cardRoot: {
-    width: 420,
-    height: 350,
+    width: 1000,
+    height: 1000,
     position: 'absolute',
     backgroundColor: 'black',
     verticalAlign: 'bottom',
-    overflowX: 'hidden',
-    overflowY: 'scroll',
+    horizontalAlign: 'left',
     padding: '5px 0px 15px 15px'
   },
   cardScript:{
     top: '60px',
-    left: '30px',
-  },
-  cardEditor:{
-    width: 670,
-    height: 800,
-    top: '50px',
-    left: '440px',
-    padding: '10px'
+    left: '75px',
+    overflowY: 'auto'
   },
   cardPyshell: {
     top: '200px',
-    left:'20px'
+    left: '30px',
   }
-
 };
+
+function startScript(exptDir) {
+    var temp_input = new Array(16);
+    temp_input.fill(30);
+    var stir_input = new Array(16);
+    stir_input.fill(8);
+    var lower_thresh = new Array(16);
+    lower_thresh.fill(.2);
+    var upper_thresh = new Array(16);
+    upper_thresh.fill(.4);
+    var volume = 20;
+    var parameters = {'temp_input':temp_input, 'stir_input': stir_input, 'lower_thresh': lower_thresh, 'upper_thresh': upper_thresh, 'volume':volume};
+    var evolverIp = 'localhost';
+    var evolverPort = 5558;
+    var name = 'testing_pyshell';
+    ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
+}
 
 
 class ExptManager extends React.Component {
@@ -48,8 +58,29 @@ class ExptManager extends React.Component {
     super(props);
     this.state = {
       scriptDir: '/legacy/data',
-      activeScript: ''
+      activeScript: '',
+      runningExpts: [],
+      pausedExpts: []
     };
+    
+    ipcRenderer.on('to-renderer', (event, arg) => {
+        console.log(arg);
+    });
+
+    ipcRenderer.on('running-expts', (event, arg) => {
+        console.log('running');
+        console.log(arg);
+        this.setState({runningExpts: arg});
+    });
+    
+    ipcRenderer.on('paused-expts', (event, arg) => {
+        console.log('paused');
+        console.log(arg);        
+        this.setState({pausedExpts: arg});
+    });
+    
+    ipcRenderer.send('paused-expts');
+    ipcRenderer.send('running-expts');
   }
 
   handleSelectFolder = (activeFolder) => {
@@ -60,24 +91,58 @@ class ExptManager extends React.Component {
       this.setState({exptDir: exptDir, activeScript: activeScript});
     }
   }
+  
+  handleStart = (script) => {
+    startScript(app.getPath('userData') + this.state.scriptDir + '/' + script);
+    setTimeout(function () {
+        ipcRenderer.send('paused-expts');
+        ipcRenderer.send('running-expts');
+    }, 1000);
+  }
+
+  handleStop = (script) => {
+    ipcRenderer.send('stop-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+    setTimeout(function () {
+        ipcRenderer.send('paused-expts');
+        ipcRenderer.send('running-expts');
+    }, 1000);
+  }
+  
+  handlePause = (script) => {
+    ipcRenderer.send('pause-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+    setTimeout(function () {
+        ipcRenderer.send('paused-expts');
+        ipcRenderer.send('running-expts');
+    }, 1000);
+  }
+  
+  handleContinue = (script) => {
+     ipcRenderer.send('continue-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+     setTimeout(function() {
+        ipcRenderer.send('paused-expts');
+        ipcRenderer.send('running-expts');
+     });
+  }
 
   render() {
     const { classes } = this.props;
+    
+    /*
+     *         <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
+          <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
+        </Card>
+        
+        <Card classes={{root:classes.cardRoot}} className={classes.cardPyshell}>
+            <RunScript className='pyshellRunner' directory={this.state.exptDir}/>
+        </Card>
+     */
 
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
 
         <Card classes={{root:classes.cardRoot}} className={classes.cardScript}>
-          <ScriptFinder subFolder={this.state.scriptDir} isScript= {true} onSelectFolder={this.handleSelectFolder}/>
-        </Card>
-
-        <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
-          <ScriptEditor className='scriptEditor' activeScript={this.state.activeScript}/>
-        </Card>
-        
-        <Card classes={{root:classes.cardRoot}} className={classes.cardPyshell}>
-            <RunScript className='pyshellRunner' directory={this.state.exptDir}/>
+          <ScriptFinder subFolder={this.state.scriptDir} isScript= {true} onSelectFolder={this.handleSelectFolder} onStart={this.handleStart} onStop={this.handleStop} onPause={this.handlePause} onContinue={this.handleContinue} runningExpts={this.state.runningExpts} pausedExpts={this.state.pausedExpts}/>
         </Card>
         
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>

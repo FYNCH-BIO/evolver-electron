@@ -8,24 +8,16 @@ import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
 import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
+import {FaPlay, FaStop, FaPause, FaPen } from 'react-icons/fa';
+import {FiActivity } from 'react-icons/fi'
 
 
 const remote = require('electron').remote;
 const app = remote.app;
 
 const styles = {
-
 };
 
-const columns = [{
-    Header: 'Name',
-    accessor: 'key' // String-based value accessors!
-  },{
-    Header: 'Modified',
-    accessor: 'modified',
-    Cell: props => <span> {props.original.modifiedString} </span>
-
-  }];
 
 var fs = require('fs');
 var path = require('path');
@@ -76,6 +68,7 @@ function loadFileDir (subFolder, isScript){
           }
           resultJSON['data'][i]['modified'] = modified;
           resultJSON['data'][i]['modifiedString'] = modifiedString;
+          resultJSON['data'][i]['fullPath'] = subFolder + '/' + resultJSON['data'][i]['key'];
         }
       }
     };
@@ -97,12 +90,13 @@ class ScriptFinder extends React.Component {
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,
     };
-  }
+    }
 
   componentDidMount(){
     var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
-    var showPagination = (filequery.length > 5)
-    this.setState({fileJSON: filequery, showPagination: showPagination})
+    console.log(filequery);
+    var showPagination = (filequery.length > 5) 
+    this.setState({fileJSON: filequery, showPagination: showPagination});
   }
 
   componentDidUpdate(prevProps) {
@@ -114,12 +108,23 @@ class ScriptFinder extends React.Component {
     }
   }
 
-
   handleRefresh = (newProps) => {
     var filequery = loadFileDir(newProps, this.state.isScript);
     var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
+  
+  getStatus = (expt) => {
+      if (this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + expt)) {
+          return "Paused";
+      }
+      else if (this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + expt)) {
+          return "Running";
+      }
+      else {
+          return "Stopped";
+      }
+  }
 
 
   isSelected = rowInfo => {
@@ -128,16 +133,45 @@ class ScriptFinder extends React.Component {
         console.log(this.state.selection);
         console.log(rowInfo);
         this.props.onSelectFolder(rowInfo.original.key);
-        return true
+        return true;
       }
     }
    };
-
+  
   render() {
     const { classes } = this.props;
-    const { fileJSON, dirLength } = this.state;
+    const { fileJSON, dirLength } = this.state; 
+    
+  var columns = [
+      {
+        Header: 'Name',
+        accessor: 'key', // String-based value accessors!
+        width: 250
+      },
+      {
+        Header: 'Last Modified',
+        accessor: 'modified',
+        Cell: props => <span> {props.original.modifiedString} </span>,
+        width: 200
+      },
+      {
+          Header: 'Status',
+          width: 150,
+          Cell: cellInfo => <span>{this.getStatus(cellInfo.row.key)}</span>
+      },
+      {
+          Header: '',
+          Cell: (cellInfo) => (<div><button className="tableIconButton" onClick={() => this.props.handleEdit(cellInfo.row.key)}> <FaPen size={13}/> </button>
+                             <button className="tableIconButton" onClick={() => this.props.handleGraphs(cellInfo.row.key)}> <FiActivity size={20}/> </button>
+                             {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onStart(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
+                             {this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onContinue(cellInfo.row.key)}> <FaPlay size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>)}
+                             <button className="tableTextButton" onClick={() => this.props.handleCopy(cellInfo.row.key)}> CLONE </button></div>),
+          width: 400
+      }];    
 
+      console.log(this.props.runningExpts);
     return (
+                        
       <div>
         <ReactTable
           data={fileJSON}
@@ -145,6 +179,7 @@ class ScriptFinder extends React.Component {
           noDataText="Select an Experiment Type"
           showPagination={this.state.showPagination}
           pageSize={5}
+          height={100}
           resizable={false}
           showPageSizeOptions= {false}
           loading={false}
