@@ -14,6 +14,9 @@ import ModalClone from './python-shell/ModalClone';
 const remote = require('electron').remote;
 const app = remote.app;
 
+const fs = require('fs');
+const path = require('path');
+
 const styles = {
   cardRoot: {
     width: 1000,
@@ -63,6 +66,8 @@ class ExptManager extends React.Component {
       pausedExpts: [],
       alertOpen: false,
       alertDirections: 'Enter new experiment name',
+      exptToClone: '',
+      refind: false
     };
     
     ipcRenderer.on('to-renderer', (event, arg) => {
@@ -134,13 +139,27 @@ class ExptManager extends React.Component {
     };
 
     handleClone = (script) => {
-        this.setState({alertOpen: true});
+        this.setState({alertOpen: true, exptToClone: script});
     };
 
-    onResumeClone = (name) => {
+    onResumeClone = (exptName) => {
         this.setState({alertOpen: false});
+        this.createNewExperiment(exptName, this.state.exptToClone);
         
     };
+    
+    createNewExperiment = (exptName, exptToClone) => {
+        var newDir = path.join(app.getPath('userData') + this.state.scriptDir, exptName);
+        var oldDir = path.join(app.getPath('userData') + this.state.scriptDir, exptToClone);
+        if (!fs.existsSync(newDir)) {
+            fs.mkdirSync(newDir);
+        }
+        fs.copyFileSync(path.join(oldDir, 'custom_script.py'), path.join(newDir, 'custom_script.py'));
+        fs.copyFileSync(path.join(oldDir, 'eVOLVER_module.py'), path.join(newDir, 'eVOLVER_module.py'));
+        fs.copyFileSync(path.join(oldDir, 'main_eVOLVER.py'), path.join(newDir, 'main_eVOLVER.py'));
+        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
+        this.setState({refind: !this.state.refind});
+    }
 
   render() {
     const { classes } = this.props;
@@ -161,7 +180,8 @@ class ExptManager extends React.Component {
             onPause={this.handlePause} 
             onContinue={this.handleContinue} 
             runningExpts={this.state.runningExpts} 
-            pausedExpts={this.state.pausedExpts}/>
+            pausedExpts={this.state.pausedExpts}
+            refind={this.state.refind}/>
         </Card>
         
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>

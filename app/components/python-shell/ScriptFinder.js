@@ -106,9 +106,16 @@ class ScriptFinder extends React.Component {
       })
     }
   }
+  
+  componentWillReceiveProps(props) {
+      const {refind} = this.props;
+      if (props.refind !== refind) {
+          this.handleRefresh(props);
+      }
+  }
 
   handleRefresh = (newProps) => {
-    var filequery = loadFileDir(newProps, this.state.isScript);
+    var filequery = loadFileDir(this.state.subFolder, this.state.isScript);
     var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
@@ -138,7 +145,6 @@ class ScriptFinder extends React.Component {
   render() {
     const { classes } = this.props;
     const { fileJSON, dirLength } = this.state; 
-    
   var columns = [
       {
         Header: 'Name',

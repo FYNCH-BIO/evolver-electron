@@ -28,16 +28,10 @@ class ModalClone extends React.Component {
     if (this.props.alertOpen !== prevProps.alertOpen) {
       this.setState({ open: this.props.alertOpen})
     }
-    if (this.props.alertQuestion !== prevProps.alertQuestion) {
-      this.setState({ question: this.props.alertQuestion})
-    }
-    if (this.props.alertAnswers !== prevProps.alertAnswers) {
-      this.setState({ answers: this.props.alertAnswers})
-    }
   }
   
   componentWillReceiveProps(nextProps) {
-      this.setState({open:true});
+      this.setState({open:nextProps.alertOpen});
   }
 
   onOpenModal = () => {
