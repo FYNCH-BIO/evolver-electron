@@ -83,6 +83,8 @@ export default class Home extends Component<Props> {
           var ip = store.get('activeEvolver').value;
           var socketString = "http://" + ip + ":8081/dpu-evolver";
           this.state.socket = io.connect(socketString, {reconnect:true});
+          // this.state.socket = io.connect("http://localhost:5558/dpu-evolver", {reconnect:true});
+
         } else {
           this.state.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
         }
