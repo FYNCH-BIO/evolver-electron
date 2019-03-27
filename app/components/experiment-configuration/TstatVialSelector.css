@@ -1,0 +1,164 @@
+/* Demo specifics */
+
+.main {
+  padding: 10px 10px;
+  overflow: hidden;
+  height: auto;
+  overflow: visible;
+  position: relative;
+}
+
+.selectable-selectbox {
+  z-index: 9000;
+  position: absolute;
+  cursor: default;
+  background: none;
+  border: 2px dashed white;
+}
+.albums {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.album-label {
+  display: block;
+  font-size: smaller;
+}
+.item {
+  position: relative;
+  width: 125px;
+  min-height: 125px;
+  border-radius: 125px;
+  margin: 7px;
+  float: left;
+  text-align: center;
+  border: 2px solid #cccccc;
+  padding: 18px;
+  overflow: hidden;
+  color: grey;
+  background: #1e1a1b;
+}
+.item.not-selectable {
+  background: #dcdcdc;
+}
+.item .tick {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+.item h2 {
+  font-size: 17px;
+  margin-top: 0;
+  margin-bottom: 0;
+  color: inherit;
+  font-weight: 600;
+}
+.item.selected {
+  background: #1e1a1b;
+  color: #f58245;
+  border: 2px solid #f58245;
+}
+.item.selecting {
+  border: 2px solid #f58245;
+  color: #f58245;
+}
+.not-selectable {
+}
+.counter {
+  color: #009688;
+}
+.selectable-button {
+  display: inline-block;
+  margin: 15px 10px 10px 3px;
+}
+.in-selection-mode .item {
+  cursor: pointer;
+}
+button {
+  display: inline-block;
+  position: relative;
+  line-height: 32px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  border: none;
+  outline: none;
+  padding: 0;
+  width: 100px;
+  height: 50px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+  font-size: 20px;
+}
+
+/* If you want the content centered horizontally and vertically */
+.centered {
+  text-align: center;
+  float: none;
+  margin: 0 auto;
+}
+
+.toggle-button-position {
+  text-align: left;
+  position: relative;
+  top: -60px;
+  left: 17px;
+  width: 120px;
+}
+
+/* If you want the content centered horizontally and vertically */
+.vialArray-gui {
+  padding-left: 0px;
+  background-color: black;
+}
+
+.upper-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.lower-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.temp-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.stir-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.vialSelectorButtons {
+  width: 178px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+}
+
+.button-position {
+  text-align: right;
+}
+
+.saveAllButton {
+  width: 178px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: white;
+  color: black;
+  border: 2px solid white;
+}

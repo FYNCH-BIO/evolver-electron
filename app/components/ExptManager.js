@@ -187,7 +187,7 @@ class ExptManager extends React.Component {
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertDirections}
           onAlertAnswer = {this.onResumeClone}/>
-      </div>      
+      </div>
     );
   }
 }

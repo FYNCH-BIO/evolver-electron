@@ -5,10 +5,10 @@ import Card from '@material-ui/core/Card';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import {FaArrowLeft} from 'react-icons/fa';
-import TstatEditor from './TstatEditor'
+import TstatEditor from './experiment-configuration/TstatEditor'
 
 import 'brace/mode/python';
-import 'brace/theme/chaos';
+import 'brace/theme/monokai';
 
 var fs = require('fs');
 var path = require('path');
@@ -17,13 +17,10 @@ const app = remote.app;
 
 const styles = {
   cardRoot: {
-    width: 1000,
-    height: 1000,
     position: 'absolute',
     backgroundColor: 'black',
     verticalAlign: 'bottom',
-    horizontalAlign: 'left',
-    padding: '5px 0px 15px 15px'
+    horizontalAlign: 'left'
   },
   cardEditor:{
     top: '60px',
@@ -83,13 +80,13 @@ class ScriptEditor extends React.Component {
     var tstatParameterPath = path.join(this.state.exptDir, 'tstat_parameters.json');
     var editorComponent;
     
-    editorComponent = fs.existsSync(tstatParameterPath) ? editorComponent = <div><TstatEditor tstatParameters={tstatParameterPath}/></div> : <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
+    editorComponent = fs.existsSync(tstatParameterPath) ? editorComponent = <div><TstatEditor tstatParameters={tstatParameterPath} onSave={this.handleSaveParameters}/></div> : <Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
             <AceEditor
               value= {this.state.scriptContent}
               width='630px'
               height='550px'
               mode="python"
-              theme="chaos"
+              theme="monokai"
               onChange={this.onChange}
               name="pythonScriptEditor"
               editorProps={{$blockScrolling: true}}
@@ -98,9 +95,10 @@ class ScriptEditor extends React.Component {
         
     return (
       <div>
+          
           <h2 className="editorTitle"> Experiment Editor </h2>
           {editorComponent}
-          <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>
+        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>                  
       </div>
     );
   }
