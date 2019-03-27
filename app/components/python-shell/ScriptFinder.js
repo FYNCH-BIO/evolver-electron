@@ -8,8 +8,7 @@ import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
 import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
-import {FaPlay, FaStop, FaPause, FaPen } from 'react-icons/fa';
-import {FiActivity } from 'react-icons/fi'
+import {FaPlay, FaStop, FaPause, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
 
@@ -143,6 +142,10 @@ class ScriptFinder extends React.Component {
       }
     }
    };
+   
+   handlePlay = exptName => {
+       this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + exptName) ? this.props.onContinue(exptName): this.props.onStart(exptName);
+   }
   
   render() {
     const { classes } = this.props;
@@ -168,9 +171,9 @@ class ScriptFinder extends React.Component {
           Header: '',
           Cell: (cellInfo) => (<div>
             <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FiActivity size={20}/> </button>
-            {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onStart(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
-            {this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onContinue(cellInfo.row.key)}> <FaPlay size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>)}
+            <button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button>
+            {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) && !this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
+            <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>
             <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
            </div>),
           width: 400
@@ -183,7 +186,7 @@ class ScriptFinder extends React.Component {
           columns={columns}
           noDataText="Select an Experiment Type"
           showPagination={this.state.showPagination}
-          pageSize={5}
+          pageSize={8}
           height={100}
           resizable={false}
           showPageSizeOptions= {false}

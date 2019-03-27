@@ -24,7 +24,7 @@ export default () => (
       <Route exact path={routes.TEMPCALIBRATIONS} component={TempCalibrationsPage} />
       <Route exact path={routes.GRAPHING} component={GraphingPage} />
       <Route exact path={routes.EXPTMANAGER} component={ExptManagerPage} />
-      <Route exact path={routes.EDITOR} componenet={ScriptEditorPage} />
+      <Route exact path={routes.EDITOR} component={ScriptEditorPage} />
     </Switch>
   </App>
 );
