@@ -113,7 +113,9 @@ class EvolverSelect extends React.Component {
 
   callback_scanEvolvers = (index, state) => {
     if (this._isMounted && store.has('activeEvolver')){
-      var registeredEvolvers = JSON.parse(JSON.stringify(this.state.registeredEvolvers));
+
+      registeredEvolvers = store.get('registeredEvolvers')
+      var registeredEvolvers = JSON.parse(JSON.stringify(registeredEvolvers));
       var selectedOption = JSON.parse(JSON.stringify(this.state.selectedOption));
       if (state){
         registeredEvolvers[index]['statusColor'] = '#32CD32';
@@ -157,7 +159,7 @@ class EvolverSelect extends React.Component {
             options= {this.state.registeredEvolvers}
             onChange={this.handleChange}
             styles={customStyles}
-            placeholder={<div>No Registered Devices</div>}
+            placeholder={<div>Select Registered Devices</div>}
           />
           <div style={{position:'absolute',right:'26px',top:'-10px'}}>
             <Typography className={classes.title}> ACTIVE EVOLVER </Typography>

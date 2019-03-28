@@ -17,8 +17,7 @@
 @import './components/python-shell/ScriptFinder.css';
 @import './components/ScriptEditor.css';
 @import './components/experiment-configuration/TstatVialSelector.css';
-
-
+@import './components/Graph.css';
 
 
 body {

@@ -133,6 +133,7 @@ class DesktopConfig extends React.Component {
       registeredEvolvers[registeredIndex] = this.state.newEvolver;
       console.log('overwrting register')
     }
+    console.log(registeredEvolvers)
     store.set('registeredEvolvers', registeredEvolvers)
     this.setState({registered: true})
   }
@@ -199,9 +200,23 @@ class DesktopConfig extends React.Component {
               {registrationButton}
             </div>
           </div>
-      } else if (!this.state.registerSocket.connected) {
+      } else if (!this.state.registerSocket.connected && registeredIndex == undefined) {
         registrationStatus =
             <Typography className={classes.registrationStatus}> eVOLVER not found on this IP ({this.state.registrationStatusIP}). Please verify IP address and check device connection. </Typography>
+      } else if (!this.state.registerSocket.connected && registeredIndex !== undefined){
+        registrationStatus =
+          <div>
+            {registrationText}
+            <div style={{position: 'absolute',margin:'60px 0px 0px 15px'}}>
+              <Typography className={classes.headerPrimary}> IP ADDRESS </Typography>
+              <Typography variant="h5" className={classes.headerSecondary}>{registeredEvolvers[registeredIndex].value}</Typography>
+              <Typography className={classes.headerPrimary}> EVOLVER NAME </Typography>
+              <Typography variant="h5" className={classes.headerSecondary}>{registeredEvolvers[registeredIndex].name}</Typography>
+              <Typography className={classes.headerPrimary}> MAC ADDRESS </Typography>
+              <Typography variant="h5" className={classes.headerSecondary}>{registeredEvolvers[registeredIndex].mac}</Typography>
+              {registrationButton}
+            </div>
+          </div>
       }
     }
 
