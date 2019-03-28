@@ -11,6 +11,7 @@
 @import './components/calibrationInputs/TextKeyboard.css';
 @import '~react-simple-keyboard/build/css/index.css';
 @import './components/evolverConfigs/evolver-configs.css';
+@import './components/Graph.css';
 
 
 body {

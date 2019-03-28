@@ -17,8 +17,8 @@ const styles = theme => ({
     borderRadius: '10px',
     display: 'flex',
     width: '300px',
-    padding: '0px 0px 20px 0px',
-    justifyContent: 'center'
+    padding: '0px 0px 30px 0px',
+    justifyContent: 'center',
   },
   label: {
     color: 'white',
@@ -56,6 +56,14 @@ class VialArrayBtns extends React.Component {
       labels: this.props.labels,
       title: this.props.radioTitle
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.labels !== prevProps.labels) {
+      this.setState({
+        labels: this.props.labels,
+        value: this.props.value})
+    }
   }
 
   componentDidMount () {
