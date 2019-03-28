@@ -150,3 +150,11 @@ button {
   color: black;
   border: 2px solid white;
 }
+
+.stop-button-position {
+  text-align: right;
+  position: absolute;
+  top: 584px;
+  left: 888px;
+  width: 120px;
+}

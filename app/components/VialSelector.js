@@ -150,7 +150,6 @@ class VialSelector extends Component<Props>  {
 
               <div className="button-position">
                 <ActiveButtons selectedItems={this.state.selectedItems} />
-                <button className = "btn btn-md stopAllButton">FORCE STOP ALL</button>
               </div>
 
             </SelectableGroup>
@@ -158,6 +157,9 @@ class VialSelector extends Component<Props>  {
           <div className= "toggle-button-position">
             <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
+          <div className="stop-button-position">
+          <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
+          </div>          
         </Card>
     )
   }
