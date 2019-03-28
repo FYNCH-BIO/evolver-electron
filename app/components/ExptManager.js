@@ -56,8 +56,8 @@ function startScript(exptDir) {
         }
         parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};            
     } 
-    var evolverIp = 'localhost';
-    var evolverPort = 5558;
+    var evolverIp = '192.168.1.3';
+    var evolverPort = 8081;
     var name = 'testing_pyshell';
     ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
 }
@@ -164,6 +164,10 @@ class ExptManager extends React.Component {
         fs.copyFileSync(path.join(oldDir, 'eVOLVER_module.py'), path.join(newDir, 'eVOLVER_module.py'));
         fs.copyFileSync(path.join(oldDir, 'main_eVOLVER.py'), path.join(newDir, 'main_eVOLVER.py'));
         fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
+        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
+        if (fs.existsSync(path.join(oldDir, 'tstat_parameters.json'))) {
+            fs.copyFileSync(path.join(oldDir, 'tstat_parameters.json'), path.join(newDir, 'tstat_parameters.json'));
+        }        
         this.setState({refind: !this.state.refind});
     }
 

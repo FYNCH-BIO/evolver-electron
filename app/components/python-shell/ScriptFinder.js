@@ -60,7 +60,7 @@ function loadFileDir (subFolder, isScript){
         if (resultJSON['data'][i]['type'] == 'folder'){
           var modifiedString;
           var modified;
-          var scriptName = 'custom_script.py';          
+          var scriptName = 'tstat_parameters.json';          
           for (var j = 0; j < resultJSON['data'][i]['children'].length; j++) {
             if (resultJSON['data'][i]['children'][j]['key'] == scriptName) {
               modifiedString = resultJSON['data'][i]['children'][j]['modifiedString'];
@@ -154,13 +154,13 @@ class ScriptFinder extends React.Component {
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
-        width: 250
+        width: 295
       },
       {
         Header: 'Last Modified',
         accessor: 'modified',
         Cell: props => <span> {props.original.modifiedString} </span>,
-        width: 200
+        width: 215
       },
       {
           Header: 'Status',
@@ -171,7 +171,7 @@ class ScriptFinder extends React.Component {
           Header: '',
           Cell: (cellInfo) => (<div>
             <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
             {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) && !this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
             <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>
             <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>

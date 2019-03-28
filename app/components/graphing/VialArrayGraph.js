@@ -6,6 +6,7 @@ import ReactEcharts from 'echarts-for-react';  // or var ReactEcharts = require(
 const remote = require('electron').remote;
 const app = remote.app;
 const fs = require('fs')
+const path = require('path');
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
@@ -110,8 +111,8 @@ class VialArrayGraph extends React.Component {
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
       for (var i = 0; i < 16; i++) {
-        var odPath =  app.getPath('userData') + '/legacy/data/pombe_dc_20190314_expt/OD/vial' + i + '_OD.txt'
-        var tempPath =  app.getPath('userData') + '/legacy/data/pombe_dc_20190314_expt/temp/vial' + i + '_temp.txt'
+        var odPath =  path.join(this.props.exptDir,'OD', 'vial' + i + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'temp', 'vial' + i + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
@@ -155,8 +156,8 @@ class VialArrayGraph extends React.Component {
         console.log('Plotting Vial: ' + this.state.activePlot)
 
 
-        var odPath =  app.getPath('userData') + '/legacy/data/pombe_dc_20190314_expt/OD/vial' + this.state.activePlot + '_OD.txt'
-        var tempPath =  app.getPath('userData') + '/legacy/data/pombe_dc_20190314_expt/temp/vial' + this.state.activePlot + '_temp.txt'
+        var odPath =  path.join(this.props.exptDir, 'OD', 'vial' + this.state.activePlot + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'temp', 'vial' + this.state.activePlot + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 

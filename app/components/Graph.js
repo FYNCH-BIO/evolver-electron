@@ -9,7 +9,7 @@ import VialArrayGraph from './graphing/VialArrayGraph';
 import VialArrayBtns from './graphing/VialArrayBtns';
 import VialMenu from './graphing/VialMenu';
 
-
+var path = require('path');
 
 const styles = {
 
@@ -95,12 +95,14 @@ class Graph extends React.Component {
   }
 
   render() {
-
+      var exptName = path.basename(this.props.exptDir);
     return (
       <div>
-        <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.HOME, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
+        <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
+                <h4 className="graphTitle">{exptName}</h4>
         <VialArrayGraph
           parameter={this.state.parameter}
+          exptDir={this.props.exptDir}
           activePlot = {this.state.activePlot}
           ymax={this.state.ymax}
           timePlotted={this.state.timePlotted}
