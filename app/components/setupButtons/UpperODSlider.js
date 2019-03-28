@@ -23,7 +23,7 @@ const styles = {
 
 class UpperODSlider extends React.Component {
   state = {
-    value: .4,
+    value: .30,
     min: 0,
     max: 1.5,
   };

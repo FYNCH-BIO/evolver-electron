@@ -28,7 +28,7 @@ const styles = {
     width: 580,
     height: 620,
     margin: '3px 5px 15px 20px',
-  },
+  }
 };
 
 const Label = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
@@ -46,7 +46,7 @@ const Label = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
 )
 
 class List extends Component {
-  shouldComponentUpdate(nextProps) {
+  componentDidUpdate(nextProps) {
     return nextProps.items !== this.props.items
   }
 
@@ -89,7 +89,7 @@ class TstatVialSelector extends Component<Props>  {
   state = {
     disableFirstRow: false,
     buttonFront: "Vial Order",
-    buttonBack: "Device Map",
+    buttonBack: "Vial Order",
     selectedItems: [],
     selectingItems: [],
   }
@@ -124,11 +124,14 @@ class TstatVialSelector extends Component<Props>  {
     })
   }
 
+    handleSave = () => {
+        this.props.onSave();
+    }
   render() {
     const { classes } = this.props;
     const { items } = this.props
     const { reversed } = this.state
-
+    
     const orderedItems = reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
     const buttonLabel = reversed ? this.state.buttonBack: this.state.buttonFront
 
@@ -151,14 +154,16 @@ class TstatVialSelector extends Component<Props>  {
               <List items={orderedItems} />
 
               <div className="button-position">
-                <ActiveButtons selectedItems={this.state.selectedItems} />
-                <button className = "btn btn-md saveAllButton" onClick={this.props.onSave}> SAVE EXPERIMENT </button>
+                <ActiveButtons selectedItems={this.state.selectedItems}/>
               </div>
 
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">
             <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+          </div>
+          <div className="save-button-position">
+          <button className = "btn btn-md saveAllButton" onClick={this.props.onSave}> SAVE EXPERIMENT </button>
           </div>
         </Card>
     )

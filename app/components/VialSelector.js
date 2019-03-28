@@ -44,7 +44,7 @@ const Label = ({ selecting, selected, vial, od, temp}) => (
 )
 
 class List extends Component {
-  shouldComponentUpdate(nextProps) {
+  componentDidUpdate(nextProps) {
     return nextProps.items !== this.props.items
   }
 

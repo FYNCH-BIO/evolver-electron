@@ -13,8 +13,8 @@ import ModalClone from './python-shell/ModalClone';
 const remote = require('electron').remote;
 const app = remote.app;
 
-const fs = require('fs');
-const path = require('path');
+var fs = require('fs');
+var path = require('path');
 
 const styles = {
   cardRoot: {
@@ -38,16 +38,24 @@ const styles = {
 };
 
 function startScript(exptDir) {
-    var temp_input = new Array(16);
-    temp_input.fill(30);
-    var stir_input = new Array(16);
-    stir_input.fill(8);
-    var lower_thresh = new Array(16);
-    lower_thresh.fill(.2);
-    var upper_thresh = new Array(16);
-    upper_thresh.fill(.4);
     var volume = 20;
-    var parameters = {'temp_input':temp_input, 'stir_input': stir_input, 'lower_thresh': lower_thresh, 'upper_thresh': upper_thresh, 'volume':volume};
+    var jsonParams = '';
+    var paramFilename = path.join(exptDir, 'tstat_parameters.json');
+    var parameters = {};
+    var temp = [];
+    var stir = [];
+    var lower = [];
+    var upper = [];
+    if (fs.existsSync(paramFilename)) {      
+        jsonParams = JSON.parse(fs.readFileSync(paramFilename, 'utf8'));            
+        for (var i = 0; i < jsonParams.length; i++) {
+            temp.push(jsonParams[i].temp);
+            stir.push(jsonParams[i].stir);
+            upper.push(jsonParams[i].upper);
+            lower.push(jsonParams[i].lower);
+        }
+        parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};            
+    } 
     var evolverIp = 'localhost';
     var evolverPort = 5558;
     var name = 'testing_pyshell';

@@ -90,16 +90,16 @@ const styles = theme => ({
 
 function ActiveButtons(props) {
   const currentTag = props.currentTag;
-  if (currentTag == 'upper') {
+  if (currentTag === 'upper') {
     return <UpperODSlider onSubmitButton={props.onSubmitButton}/>;
   }
-  if (currentTag == 'lower') {
+  if (currentTag === 'lower') {
     return <LowerODSlider onSubmitButton={props.onSubmitButton}/>;
   }
-  if (currentTag == 'temp') {
+  if (currentTag === 'temp') {
     return <TempSlider onSubmitButton={props.onSubmitButton}/>;
   }
-  if (currentTag == 'stir') {
+  if (currentTag === 'stir') {
     return <StirSlider onSubmitButton={props.onSubmitButton}/>;
   }
   return null;

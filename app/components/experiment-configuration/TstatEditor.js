@@ -49,6 +49,7 @@ class TstatEditor extends React.Component {
         super(props);
         this.state = {
             vialData: data,
+            rawData: [],
             selectedItems: []
         };
 
@@ -61,11 +62,12 @@ class TstatEditor extends React.Component {
     readParameters = (tstatParameters) => {
         var parameters = fs.readFileSync(tstatParameters, 'utf8');
         parameters = JSON.parse(parameters);
+        var newRawData = parameters;
         parameters = this.formatVialSelectStrings(parameters, 'upper');
         parameters = this.formatVialSelectStrings(parameters, 'lower');
         parameters = this.formatVialSelectStrings(parameters, 'temp');
         parameters = this.formatVialSelectStrings(parameters, 'stir');
-        this.setState({vialData: parameters});
+        this.setState({vialData: parameters, rawData: newRawData});
     };
     
     onSelectVials = (selectedVials) =>    {
@@ -110,13 +112,18 @@ class TstatEditor extends React.Component {
     onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
       var newVialData = this.state.vialData;
+      var newRawData = this.state.rawData;
       for (var i = 0; i < vials.length; i++) {
-          newVialData[i][evolverComponent] = this.formatVialString(value, evolverComponent);
+          newVialData[vials[i]][evolverComponent] = this.formatVialString(value, evolverComponent);
+          newRawData[vials[i]][evolverComponent] = Number(value);
       }
-      
-      console.log(newVialData);
-      this.setState({vialData: newVialData});
+      this.setState({vialData: newVialData, rawData: newRawData});
     };
+    
+    handleSave = () => {
+        console.log('trying to save...')    
+        this.props.onSave(this.state.rawData);
+    }
     
     render() {
         const {classes} = this.props;

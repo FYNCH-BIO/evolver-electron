@@ -74,6 +74,14 @@ class ScriptEditor extends React.Component {
       this.setState({scriptContent: data})
     }.bind(this));
   }
+  
+  handleSaveParameters = (vialData) => {
+      var filename = path.join(this.state.exptDir, 'tstat_parameters.json');
+      console.log("save that shit")
+      console.log(vialData);
+      var filehandle = fs.openSync(filename, 'w');
+      fs.writeSync(filehandle, JSON.stringify(vialData));
+  }
 
   render() {
     const { classes } = this.props;

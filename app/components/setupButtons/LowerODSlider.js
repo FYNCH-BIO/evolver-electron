@@ -23,7 +23,7 @@ const styles = {
 
 class LowerODSlider extends React.Component {
   state = {
-    value: .2,
+    value: .15,
     min: 0,
     max: 1.5,
   };
@@ -49,7 +49,7 @@ class LowerODSlider extends React.Component {
   }
 
   clickSubmit = (event) => {
-      this.props.onSubmitButton("stir", (Math.round(this.state.value * 100)/100).toFixed(2));
+      this.props.onSubmitButton("lower", (Math.round(this.state.value * 100)/100).toFixed(2));
   }
 
   render() {
