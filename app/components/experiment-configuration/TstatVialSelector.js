@@ -28,17 +28,19 @@ const styles = {
     width: 580,
     height: 620,
     margin: '3px 5px 15px 20px',
-  },
+  }
 };
 
-const Label = ({ selecting, selected, vial, od, temp}) => (
+const Label = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="temp-label">{`${temp}`}</span><br/>
-    <span className="OD-label">{`${od}`}</span>
+    <span className="upper-label"> {`${upper}`} </span><br/>
+    <span className="lower-label"> {`${lower}`} </span><br/>       
+    <span className="temp-label"> {`${temp}`} </span>
+    <span className="stir-label"> {`${stir}`} </span>     
     <br />
   </div>
 )
@@ -53,7 +55,7 @@ class List extends Component {
       <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
+            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
           ))}
         </div>
       </div>
@@ -62,7 +64,7 @@ class List extends Component {
 }
 
 const Album = ({
-  selectableRef, selected, selecting, strain, vial, od, temp
+  selectableRef, selected, selecting, strain, vial, upper, lower, temp, stir
 }) => (
   <div
     id = {"vialID-" + vial}
@@ -75,7 +77,7 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} od={od} temp={temp}/>
+    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} upper={upper} lower={lower} temp={temp} stir={stir}/>
   </div>
 )
 
@@ -83,11 +85,11 @@ const SelectableAlbum = createSelectable(Album)
 
 
 
-class VialSelector extends Component<Props>  {
+class TstatVialSelector extends Component<Props>  {
   state = {
     disableFirstRow: false,
     buttonFront: "Vial Order",
-    buttonBack: "Device Map",
+    buttonBack: "Vial Order",
     selectedItems: [],
     selectingItems: [],
   }
@@ -122,11 +124,14 @@ class VialSelector extends Component<Props>  {
     })
   }
 
+    handleSave = () => {
+        this.props.onSave();
+    }
   render() {
     const { classes } = this.props;
     const { items } = this.props
     const { reversed } = this.state
-
+    
     const orderedItems = reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
     const buttonLabel = reversed ? this.state.buttonBack: this.state.buttonFront
 
@@ -149,7 +154,7 @@ class VialSelector extends Component<Props>  {
               <List items={orderedItems} />
 
               <div className="button-position">
-                <ActiveButtons selectedItems={this.state.selectedItems} />
+                <ActiveButtons selectedItems={this.state.selectedItems}/>
               </div>
 
             </SelectableGroup>
@@ -157,16 +162,16 @@ class VialSelector extends Component<Props>  {
           <div className= "toggle-button-position">
             <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
-          <div className="stop-button-position">
-          <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
-          </div>          
+          <div className="save-button-position">
+          <button className = "btn btn-md saveAllButton" onClick={this.props.onSave}> SAVE EXPERIMENT </button>
+          </div>
         </Card>
     )
   }
 }
 
-VialSelector.propTypes = {
+TstatVialSelector.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(VialSelector);
+export default withStyles(styles)(TstatVialSelector);

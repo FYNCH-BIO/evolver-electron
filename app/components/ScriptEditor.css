@@ -1,0 +1,37 @@
+.expEditorHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 12px 0px 0px 40px;
+  border: none;
+  font-size: 30px;
+}
+
+.expEditorHomeBtn:hover{
+  color: white;
+}
+
+.editorTitle{
+  position: absolute;
+  top: 15px;
+  left: 90px;
+  z-index: 10;
+}
+
+.expEditorHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 12px 0px 0px 40px;
+  border: none;
+  font-size: 30px;
+}
+
+.expEditorHomeBtn:hover{
+  color: white;
+}
+
+/* If you want the content centered horizontally and vertically */
+.centered {
+  text-align: center;
+  float: none;
+  margin: 0 auto;
+}

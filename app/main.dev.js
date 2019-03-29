@@ -10,10 +10,118 @@
  *
  * @flow
  */
-import { app, BrowserWindow, Menu  } from 'electron';
+import { ipcMain, app, BrowserWindow, Menu  } from 'electron';
 import MenuBuilder from './menu';
 
 let mainWindow = null;
+
+/*
+ * Ipc communication so background windows can talk to the renderer.
+ * 
+ */ 
+
+var backgroundShells = [];
+var tasks = [];
+var available = [];
+var maxShells = 5;
+
+var exptMap = {};
+var pausedExpts = [];
+
+function makeBackgroundShell() {
+    if (backgroundShells.length >= maxShells) {
+        return;
+    }
+    var pyshellWindow = new BrowserWindow({show:false, nodeIntegrationInWorker: true});
+    pyshellWindow.loadURL('file://' + __dirname + '/' + 'background.html');
+    pyshellWindow.on('closed', () => {
+        console.log('bg window closed');
+    });    
+}
+
+function runPyshells() {
+    if (available.length === 0) {
+        makeBackgroundShell();
+    }
+    while (available.length > 0 && tasks.length > 0) {
+        var task = tasks.shift();
+        if (task.length === 3) {
+            var pyShell = available.shift();
+            pyShell.send(task[0], task[1]);
+            exptMap[task[2]] = pyShell;
+            
+        }
+        else {
+            available.shift().send(task[0], task[1]);
+        }
+        if (available.length === 0 && tasks.length > 0) {
+            makeBackgroundShell();
+        }
+    }
+}
+
+ipcMain.on('for-renderer', (event, arg) => {
+    mainWindow.webContents.send(arg[0], arg[1]);
+});
+
+ipcMain.on('start-script', (event, arg) => {
+    tasks.push([arg[0], arg[1], arg[2]]);
+    runPyshells();
+});
+
+ipcMain.on('send-message', (event, arg) => {  
+   var recipientShell = exptMap[arg[0]];
+   recipientShell.send(arg[1], arg[2]);   
+});
+
+ipcMain.on('pause-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('pause-script');
+   pausedExpts.push(arg);
+});
+
+ipcMain.on('continue-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('continue-script');
+   for (var i = 0; i < pausedExpts.length; i++) {
+       if (pausedExpts[i] === arg) {
+           pausedExpts.splice(i, 1);
+       }
+   }    
+});
+
+ipcMain.on('stop-script', (event, arg) => {
+   var recipientShell = exptMap[arg];
+   recipientShell.send('stop-script');
+   delete exptMap[arg];
+   for (var i = 0; i < pausedExpts.length; i++) {
+       if (pausedExpts[i] === arg) {
+           pausedExpts.splice(i, 1);
+       }
+   }    
+});
+
+ipcMain.on('running-expts', (event, arg) => {
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap)); 
+});
+
+ipcMain.on('paused-expts', (event, arg) => {
+   mainWindow.webContents.send('paused-expts', pausedExpts);
+});
+
+ipcMain.on('ready', (event, arg) => {
+    if (!backgroundShells.includes(event.sender)) {
+        backgroundShells.push(event.sender);
+    }
+    
+    // remove the thread from the expt map
+    console.log(arg);
+    console.log(exptMap[arg]);
+    delete exptMap[arg];
+    
+    available.push(event.sender);
+    runPyshells();
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

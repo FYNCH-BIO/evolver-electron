@@ -1,0 +1,132 @@
+
+.managerFileInput {
+  width: 300px;
+}
+
+.managerFileInput:focus {
+  outline: none;
+}
+
+.scriptSubmitBtn{
+  margin: 100px 0px 0px 100px;
+  width: 40px;
+  height: 40px;
+}
+
+.RunScript{
+  position: absolute;
+  align-items: center;
+  margin: 0px 0px 0px 0px;
+  width: 100vw;
+  bottom: 10px;
+}
+
+.expManagerHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 12px 0px 0px 40px;
+  border: none;
+  font-size: 30px;
+}
+
+.expManagerHomeBtn:hover{
+  color: white;
+}
+
+.refreshBtn{
+  position: absolute;
+  width: auto;
+  height: auto;
+  top: 22px;
+  left: 385px;
+  padding: 5px;
+  background-color: black;
+  border: none;
+  color: #f58245;
+
+}
+
+
+.draganddrop{
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+}
+
+.ReactTable input{
+  height: 25px;
+}
+
+
+.ReactTable {
+  position: absolute;
+  left: -5px;
+  width: 1050px;
+  color: white;
+}
+
+.rt-th {
+  font-size:25px;
+  font-weight: bold;
+  text-align: left;
+  font-style: italic;
+  color: #f58245;
+}
+
+.rt-td {
+  height: 50px;
+  font-size: 22px;
+  line-height: 25px;
+}
+
+.searchbar{
+  width: 350px;
+  color: black;
+}
+
+.managerTitle{
+  position: absolute;
+  top: 15px;
+  left: 90px;
+  z-index: 10;
+}
+
+.ReactTable .-pagination{
+  width: 950px;
+  padding-top: 12px;
+}
+
+.ReactTable .-pagination .-previous, .ReactTable .-pagination .-next {
+  color: white;
+  border-radius: 10px;
+  padding-right: 10px;
+}
+
+.ReactTable .-pagination .-pageJump{
+  width: 80px;
+}
+
+.ReactTable .-pagination .-btn{
+  color: #f58245;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 18px;
+}
+.ReactTable .rt-noData{
+  position: absolute;
+  top: 100px;
+  left: 185px;
+  font-size: 20px;
+  height: 60px;
+  padding: 15px 20px 15px 20px;
+  color: black;
+}
+
+.pastExptTitle {
+  position: absolute;
+  top: 330px;
+  left: 70px;
+  z-index: 10;
+}

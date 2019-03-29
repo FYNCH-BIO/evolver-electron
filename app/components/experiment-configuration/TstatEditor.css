@@ -1,0 +1,15 @@
+.expManagerHomeBtn{
+  background-color: black;
+  position: absolute;
+  margin: 12px 0px 0px 40px;
+  border: none;
+  font-size: 30px;
+}
+
+.expManagerHomeBtn:hover{
+  color: white;
+}
+
+.tstat-temp {
+    
+}

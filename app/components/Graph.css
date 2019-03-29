@@ -1,0 +1,52 @@
+.vialPlotsMenuBtns{
+  width:30px;
+  height: 30px;
+  margin: 2px;
+  border-radius: 20px;
+  background-color: black;
+  border: 1px solid white;
+  padding: 0px 0px 0px 0px;
+}
+
+.vialPlotsMenuBtns:hover{
+  background-color: orange;
+}
+
+.vialPlotMenuBtnsText {
+  color: orange;
+  font-size: 17px;
+  font-weight: bold;
+  margin: -1px 0px 0px 0px;
+}
+
+.vialPlotMenuBtnsText:hover{
+  color: black;
+}
+
+.vialPlotAllMenuBtns{
+  width:70px;
+  height: 130px;
+  margin: 2px;
+  border-radius: 5px;
+  background-color: black;
+  border: 1px solid white;
+  position: absolute;
+  top: 447px;
+  left: 27px;
+  color: orange;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+
+.vialPlotAllMenuBtns:hover{
+  background-color: orange;
+  color: black;
+}
+
+.graphTitle{
+  position: absolute;
+  top: 37px;
+  left: 70px;
+  z-index: 10;
+}

@@ -1,0 +1,78 @@
+<h1>Background</h1>
+
+<script type="text/javascript">
+	const {ipcRenderer} = require('electron');
+        const {PythonShell} = require('python-shell');
+        require('../node_modules/log4js/lib/appenders/stdout');
+        require('../node_modules/log4js/lib/appenders/console');
+        const log4js = require('log4js');
+        
+        var pyShell;
+        var name = '';
+        var logger;
+        
+        function ready() {
+            ipcRenderer.send('ready', name);
+        }
+        
+        function setupLogger(logPath) {
+          log4js.configure({
+            appenders: {
+              out: { type: 'stdout' },
+              app: { type: 'file', filename: logPath + '/application.log' }
+            },
+            categories: {
+              default: { appenders: ['app' ], level: 'info' }
+            }
+          });
+
+          const logger = log4js.getLogger('app');
+          logger.level = 'debug';
+          return logger;
+        }        
+
+	ipcRenderer.on('message', (event, arg) => {
+            console.log(arg);
+            ipcRenderer.send('for-renderer', 'loud and clear!');
+	});
+        
+        ipcRenderer.on('pause-script', (event, arg) => {
+            logger.info("Pausing script");    
+            pyShell.send('pause-script');            
+        });
+        
+        ipcRenderer.on('continue-script', (event, arg) => {
+            logger.info("Continuing script");    
+            pyShell.send('continue-script');
+        });
+        
+        ipcRenderer.on('stop-script', (event, arg) => {
+            logger.info("Stopping script");      
+            pyShell.terminate();
+            pyShell.end(function (err) {
+               if (err) logger.error(err); 
+               logger.info('done');
+            });
+            ready();
+        });
+
+        ipcRenderer.on('start', (event, arg) => {
+            console.log(arg);
+            var zero = arg['zero'] ? '-z' : '';
+            var overwrite = arg['overwrite'] ? '-o' : '';
+            var continueExpt = arg['continue'] ? '-c' : '';
+            var scriptName = arg['script'] + '/main_eVOLVER.py';
+            name = arg['script'];
+            var options = {
+              mode: 'text',
+              pythonPath: '/usr/local/bin/python3.6',
+              args: [zero, overwrite, continueExpt, '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name']]
+            };            
+            pyShell = new PythonShell(scriptName, options);
+            logger = setupLogger(arg['script']);
+            pyShell.on('message', function(message) {
+               logger.info(message);
+            });
+        });
+        ready();
+</script>

@@ -117,14 +117,26 @@ button {
   background-color: black;
 }
 
-.OD-label {
-  font-size: 15px;
+.upper-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.lower-label {
+  font-size: 12px;
   font-style: italic;
   color: white;
 }
 
 .temp-label {
-  font-size: 15px;
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+.stir-label {
+  font-size: 12px;
   font-style: italic;
   color: white;
 }
@@ -138,11 +150,7 @@ button {
   border: 2px solid white;
 }
 
-.button-position {
-  text-align: right;
-}
-
-.stopAllButton {
+.saveAllButton {
   width: 178px;
   height: 40px;
   opacity: 0.9;
@@ -151,10 +159,14 @@ button {
   border: 2px solid white;
 }
 
-.stop-button-position {
+.button-position {
+  text-align: center;
+}
+
+.save-button-position {
   text-align: right;
   position: absolute;
   top: 584px;
-  left: 888px;
+  left: 400px;
   width: 120px;
 }
