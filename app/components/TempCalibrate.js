@@ -165,8 +165,8 @@ class TempCal extends React.Component {
                   store.set('runningTempCal', this.state)
                 }); //callback
           }
-          this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
-      });
+      this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
+	});
     }.bind(this));
 
     this.props.socket.on('databroadcast', function(response) {
@@ -226,6 +226,7 @@ class TempCal extends React.Component {
     for (var i = 0; i < this.state.currentPowerLevel.length; i++) {
       evolverMessage[i] = this.state.currentPowerLevel[i];
     }
+    console.log(evolverMessage)
     this.props.socket.emit("command", {param: "temp", message: evolverMessage});
 
     if (this.state.equilibrateState){
@@ -261,7 +262,7 @@ class TempCal extends React.Component {
         enteredValues:this.state.enteredValues,
         });
       this.setState({vialData:newVialData});
-      this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
+    this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
     }
   }
 
