@@ -49,18 +49,31 @@ function createWindow () {
   else {
     position = [0,0]
   }
-  mainWindow = new BrowserWindow({
-    show: false,
-    width: 1120,
-    height: 666,
-    backgroundColor: '#F7F7F7',
-    minWidth: 1120,
-    minHeight: 666,
-    resizable: false,
-    x: position[0]+20,
-    y: position[1]+20
-
-  });
+  if (process.platform == 'linux') {
+    mainWindow = new BrowserWindow({
+      show: false,
+      width: 1120,
+      height: 666,
+      backgroundColor: '#F7F7F7',
+      minWidth: 1120,
+      minHeight: 666,
+      resizable: false,
+      x: position[0]+20,
+      y: position[1]+20
+    });
+  } else {
+    mainWindow = new BrowserWindow({
+      show: false,
+      width: 1110,
+      height: 690,
+      backgroundColor: '#F7F7F7',
+      minWidth: 1110,
+      minHeight: 690,
+      resizable: false,
+      x: position[0]+20,
+      y: position[1]+20
+    });
+  }
   if (process.env.START_FULLSCREEN) {
     mainWindow.setFullScreen(true);
   }
@@ -137,6 +150,8 @@ app.on('activate', () => {
   }
 });
 
-app.setAboutPanelOptions({
-  copyright: "Copyright © 2019 Fynch Biosciences Inc."
-});
+if (process.platform == 'darwin') {
+  app.setAboutPanelOptions({
+    copyright: "Copyright © 2019 Fynch Biosciences Inc."
+  });
+}
