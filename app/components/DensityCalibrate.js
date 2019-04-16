@@ -66,8 +66,8 @@ class ODcal extends React.Component {
       vialProgress: Array(16).fill(0),
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
-      powerLevel: 2125,
-      powerLevels: [2125],
+      powerLevel: 4095,
+      powerLevels: [4095],
       timesRead: 3,
       experimentName:'',
       alertOpen: false,
@@ -102,7 +102,7 @@ class ODcal extends React.Component {
                     var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
                     newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
                     this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
-                        this.props.socket.emit('data', {power: Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this))});
+                        this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
                     }.bind(this));
                 }
                 else {
@@ -119,7 +119,7 @@ class ODcal extends React.Component {
                 }
             }
             else {
-                this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevel;}.bind(this))});
+                        this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
             }
         });
     }.bind(this));
@@ -164,7 +164,7 @@ class ODcal extends React.Component {
 
     newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
     this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
-    this.props.socket.emit('data', {power: Array.apply(null,{length:16}).map(function() {return this.state.powerLevels[0];}.bind(this))});
+                        this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
   }
 
   stopRead = () => {
@@ -419,7 +419,7 @@ class ODcal extends React.Component {
       statusText = <p className="statusText"> Please enter OD calibration Values. </p>
     }
     else if (this.state.readProgress !== 0){
-      statusText = <p className="statusText"> Collecting raw values from eVOLVER... </p>
+      statusText = <p className="statusText"> Collecting raw values from eVOLVER (PWR: {this.state.powerLevel})... </p>
     }
     else if (this.state.inputsEntered && (this.state.vialData.length !== 0)){
       statusText = <p className="statusText"> {this.state.readsFinished}/16 Measurements Made </p>

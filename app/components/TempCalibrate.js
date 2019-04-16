@@ -165,7 +165,7 @@ class TempCal extends React.Component {
                   store.set('runningTempCal', this.state)
                 }); //callback
           }
-          this.props.socket.emit('data', {});
+          this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
       });
     }.bind(this));
 
@@ -261,7 +261,7 @@ class TempCal extends React.Component {
         enteredValues:this.state.enteredValues,
         });
       this.setState({vialData:newVialData});
-      this.props.socket.emit('data', {});
+      this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
     }
   }
 

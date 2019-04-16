@@ -90,6 +90,7 @@ class VialSelector extends Component<Props>  {
     buttonBack: "Device Map",
     selectedItems: [],
     selectingItems: [],
+    reversed: true
   }
 
   handleSelecting = selectingItems => {
