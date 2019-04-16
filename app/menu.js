@@ -223,7 +223,6 @@ export default class MenuBuilder {
               shell.openExternal('https://evolver.bio');
             }
           }
-          }
         ]
       }
     ];
