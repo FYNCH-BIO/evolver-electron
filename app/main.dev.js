@@ -49,13 +49,13 @@ function createWindow () {
   else {
     position = [0,0]
   }
-  if (process.platform == 'darwin') {
+  if (process.platform == 'linux') {
     mainWindow = new BrowserWindow({
       show: false,
-      width: 1110,
+      width: 1120,
       height: 666,
       backgroundColor: '#F7F7F7',
-      minWidth: 1110,
+      minWidth: 1120,
       minHeight: 666,
       resizable: false,
       x: position[0]+20,
@@ -65,10 +65,10 @@ function createWindow () {
     mainWindow = new BrowserWindow({
       show: false,
       width: 1110,
-      height: 680,
+      height: 690,
       backgroundColor: '#F7F7F7',
       minWidth: 1110,
-      minHeight: 680,
+      minHeight: 690,
       resizable: false,
       x: position[0]+20,
       y: position[1]+20
