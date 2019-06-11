@@ -48,10 +48,10 @@ function generateVialLabel (response, oldTempStream, roomTempAvg) {
   var tempStream = Array(16).fill('...');
   var deltaTempStream = Array(16).fill('...');
   var valueInputs = Array(16).fill('...')
-  for (var i = 0; i < response.temp.length; i++) {
+  for (var i = 0; i < response.data.temp.length; i++) {
     //  To Not show value during RT reading
     // if (roomTempAvg.length !== 0){
-      tempStream[i] = response.temp[i]
+      tempStream[i] = response.data.temp[i]
       deltaTempStream[i] = tempStream[i] - oldTempStream[i];
       if (isNaN(deltaTempStream[i])){
         deltaTempStream[i] = "0"
@@ -117,24 +117,35 @@ class TempCal extends React.Component {
       keyboardPrompt: "Enter File Name or press ESC to autogenerate."
 
     };
-    this.props.socket.on('dataresponse', function(response) {
-
+    this.props.socket.on('broadcast', function(response) {
+      console.log(response);
       var newVialData = this.state.vialData;
-      // if stop was pressed or late response, don't want to continue
+      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
+      let tempStream = returnedTemps[0];
+      let valueInputs = returnedTemps[1];
+
+      let percentVialProgress = [];
+      if (this.state.currentStep > 1) {
+        percentVialProgress = calculateVialProgress (tempStream, this.state.previousLockedTemp, this.state.currentPowerLevel);
+      }
+
+      this.setState({
+        tempStream: tempStream,
+        valueInputs: valueInputs,
+        vialProgress: percentVialProgress
+        })
+
+      //  if stop was pressed or user still moving vials around, don't want to continue
       if (this.state.readProgress === 0) {
           return;
       }
       this.progress();
 
-      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
-      let tempStream = returnedTemps[0];
-      let valueInputs = returnedTemps[1];
-
-      for (var i = 0; i < response.temp.length; i++) {
+      for (var i = 0; i < response.data.temp.length; i++) {
           if (newVialData[newVialData.length - 1].temp.length <= i) {
               newVialData[newVialData.length - 1].temp.push([]);
           }
-          newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
+          newVialData[newVialData.length - 1].temp[i].push(response.data.temp[i]);
       }
       this.setState({
         tempStream: tempStream,
@@ -163,27 +174,9 @@ class TempCal extends React.Component {
                 vialProgress: Array(16).fill(0)},
                 function() {
                   store.set('runningTempCal', this.state)
-                }); //callback
+                });
           }
-      this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
-	});
-    }.bind(this));
-
-    this.props.socket.on('databroadcast', function(response) {
-      let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
-      let tempStream = returnedTemps[0];
-      let valueInputs = returnedTemps[1];
-
-      let percentVialProgress = [];
-      if (this.state.currentStep > 1) {
-        percentVialProgress = calculateVialProgress (tempStream, this.state.previousLockedTemp, this.state.currentPowerLevel);
-      }
-
-      this.setState({
-        tempStream: tempStream,
-        valueInputs: valueInputs,
-        vialProgress: percentVialProgress
-         })
+	    });
     }.bind(this));
 
     this.props.socket.on('setcalibrationrawtemp_callback', function(response) {
@@ -222,11 +215,11 @@ class TempCal extends React.Component {
   };
 
   startRead = () => {
-    var evolverMessage = Array(16).fill("NaN");
+    var evolverValue = Array(16).fill("NaN");
     for (var i = 0; i < this.state.currentPowerLevel.length; i++) {
-      evolverMessage[i] = this.state.currentPowerLevel[i];
+      evolverValue[i] = this.state.currentPowerLevel[i];
     }
-    this.props.socket.emit("command", {param: "temp", message: evolverMessage});
+    this.props.socket.emit("command", {param: "temp", value: evolverValue, immediate: true});
 
     if (this.state.equilibrateState){
       this.handleLockBtns();

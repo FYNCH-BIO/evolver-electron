@@ -67,7 +67,6 @@ class ODcal extends React.Component {
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: [],
       powerLevel: 4095,
-      powerLevels: [4095],
       timesRead: 3,
       experimentName:'',
       alertOpen: false,
@@ -79,49 +78,41 @@ class ODcal extends React.Component {
       resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate."
     };
-    this.props.socket.on('dataresponse', function(response) {
+    this.props.socket.on('broadcast', function(response) {
+        console.log(response);
         var newVialData = this.state.vialData;
-        // if stop was pressed or late response, don't want to continue
+        // if stop was pressed or user still moving vials around, don't want to continue
         if (this.state.readProgress === 0) {
             return;
         }
         this.progress();
-        for (var i = 0; i < response.od.length; i++) {
-            if (newVialData[newVialData.length - 1].od.length <= i) {
-                newVialData[newVialData.length - 1].od.push([]);
+        for (var i = 0; i < response.data.od_135.length; i++) {
+            if (newVialData[newVialData.length - 1].od135.length <= i) {
+                newVialData[newVialData.length - 1].od135.push([]);
+                newVialData[newVialData.length - 1].od90.push([]);
                 newVialData[newVialData.length - 1].temp.push([]);
             }
-            newVialData[newVialData.length - 1].od[i].push(response.od[i]);
-            newVialData[newVialData.length - 1].temp[i].push(response.temp[i]);
+            newVialData[newVialData.length - 1].od135[i].push(response.data.od_135[i]);
+            newVialData[newVialData.length - 1].od90[i].push(response.data.od_90[i]);
+            newVialData[newVialData.length - 1].temp[i].push(response.data.temp[i]);
         }
-        this.setState({vialData: newVialData}, function() {
-
-            if (this.state.vialData[newVialData.length - 1].od[0].length === this.state.timesRead) {
-                if (this.state.powerLevel !== this.state.powerLevels[this.state.powerLevels.length - 1]) {
-                    newVialData = this.state.vialData;
-                    var newPowerLevel = this.state.powerLevels[this.state.powerLevels.indexOf(this.state.powerLevel) + 1];
-                    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel: newPowerLevel});
-                    this.setState({powerLevel: newPowerLevel, vialData: newVialData}, function() {
-                    this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
-		    }.bind(this));
-                }
-                else {
-                    console.log(this.state.vialData);
-                    this.handleUnlockBtns();
-                    var readsFinished = this.state.vialData.length / this.state.powerLevels.length;
-                    this.setState({
-                      progressCompleted: (100 * ((this.state.vialData.length / this.state.powerLevels.length) / 16)),
-                      readsFinished: readsFinished,
-                      readProgress: 0},
-                      function() {
-                        store.set('runningODCal', this.state)
-                      }); //callback
-                }
-            }
-            else {
-        this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
-	    }
+        console.log(newVialData);
+        var readsFinished = this.state.vialData.length;
+        var progressCompleted = (100 * ((this.state.vialData.length) / 16));
+        var readProgress = this.state.readProgress;
+        if (this.state.vialData[newVialData.length - 1].od135[0].length === this.state.timesRead) {
+          readProgress = 0;
+        }
+        this.setState({vialData: newVialData,
+          readsFinished: readsFinished,
+          readProgress: readProgress,
+          progressCompleted: progressCompleted
+        }, function() {
+          if (this.state.progressCompleted === 100) {
+            store.set('runningODCal', this.state);
+          }
         });
+        this.handleUnlockBtns();
     }.bind(this));
 
     this.props.socket.on('setcalibrationrawod_callback', function(response) {
@@ -147,12 +138,11 @@ class ODcal extends React.Component {
     this.props.socket.removeAllListeners('dataresponse');
     this.props.socket.removeAllListeners('setcalibrationrawod_callback');
     this.setState({readProgress: 0});
-  }
+  };
 
 
   startRead = () => {
     this.handleLockBtns();
-    this.setState({readProgress: this.state.readProgress + .01, powerLevel: this.state.powerLevels[0]});
     var newVialData = this.state.vialData;
 
     // remove existing data for particular layout
@@ -162,10 +152,9 @@ class ODcal extends React.Component {
         }
     }
 
-    newVialData.push({od:[], temp:[], step: this.state.currentStep, powerLevel:this.state.powerLevels[0]});
-    this.setState({vialData:newVialData, powerLevel: this.state.powerLevels[0]});
-  this.props.socket.emit('data', {'config': {'od':Array.apply(null,{length: 16}).map(function() { return this.state.powerLevel; }.bind(this)), 'temp':['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
-  }
+    newVialData.push({od90:[], od135:[], temp:[], step: this.state.currentStep});
+    this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
+  };
 
   stopRead = () => {
     this.props.socket.emit('stopread', {});
@@ -182,7 +171,7 @@ class ODcal extends React.Component {
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     readProgress = readProgress + (100/(this.state.timesRead * this.state.powerLevels.length));
+     readProgress = readProgress + (100/(this.state.timesRead));
      this.setState({readProgress: readProgress});
    };
 
@@ -340,8 +329,8 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
       for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].od[0]) != "undefined")) {
-          if (this.state.vialData[i].od[0].length === this.state.timesRead){
+        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].od135[0]) != "undefined")) {
+          if (this.state.vialData[i].od135[0].length === this.state.timesRead){
 
               measureButton =
               <button
