@@ -65,7 +65,7 @@ class ODcal extends React.Component {
       readProgress: 0,
       vialProgress: Array(16).fill(0),
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
-      vialData: [],
+      vialData: {'od135':[],'od90':[],'temp':[]},
       powerLevel: 4095,
       timesRead: 3,
       experimentName:'',
@@ -76,7 +76,8 @@ class ODcal extends React.Component {
       resumeOpen: false,
       resumeQuestion: 'Start new calibration or resume?',
       resumeAnswers: ['New', 'Resume'],
-      keyboardPrompt: "Enter File Name or press ESC to autogenerate."
+      keyboardPrompt: "Enter File Name or press ESC to autogenerate.",
+      vialsRead: 0
     };
     this.props.socket.on('broadcast', function(response) {
         console.log(response);
@@ -86,33 +87,39 @@ class ODcal extends React.Component {
             return;
         }
         this.progress();
+
+        // Add the data into the data structures
         for (var i = 0; i < response.data.od_135.length; i++) {
-            if (newVialData[newVialData.length - 1].od135.length <= i) {
-                newVialData[newVialData.length - 1].od135.push([]);
-                newVialData[newVialData.length - 1].od90.push([]);
-                newVialData[newVialData.length - 1].temp.push([]);
-            }
-            newVialData[newVialData.length - 1].od135[i].push(response.data.od_135[i]);
-            newVialData[newVialData.length - 1].od90[i].push(response.data.od_90[i]);
-            newVialData[newVialData.length - 1].temp[i].push(response.data.temp[i]);
+            newVialData.od135[i][this.state.currentStep - 1].push(response.data.od_135[i]);
+            newVialData.od90[i][this.state.currentStep - 1].push(response.data.od_90[i]);
+            newVialData.temp[i][this.state.currentStep - 1].push(response.data.temp[i]);
         }
-        console.log(newVialData);
-        var readsFinished = this.state.vialData.length;
-        var progressCompleted = (100 * ((this.state.vialData.length) / 16));
+        var progressCompleted = (100 * ((this.state.readsFinished) / 16));
         var readProgress = this.state.readProgress;
-        if (this.state.vialData[newVialData.length - 1].od135[0].length === this.state.timesRead) {
+        var readsFinished = 0;
+
+        // Check how many reads have been finished by looking through the data structure
+        for (var i = 0; i < 16; i++) {
+          if (newVialData.od135[0][i].length === this.state.timesRead) {
+            readsFinished += 1;
+          }
+        }
+
+        // This means we've finished - we have all the measurements we need for this step.
+        if (this.state.vialData.od135[0][this.state.currentStep - 1].length === this.state.timesRead) {
           readProgress = 0;
+          progressCompleted = (100 * ((readsFinished) / 16));
+          this.handleUnlockBtns();
         }
         this.setState({vialData: newVialData,
-          readsFinished: readsFinished,
           readProgress: readProgress,
-          progressCompleted: progressCompleted
+          progressCompleted: progressCompleted,
+          readsFinished: readsFinished
         }, function() {
           if (this.state.progressCompleted === 100) {
             store.set('runningODCal', this.state);
           }
         });
-        this.handleUnlockBtns();
     }.bind(this));
 
     this.props.socket.on('setcalibrationrawod_callback', function(response) {
@@ -145,14 +152,29 @@ class ODcal extends React.Component {
     this.handleLockBtns();
     var newVialData = this.state.vialData;
 
-    // remove existing data for particular layout
-    for (var i = this.state.vialData.length - 1; i >= 0; i--) {
-        if (this.state.currentStep == this.state.vialData[i].step) {
-            newVialData.splice(i, 1);
+    // Initialization of data lists
+    // First dimension is Vial
+    // Second dimension is step number
+    // Each step will be a list with 3 technical replicates
+    if (newVialData.od135.length === 0) {
+      for (var i = 0; i < 16; i++) {
+        newVialData.od135.push([]);
+        newVialData.od90.push([]);
+        newVialData.temp.push([]);
+        for (var j = 0; j < 16; j++) {
+          newVialData.od135[i].push([]);
+          newVialData.od90[i].push([]);
+          newVialData.temp[i].push([]);
         }
+      }
     }
 
-    newVialData.push({od90:[], od135:[], temp:[], step: this.state.currentStep});
+    // remove existing data for particular layout
+    for (var i = 0; i < newVialData.od135.length; i++) {
+      newVialData.od135[i][this.state.currentStep - 1] = [];
+      newVialData.od90[i][this.state.currentStep - 1] = [];
+      newVialData.temp[i][this.state.currentStep - 1] = [];
+    }
     this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
   };
 
@@ -161,10 +183,10 @@ class ODcal extends React.Component {
     this.handleUnlockBtns()
     // remove existing data for particular layout
     var newVialData = this.state.vialData;
-    for (var i = this.state.vialData.length - 1; i >= 0; i--) {
-        if (this.state.currentStep == this.state.vialData[i].step) {
-            newVialData.splice(i, 1);
-        }
+    for (var i = 0; i < this.vialData.od135.length; i++) {
+      newVialData.od135[i][this.state.currentStep - 1] = [];
+      newVialData.od90[i][this.state.currentStep - 1] = [];
+      newVialData.temp[i][this.state.currentStep - 1] = [];
     }
     this.setState({readProgress: 0, vialData: newVialData});
   }
@@ -328,9 +350,8 @@ class ODcal extends React.Component {
           onClick = {this.startRead}>
            <FaPlay/>
         </button>;
-      for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].od135[0]) != "undefined")) {
-          if (this.state.vialData[i].od135[0].length === this.state.timesRead){
+        try {
+          if (this.state.vialData.od135[0][this.state.currentStep - 1].length === this.state.timesRead){
 
               measureButton =
               <button
@@ -338,10 +359,9 @@ class ODcal extends React.Component {
                 onClick = {this.startRead}>
                  <FaCheck/>
               </button>;
-              break;
             }
         }
-      }
+        catch(err) {}
     } else {
       measureButton =
       <button
