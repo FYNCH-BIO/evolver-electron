@@ -38,8 +38,7 @@ export default class Setup extends Component<Props> {
       this.props.socket.emit('getcalibrationtemp', {});
       this.props.socket.emit('getfittedcalibrationfilenamesod', {});
       this.props.socket.emit('getfittedcalibrationfilenamestemp', {});
-      this.props.socket.on('dataresponse', function(response) {this.handleRawData(this.handlePiIncoming(response), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
-      this.props.socket.on('databroadcast', function(response) {this.handleRawData(this.handlePiIncoming(response), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
+      this.props.socket.on('broadcast', function(response) {this.handleRawData(this.handlePiIncoming(response.data), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
       this.props.socket.on('odfittedfilenames', function(response) {this.setState({odCalFiles: response})}.bind(this))
       this.props.socket.on('tempfittedfilenames', function(response) {this.setState({tempCalFiles: response})}.bind(this))
       this.props.socket.on('activecalibrationod', function(response) {
@@ -117,7 +116,8 @@ export default class Setup extends Component<Props> {
       rawData[i].vial = this.state.vialData[i].vial;
       rawData[i].selected = this.state.vialData[i].selected;
 
-      rawData[i].od = responseData.od[i];
+      rawData[i].od135 = responseData.od_135[i];
+      rawData[i].od90 = responseData.od_90[i];
       rawData[i].temp = responseData.temp[i];
     }
     return rawData
@@ -135,11 +135,13 @@ export default class Setup extends Component<Props> {
     this.setState({vialData: newVialData, rawVialData: rawData});
   }
 
+  // TODO: Use both od90 and od135 for calibrations. Should work for systems
+  // that only have od90 or od135 as well.
   formatVialSelectStrings = (vialData, parameter) => {
     var newData = JSON.parse(JSON.stringify(vialData));
     for(var i = 0; i < newData.length; i++) {
       if (parameter == 'od'){
-        newData[i].od = 'OD: ' + newData[i].od;
+        newData[i].od135 = 'OD: ' + newData[i].od135;
       }
       if (parameter == 'temp'){
         newData[i].temp = newData[i].temp +'\u00b0C';
@@ -148,17 +150,18 @@ export default class Setup extends Component<Props> {
     return newData
   }
 
-
+  // TODO: Use both od90 and od135 for calibrations. Should work for systems
+  // that only have od90 or od135 as well.
   handleRawToCal = (response, showRawOD, showRawTemp) => {
     var newVialData = JSON.parse(JSON.stringify(response));
     for(var i = 0; i < newVialData.length; i++) {
         try {
           if ((!showRawOD) && (this.state.odCal.length !== 0)){
-            newVialData[i].od = this.sigmoidRawToCal(newVialData[i].od, this.state.odCal[i]).toFixed(3);
+            newVialData[i].od135 = this.sigmoidRawToCal(newVialData[i].od135, this.state.odCal[i]).toFixed(3);
           } else if (this.state.odCal.length == 0) {
-            newVialData[i].od = '--'
+            newVialData[i].od135 = '--'
           } else{
-            newVialData[i].od = newVialData[i].od;
+            newVialData[i].od135 = newVialData[i].od135;
           }
         }
         catch (err) {
@@ -216,27 +219,19 @@ export default class Setup extends Component<Props> {
   onSubmitButton = (evolverComponent, value) => {
     var vials = this.state.selectedItems.map(item => item.props.vial);
     var evolverMessage = {};
+    evolverMessage = Array(16).fill("NaN")
     if (evolverComponent == "pump") {
-        evolverMessage = {};
-        var vialsToBinary = [];
-        for (var i = 0; i < vials.length; i++) {
-            if (value.in1) {
-              vialsToBinary.push(vials[i]);
-            }
-            if (value.efflux) {
-              vialsToBinary.push(parseInt(vials[i]) + 16);
-            }
+      evolverMessage = Array(48).fill("0");
+      for (var i = 0; i < 48; i++) {
+        if (value.in1) {
+          evolverMessage[vials[i]] = value.time;
         }
-        var binaryString = this.getBinaryString(vialsToBinary);
-        evolverMessage = {pumps_binary: binaryString, pump_time: value.time, efflux_pump_time: 0, delay_interval: 0, times_to_repeat: 0, run_efflux:0};
-        this.setState({arduinoMessage: "Running pump for Vials: " + vials});
-        value['vials'] = vials;
-    }
-    else if (evolverComponent == "light") {
-        this.setState({arduinoMessage: "Set \"" + evolverComponent + '\" to ' + value.percent + " Vials: " + this.state.selectedItems.map(function (item) {return item.props.vial;})});
+        if (value.efflux) {
+          evolverMessage[vials[i] + 16] = value.time;
+        }
+      }
     }
     else {
-      evolverMessage = Array(16).fill("NaN")
       for (var i = 0; i < vials.length; i++) {
           if (evolverComponent == "temp") {
             evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCal[i]).toFixed(0);
@@ -245,10 +240,11 @@ export default class Setup extends Component<Props> {
             evolverMessage[vials[i]] = value;
           }
       }
-      this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
     }
-    this.props.socket.emit("command", {param: evolverComponent, message: evolverMessage,  value: value});
-    this.setState({command: {param: evolverComponent, message: evolverMessage, value: value} });
+
+    this.setState({arduinoMessage:"Set \"" + evolverComponent + "\" to " + value + " Vials: " + vials});
+    this.props.socket.emit("command", {param: evolverComponent, value: evolverMessage, immediate: true});
+    this.setState({command: {param: evolverComponent, value: evolverMessage} });
   };
 
   sigmoidRawToCal = (value, cal) => {
