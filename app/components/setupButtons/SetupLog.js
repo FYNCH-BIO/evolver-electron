@@ -105,14 +105,15 @@ class SetupLog extends React.Component {
           outputString = 'Response: ' + value + ' ON for ' + data.value.time + 's, vials (' + triggeredVials + ')'
         }
       } else {
-        var vials = data['message']
+        var vials = data['value'];
+	      var value = [];
         for (var i = 0; i < vials.length; i++) {
           if (vials[i] !== 'NaN'){
             triggeredVials = triggeredVials + i + ',';
             if (data['param'] == "temp"){
-              value = data['value'] + '\u00b0C';
+              value.push(data['value'][i]);// + '\u00b0C');
             } else {
-              value = data['value']
+              value.push(data['value'][i]);
             }
           }
         }
