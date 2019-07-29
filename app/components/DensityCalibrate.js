@@ -90,9 +90,9 @@ class ODcal extends React.Component {
 
         // Add the data into the data structures
         for (var i = 0; i < response.data.od_135.length; i++) {
-            newVialData.od135[i][this.state.currentStep - 1].push(response.data.od_135[i]);
-            newVialData.od90[i][this.state.currentStep - 1].push(response.data.od_90[i]);
-            newVialData.temp[i][this.state.currentStep - 1].push(response.data.temp[i]);
+            newVialData.od135[i][this.state.currentStep - 1].push(parseInt(response.data.od_135[i]));
+            newVialData.od90[i][this.state.currentStep - 1].push(parseInt(response.data.od_90[i]));
+            newVialData.temp[i][this.state.currentStep - 1].push(parseInt(response.data.temp[i]));
         }
         var progressCompleted = (100 * ((this.state.readsFinished) / 16));
         var readProgress = this.state.readProgress;

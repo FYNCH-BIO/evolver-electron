@@ -145,7 +145,7 @@ class TempCal extends React.Component {
           if (newVialData[newVialData.length - 1].temp.length <= i) {
               newVialData[newVialData.length - 1].temp.push([]);
           }
-          newVialData[newVialData.length - 1].temp[i].push(response.data.temp[i]);
+          newVialData[newVialData.length - 1].temp[i].push(parseInt(response.data.temp[i]));
       }
       this.setState({
         tempStream: tempStream,
