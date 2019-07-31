@@ -103,9 +103,7 @@ export default class Setup extends Component<Props> {
     this.props.socket.removeAllListeners('calibrationtemp');
     this.props.socket.removeAllListeners('odfittedfilenames');
     this.props.socket.removeAllListeners('tempfittedfilenames');
-    this.props.socket.removeAllListeners('databroadcast');
-    this.props.socket.removeAllListeners('dataresponse');
-    this.props.socket.removeAllListeners('commandbroadcast');
+    this.props.socket.removeAllListeners('broadcast');
   }
 
   handlePiIncoming = (response) => {
@@ -221,7 +219,7 @@ export default class Setup extends Component<Props> {
     var evolverMessage = {};
     evolverMessage = Array(16).fill("NaN")
     if (evolverComponent == "pump") {
-      evolverMessage = Array(48).fill("0");
+      evolverMessage = Array(48).fill("--");
       for (var i = 0; i < 48; i++) {
         if (value.in1) {
           evolverMessage[vials[i]] = value.time;

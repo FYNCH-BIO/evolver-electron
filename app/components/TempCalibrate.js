@@ -188,8 +188,7 @@ class TempCal extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.socket.removeAllListeners('dataresponse');
-    this.props.socket.removeAllListeners('databroadcast');
+    this.props.socket.removeAllListeners('broadcast');
     this.props.socket.removeAllListeners('setcalibrationrawtemp_callback');
     this.setState({readProgress: 0});
   }

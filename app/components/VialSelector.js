@@ -90,6 +90,7 @@ class VialSelector extends Component<Props>  {
     buttonBack: "Device Map",
     selectedItems: [],
     selectingItems: [],
+    reversed: true
   }
 
   handleSelecting = selectingItems => {
@@ -127,8 +128,8 @@ class VialSelector extends Component<Props>  {
     const { items } = this.props
     const { reversed } = this.state
 
-    const orderedItems = reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
-    const buttonLabel = reversed ? this.state.buttonBack: this.state.buttonFront
+    const orderedItems = this.state.reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
+    const buttonLabel = this.state.reversed ? this.state.buttonBack: this.state.buttonFront
 
     return (
         <Card className={classes.card}>
@@ -159,7 +160,7 @@ class VialSelector extends Component<Props>  {
           </div>
           <div className="stop-button-position">
           <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
-          </div>          
+          </div>
         </Card>
     )
   }

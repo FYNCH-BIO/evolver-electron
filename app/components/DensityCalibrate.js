@@ -142,7 +142,7 @@ class ODcal extends React.Component {
   };
 
   componentWillUnmount() {
-    this.props.socket.removeAllListeners('dataresponse');
+    this.props.socket.removeAllListeners('broadcast');
     this.props.socket.removeAllListeners('setcalibrationrawod_callback');
     this.setState({readProgress: 0});
   };

@@ -87,16 +87,28 @@ class SetupLog extends React.Component {
     } else if (inputType == 'response'){
       var triggeredVials = '';
       var value = '';
+      var in1 = false;
+      var in2 = false;
+      var efflux = false;
+      var time_ON = 0;
+
       if (data['param'] == 'pump'){
-        var vials = data.value.vials;
+        console.log(data)
+        var vials = data.value;
         for (var i = 0; i < vials.length; i++) {
-          triggeredVials = triggeredVials + vials[i] + ',';
+          if ((vials[i] != '--') && (i <= 15)){
+            time_ON = vials[i];
+            triggeredVials = triggeredVials + i + ',';
+          };
+          if ((vials[i] != '--') && (i <= 15)){in1 = true};
+          if ((vials[i] != '--') && (i > 15) && (i <= 31)){efflux = true};
+          if ((vials[i] != '--') && (i > 31) && (i <= 47)){in2 = true};
         }
         triggeredVials = triggeredVials.slice(0, -1);
 
-        if (data.value.in1){value = value + 'in1, '};
-        if (data.value.in2){value = value + 'in2, '};
-        if (data.value.efflux){value = value + 'efflux, '};
+        if (in1){value = value + 'in1, '};
+        if (in2){value = value + 'in2, '};
+        if (efflux){value = value + 'efflux, '};
         if (value == ''){
           outputString= 'Response: Nothing Changed, no pumps selected'
         } else {
