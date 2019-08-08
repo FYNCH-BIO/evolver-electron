@@ -227,6 +227,9 @@ export default class Setup extends Component<Props> {
         if (value.efflux) {
           evolverMessage[vials[i] + 16] = value.time;
         }
+        if (value.in2) {
+          evolverMessage[vials[i] + 32] = value.time;
+        }
       }
     }
     else {
