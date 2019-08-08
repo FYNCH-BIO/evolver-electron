@@ -63,10 +63,10 @@ class ODcal extends React.Component {
       inputsEntered: false,
       enteredValuesFloat: [],
       readProgress: 0,
+      skipFirst: true,
       vialProgress: Array(16).fill(0),
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: {'od135':[],'od90':[],'temp':[]},
-      powerLevel: 4095,
       timesRead: 3,
       experimentName:'',
       alertOpen: false,
@@ -86,35 +86,48 @@ class ODcal extends React.Component {
         if (this.state.readProgress === 0) {
             return;
         }
-        this.progress();
 
         // Add the data into the data structures
-        for (var i = 0; i < response.data.od_135.length; i++) {
-            newVialData.od135[i][this.state.currentStep - 1].push(parseInt(response.data.od_135[i]));
-            newVialData.od90[i][this.state.currentStep - 1].push(parseInt(response.data.od_90[i]));
-            newVialData.temp[i][this.state.currentStep - 1].push(parseInt(response.data.temp[i]));
+        if (!this.state.skipFirst) {
+          if (response.data.od_90 && response.data.temp) {
+            this.progress();
+            for (var i = 0; i < response.data.od_90.length; i++) {
+              if (response.data.od_135) {
+                newVialData.od135[i][this.state.currentStep - 1].push(parseInt(response.data.od_135[i]));
+              }
+              newVialData.od90[i][this.state.currentStep - 1].push(parseInt(response.data.od_90[i]));
+              newVialData.temp[i][this.state.currentStep - 1].push(parseInt(response.data.temp[i]));
+            }
+          }
         }
+        else {
+          this.progress();
+        }
+
         var progressCompleted = (100 * ((this.state.readsFinished) / 16));
         var readProgress = this.state.readProgress;
         var readsFinished = 0;
+        var newSkipFirst = false;
 
         // Check how many reads have been finished by looking through the data structure
         for (var i = 0; i < 16; i++) {
-          if (newVialData.od135[0][i].length === this.state.timesRead) {
+          if (newVialData.od90[0][i].length === this.state.timesRead) {
             readsFinished += 1;
           }
         }
 
         // This means we've finished - we have all the measurements we need for this step.
-        if (this.state.vialData.od135[0][this.state.currentStep - 1].length === this.state.timesRead) {
+        if (this.state.vialData.od90[0][this.state.currentStep - 1].length === this.state.timesRead) {
           readProgress = 0;
           progressCompleted = (100 * ((readsFinished) / 16));
           this.handleUnlockBtns();
+          newSkipFirst = true;
         }
         this.setState({vialData: newVialData,
           readProgress: readProgress,
           progressCompleted: progressCompleted,
-          readsFinished: readsFinished
+          readsFinished: readsFinished,
+          skipFirst: newSkipFirst
         }, function() {
           if (this.state.progressCompleted === 100) {
             store.set('runningODCal', this.state);
@@ -183,17 +196,21 @@ class ODcal extends React.Component {
     this.handleUnlockBtns()
     // remove existing data for particular layout
     var newVialData = this.state.vialData;
-    for (var i = 0; i < this.vialData.od135.length; i++) {
-      newVialData.od135[i][this.state.currentStep - 1] = [];
-      newVialData.od90[i][this.state.currentStep - 1] = [];
-      newVialData.temp[i][this.state.currentStep - 1] = [];
+    if (this.vialData) {
+      for (var i = 0; i < this.vialData.od90.length; i++) {
+            if (newVialData.od135) {
+              newVialData.od135[i][this.state.currentStep - 1] = [];
+            }
+            newVialData.od90[i][this.state.currentStep - 1] = [];
+            newVialData.temp[i][this.state.currentStep - 1] = [];
+          }
     }
-    this.setState({readProgress: 0, vialData: newVialData});
+    this.setState({readProgress: 0, vialData: newVialData, skipFirst: true});
   }
 
   progress = () => {
      let readProgress = this.state.readProgress;
-     readProgress = readProgress + (100/(this.state.timesRead));
+     readProgress = readProgress + (100/(this.state.timesRead + 1));
      this.setState({readProgress: readProgress});
    };
 
