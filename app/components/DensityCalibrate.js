@@ -81,6 +81,7 @@ class ODcal extends React.Component {
     };
     this.props.socket.on('broadcast', function(response) {
         console.log(response);
+        console.log(this.state.vialData);
         var newVialData = this.state.vialData;
         // if stop was pressed or user still moving vials around, don't want to continue
         if (this.state.readProgress === 0) {
@@ -91,12 +92,20 @@ class ODcal extends React.Component {
         if (!this.state.skipFirst) {
           if (response.data.od_90 && response.data.temp) {
             this.progress();
+            /*
+               Note on indexing: Because vials are being shuffled around during a calibration,
+               the data is not collected in order, ie the vial with OD 0 would be the 3rd
+               data point collected for vial 2. To shift them properly,
+               use the formula: (-currentStep -1) + vialIndex. If this is negative,
+               do 15 - <value>.
+            */
             for (var i = 0; i < response.data.od_90.length; i++) {
+              var shift = this.calculateShift(i);
               if (response.data.od_135) {
-                newVialData.od135[i][this.state.currentStep - 1].push(parseInt(response.data.od_135[i]));
+                newVialData.od135[i][shift].push(parseInt(response.data.od_135[i]));
               }
-              newVialData.od90[i][this.state.currentStep - 1].push(parseInt(response.data.od_90[i]));
-              newVialData.temp[i][this.state.currentStep - 1].push(parseInt(response.data.temp[i]));
+              newVialData.od90[i][shift].push(parseInt(response.data.od_90[i]));
+              newVialData.temp[i][shift].push(parseInt(response.data.temp[i]));
             }
           }
         }
@@ -117,7 +126,7 @@ class ODcal extends React.Component {
         }
 
         // This means we've finished - we have all the measurements we need for this step.
-        if (this.state.vialData.od90[0][this.state.currentStep - 1].length === this.state.timesRead) {
+        if (readProgress >= 100) {
           readProgress = 0;
           progressCompleted = (100 * ((readsFinished) / 16));
           this.handleUnlockBtns();
@@ -135,7 +144,7 @@ class ODcal extends React.Component {
         });
     }.bind(this));
 
-    this.props.socket.on('setcalibrationrawod_callback', function(response) {
+    this.props.socket.on('calibrationrawcallback', function(response) {
       if (response == 'success'){
         this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
       }
@@ -156,7 +165,7 @@ class ODcal extends React.Component {
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('broadcast');
-    this.props.socket.removeAllListeners('setcalibrationrawod_callback');
+    this.props.socket.removeAllListeners('calibrationrawcallback');
     this.setState({readProgress: 0});
   };
 
@@ -175,6 +184,7 @@ class ODcal extends React.Component {
         newVialData.od90.push([]);
         newVialData.temp.push([]);
         for (var j = 0; j < 16; j++) {
+          // fill these guys with nothing to start just to
           newVialData.od135[i].push([]);
           newVialData.od90[i].push([]);
           newVialData.temp[i].push([]);
@@ -184,9 +194,9 @@ class ODcal extends React.Component {
 
     // remove existing data for particular layout
     for (var i = 0; i < newVialData.od135.length; i++) {
-      newVialData.od135[i][this.state.currentStep - 1] = [];
-      newVialData.od90[i][this.state.currentStep - 1] = [];
-      newVialData.temp[i][this.state.currentStep - 1] = [];
+      newVialData.od135[i][this.calculateShift(i)] = [];
+      newVialData.od90[i][this.calculateShift(i)] = [];
+      newVialData.temp[i][this.calculateShift(i)] = [];
     }
     this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
   };
@@ -325,8 +335,19 @@ class ODcal extends React.Component {
     console.log("Experiment Finished!");
     var d = new Date();
     var currentTime = d.getTime();
-    var saveData = {time: currentTime, vialData: this.state.vialData, inputData:this.state.enteredValuesFloat, filename:(this.state.experimentName + '.json')};
-    this.props.socket.emit('setcalibrationrawod', saveData);
+
+    var rawList = [];
+    var saveData = {name: this.state.experimentName, calibrationType: "od", timeCollected: currentTime, measuredData: Array(16).fill(this.state.enteredValuesFloat), fits:[]};
+    if (this.state.vialData.od90[0][0].length > 0) {
+      rawList.push({param: 'od_90', vialData: this.state.vialData.od90});
+    }
+    if (this.state.vialData.od135[0][0].length > 0) {
+      rawList.push({param: 'od_135', vialData: this.state.vialData.od135});
+    }
+    rawList.push({param: 'temp', vialData: this.state.vialData.temp});
+    saveData.raw = rawList;
+    this.props.socket.emit('setrawcalibration', saveData);
+
   }
 
   handleKeyboardModal = () => {
@@ -355,6 +376,14 @@ class ODcal extends React.Component {
     this.setState({resumeOpen:false})
   }
 
+  calculateShift = (i) => {
+    var shift = -(this.state.currentStep - 1) + i;
+    if (shift < 0) {
+      shift = 16 + shift;
+    }
+    return shift;
+  }
+
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
@@ -368,7 +397,7 @@ class ODcal extends React.Component {
            <FaPlay/>
         </button>;
         try {
-          if (this.state.vialData.od135[0][this.state.currentStep - 1].length === this.state.timesRead){
+          if (this.state.vialData.od135[0][this.calculateShift(0)].length === this.state.timesRead){
 
               measureButton =
               <button

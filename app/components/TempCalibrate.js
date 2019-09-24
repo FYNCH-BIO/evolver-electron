@@ -103,7 +103,7 @@ class TempCal extends React.Component {
       buttonAdvanceText: '',
       buttonBackText: '',
       buttonMeasureText: 'RT',
-      slopeEsimate: .02,
+      slopeEstimate: .02,
       previousLockedTemp: [],
       experimentName:'',
       readsFinished: 0,
@@ -179,7 +179,7 @@ class TempCal extends React.Component {
 	    });
     }.bind(this));
 
-    this.props.socket.on('setcalibrationrawtemp_callback', function(response) {
+    this.props.socket.on('calibrationrawcallback', function(response) {
       if (response == 'success'){
         this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
       }
@@ -189,7 +189,7 @@ class TempCal extends React.Component {
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('broadcast');
-    this.props.socket.removeAllListeners('setcalibrationrawtemp_callback');
+    this.props.socket.removeAllListeners('calibrationrawcallback');
     this.setState({readProgress: 0});
   }
 
@@ -202,8 +202,8 @@ class TempCal extends React.Component {
     }
 
     var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
-    var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
-    var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEsimate) + "\u00b0C";
+    var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEstimate) + "\u00b0C";
+    var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEstimate) + "\u00b0C";
     this.setState({
       vialOpacities: Array(16).fill(0),
       generalOpacity: Array(16).fill(1),
@@ -279,7 +279,7 @@ class TempCal extends React.Component {
      var buttonMeasureText = "RT"
    }
    else{
-    var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+    var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEstimate) + "\u00b0C";
     }
 
    if (this.state.currentStep === this.state.deltaTempSteps){
@@ -309,7 +309,7 @@ class TempCal extends React.Component {
       var buttonMeasureText = "RT"
     }
     else{
-     var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEsimate) + "\u00b0C";
+     var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEstimate) + "\u00b0C";
      }
 
     if (this.state.currentStep === 1){
@@ -387,8 +387,24 @@ class TempCal extends React.Component {
       console.log("Experiment Finished!");
       var d = new Date();
       var currentTime = d.getTime();
-      var saveData = {time: currentTime, vialData: this.state.vialData, filename:(this.state.experimentName + '.json')};
-      this.props.socket.emit('setcalibrationrawtemp', saveData);
+      var enteredValuesStructured = [];
+      var vialDataStructured = [];
+
+      // TODO: Change data structure so that we don't have to do this transformation. Would require other code restructure
+      // Data should be saved vial -> step -> data format, not step -> vial -> data as it is here.
+      for(var i = 0; i < this.state.vialData.length; i++) {
+        for(var j = 0; j < this.state.vialData[i].enteredValues.length; j++) {
+          if(!enteredValuesStructured[j]) {
+            enteredValuesStructured.push([]);
+            vialDataStructured.push(new Array(3).fill([]));
+          }
+          enteredValuesStructured[j].push(parseFloat(this.state.vialData[i].enteredValues[j]));
+          vialDataStructured[j][i] = this.state.vialData[i].temp[j];
+        }
+      }
+      var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', vialData: vialDataStructured}]}
+      console.log(saveData);
+      this.props.socket.emit('setrawcalibration', saveData);
    }
 
    handleKeyboardModal = () => {
