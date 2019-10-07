@@ -25,12 +25,6 @@ git add .
 git commit -a --no-verify -m "Put comment here"
 ```
 
-When running a release, be sure to install git-lfs to handel larger files (AppImage, DMG, EXE files) for the GUI distribution
-
-```bash
-$ brew install git-lfs
-```
-
 ## Packaging
 
 To package apps for the local platform (Does not work well when compiling in other platforms. e.g. compile in OSX for OSX):
