@@ -46,22 +46,21 @@ function startScript(exptDir) {
     var stir = [];
     var lower = [];
     var upper = [];
-    if (fs.existsSync(paramFilename)) {      
-        jsonParams = JSON.parse(fs.readFileSync(paramFilename, 'utf8'));            
+    if (fs.existsSync(paramFilename)) {
+        jsonParams = JSON.parse(fs.readFileSync(paramFilename, 'utf8'));
         for (var i = 0; i < jsonParams.length; i++) {
             temp.push(jsonParams[i].temp);
             stir.push(jsonParams[i].stir);
             upper.push(jsonParams[i].upper);
             lower.push(jsonParams[i].lower);
         }
-        parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};            
-    } 
-    var evolverIp = '192.168.1.3';
-    var evolverPort = 8081;
-    var name = 'testing_pyshell';
-    ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
-}
-
+        parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};
+    }
+    var evolverIp = 'localhost';
+    var evolverPort = 5555;
+    var name = 'test_expt';
+    ipcRenderer.send('start-script', ['start', {'zero':true, 'overwrite':'y', 'continue':'n', 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir, 'blank': 'y'}, exptDir]);
+};
 
 class ExptManager extends React.Component {
   constructor(props) {
@@ -76,23 +75,23 @@ class ExptManager extends React.Component {
       exptToClone: '',
       refind: false
     };
-    
+
     ipcRenderer.on('to-renderer', (event, arg) => {
-        console.log(arg);
+        //console.log(arg);
     });
 
     ipcRenderer.on('running-expts', (event, arg) => {
-        console.log('running');
-        console.log(arg);
+        //console.log('running');
+        //console.log(arg);
         this.setState({runningExpts: arg});
     });
-    
+
     ipcRenderer.on('paused-expts', (event, arg) => {
-        console.log('paused');
-        console.log(arg);        
+        //console.log('paused');
+        //console.log(arg);
         this.setState({pausedExpts: arg});
     });
-    
+
     ipcRenderer.send('paused-expts');
     ipcRenderer.send('running-expts');
   }
@@ -104,7 +103,7 @@ class ExptManager extends React.Component {
       this.setState({exptDir: exptDir, activeScript: activeScript});
     }
   }
-  
+
   handleStart = (script) => {
     startScript(app.getPath('userData') + this.state.scriptDir + '/' + script);
     setTimeout(function () {
@@ -120,28 +119,29 @@ class ExptManager extends React.Component {
         ipcRenderer.send('running-expts');
     }, 1000);
   }
-  
+
   handlePause = (script) => {
+    //console.log('pause expt')
     ipcRenderer.send('pause-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
     setTimeout(function () {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
     }, 1000);
   }
-  
+
   handleContinue = (script) => {
      ipcRenderer.send('continue-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
      setTimeout(function() {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
      });
-   }
-   
+  };
+
     handleEdit = (script) => {
     };
 
     handleGraph = (script) => {
-         console.log(script);
+         //console.log(script);
     };
 
     handleClone = (script) => {
@@ -151,9 +151,9 @@ class ExptManager extends React.Component {
     onResumeClone = (exptName) => {
         this.setState({alertOpen: false});
         this.createNewExperiment(exptName, this.state.exptToClone);
-        
+
     };
-    
+
     createNewExperiment = (exptName, exptToClone) => {
         var newDir = path.join(app.getPath('userData') + this.state.scriptDir, exptName);
         var oldDir = path.join(app.getPath('userData') + this.state.scriptDir, exptToClone);
@@ -161,13 +161,11 @@ class ExptManager extends React.Component {
             fs.mkdirSync(newDir);
         }
         fs.copyFileSync(path.join(oldDir, 'custom_script.py'), path.join(newDir, 'custom_script.py'));
-        fs.copyFileSync(path.join(oldDir, 'eVOLVER_module.py'), path.join(newDir, 'eVOLVER_module.py'));
-        fs.copyFileSync(path.join(oldDir, 'main_eVOLVER.py'), path.join(newDir, 'main_eVOLVER.py'));
-        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
+        fs.copyFileSync(path.join(oldDir, 'eVOLVER.py'), path.join(newDir, 'eVOLVER.py'));
         fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
         if (fs.existsSync(path.join(oldDir, 'tstat_parameters.json'))) {
             fs.copyFileSync(path.join(oldDir, 'tstat_parameters.json'), path.join(newDir, 'tstat_parameters.json'));
-        }        
+        }
         this.setState({refind: !this.state.refind});
     }
 
@@ -177,23 +175,22 @@ class ExptManager extends React.Component {
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
-
         <Card classes={{root:classes.cardRoot}} className={classes.cardScript}>
           <ScriptFinder subFolder={this.state.scriptDir}
-            isScript= {true} 
+            isScript= {true}
             onSelectFolder={this.handleSelectFolder}
-            onClone={this.handleClone} 
-            onEdit={this.handleEdit} 
-            onGraph={this.handleGraph} 
-            onStart={this.handleStart} 
-            onStop={this.handleStop} 
-            onPause={this.handlePause} 
-            onContinue={this.handleContinue} 
-            runningExpts={this.state.runningExpts} 
+            onClone={this.handleClone}
+            onEdit={this.handleEdit}
+            onGraph={this.handleGraph}
+            onStart={this.handleStart}
+            onStop={this.handleStop}
+            onPause={this.handlePause}
+            onContinue={this.handleContinue}
+            runningExpts={this.state.runningExpts}
             pausedExpts={this.state.pausedExpts}
             refind={this.state.refind}/>
         </Card>
-        
+
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
         <ModalClone
           alertOpen= {this.state.alertOpen}

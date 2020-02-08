@@ -17,8 +17,8 @@ let mainWindow = null;
 
 /*
  * Ipc communication so background windows can talk to the renderer.
- * 
- */ 
+ *
+ */
 
 var backgroundShells = [];
 var tasks = [];
@@ -27,18 +27,21 @@ var maxShells = 5;
 
 var exptMap = {};
 var pausedExpts = [];
+var foundExpts = [];
 
+/* Generate browser window for an experiment */
 function makeBackgroundShell() {
     if (backgroundShells.length >= maxShells) {
         return;
     }
     var pyshellWindow = new BrowserWindow({show:false, nodeIntegrationInWorker: true});
     pyshellWindow.loadURL('file://' + __dirname + '/' + 'background.html');
+    pyshellWindow.webContents.openDevTools()
     pyshellWindow.on('closed', () => {
-        console.log('bg window closed');
-    });    
+    });
 }
 
+/* Manage the launching of background shells for experiments and handling of experiment arguments */
 function runPyshells() {
     if (available.length === 0) {
         makeBackgroundShell();
@@ -47,9 +50,12 @@ function runPyshells() {
         var task = tasks.shift();
         if (task.length === 3) {
             var pyShell = available.shift();
-            pyShell.send(task[0], task[1]);
             exptMap[task[2]] = pyShell;
-            
+            var commands = '-z ' + task[1]['zero'] + ' -o ' + task[1]['overwrite'] + ' -c ' + task[1]['continue'] + ' -p ' + JSON.stringify(task[1]['parameters']) + ' -i ' + task[1]['evolver-ip'] + ' -t ' + task[1]['evolver-port'] + ' -n ' + task[1]['name'] + ' -b ' + task[1]['blank'];
+            exptMap[task[2]].commands = commands;
+            pyShell.send(task[0], task[1]);
+            updateExptFile();
+
         }
         else {
             available.shift().send(task[0], task[1]);
@@ -60,6 +66,28 @@ function runPyshells() {
     }
 }
 
+var fs = require('fs');
+
+/*
+* Create and update a runningExpts.txt file to access list of running experiments off the application
+* updateExptFile() called whenever changes are made to exptMap in application
+*/
+function updateExptFile() {
+  var runningExpts = Object.keys(exptMap);
+
+  /* Append each experiment path with the commands used to initially launch it */
+  runningExpts.forEach( (exp, index) => {
+    runningExpts[index] = runningExpts[index] + "/eVOLVER.py " + exptMap[exp].commands;
+  });
+  runningExpts = runningExpts.join('\n');
+  runningExpts = runningExpts + '\n';
+
+  /* Write running experiments to a text file */
+  fs.writeFile('./runningExpts.txt', runningExpts, (err) => {
+      if (err) throw err;
+  });
+};
+
 ipcMain.on('for-renderer', (event, arg) => {
     mainWindow.webContents.send(arg[0], arg[1]);
 });
@@ -69,9 +97,9 @@ ipcMain.on('start-script', (event, arg) => {
     runPyshells();
 });
 
-ipcMain.on('send-message', (event, arg) => {  
+ipcMain.on('send-message', (event, arg) => {
    var recipientShell = exptMap[arg[0]];
-   recipientShell.send(arg[1], arg[2]);   
+   recipientShell.send(arg[1], arg[2]);
 });
 
 ipcMain.on('pause-script', (event, arg) => {
@@ -87,22 +115,23 @@ ipcMain.on('continue-script', (event, arg) => {
        if (pausedExpts[i] === arg) {
            pausedExpts.splice(i, 1);
        }
-   }    
+   }
 });
 
 ipcMain.on('stop-script', (event, arg) => {
    var recipientShell = exptMap[arg];
    recipientShell.send('stop-script');
    delete exptMap[arg];
+   updateExptFile();
    for (var i = 0; i < pausedExpts.length; i++) {
        if (pausedExpts[i] === arg) {
            pausedExpts.splice(i, 1);
        }
-   }    
+   }
 });
 
 ipcMain.on('running-expts', (event, arg) => {
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap)); 
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
 });
 
 ipcMain.on('paused-expts', (event, arg) => {
@@ -113,15 +142,18 @@ ipcMain.on('ready', (event, arg) => {
     if (!backgroundShells.includes(event.sender)) {
         backgroundShells.push(event.sender);
     }
-    
+
     // remove the thread from the expt map
-    console.log(arg);
-    console.log(exptMap[arg]);
     delete exptMap[arg];
-    
+    updateExptFile();
+
     available.push(event.sender);
     runPyshells();
 });
+
+ipcMain.on('send-commands', (event, arg) => {
+  exptMap[arg[0]].commands = arg[1];
+  });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -150,12 +182,12 @@ const installExtensions = async () => {
 
 
 function createWindow () {
-  var position = []
+  var position = [];
   if (mainWindow) {
-    position = mainWindow.getPosition()
+    position = mainWindow.getPosition();
   }
   else {
-    position = [0,0]
+    position = [0,0];
   }
   mainWindow = new BrowserWindow({
     show: false,
@@ -174,7 +206,7 @@ function createWindow () {
   }
   mainWindow.setMenu(null);
   mainWindow.loadURL(`file://${__dirname}/app.html`);
-  // mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -191,6 +223,7 @@ function createWindow () {
   });
 
   mainWindow.on('close', function(e){
+
     var choice = require('electron').dialog.showMessageBox(this,
         {
           type: 'question',
@@ -216,8 +249,8 @@ function createWindow () {
      const menu = Menu.buildFromTemplate(template);
 
      Menu.setApplicationMenu(menu);
-   }
- }
+   };
+ };
 
 
 /**
@@ -226,6 +259,7 @@ function createWindow () {
 
 app.on('window-all-closed', () => {
   app.quit();
+
 });
 
 app.on('ready', async () => {
@@ -234,15 +268,54 @@ app.on('ready', async () => {
     process.env.DEBUG_PROD === 'true'
   ) {
     await installExtensions();
-  }
+  };
 
+  var ps = require('ps-node');
+
+  /*
+  * Check for exisitng running experiments, kill them, and re-launch them through the application
+  * User should not change the dpu file name in order for this functionality to work
+  */
+  ps.lookup({
+      command: 'Python',
+      arguments: 'eVOLVER',
+      }, function(err, resultList ) {
+      if (err) {
+          throw new Error( err );
+      };
+
+
+      /* If experiment processes are found while the app is starting up then experiment arguments are saved before killing process */
+      if (resultList.length > 0) {
+        var found = "";
+        for (var i = 0; i < resultList.length; i++) {
+          found = resultList[i].arguments[0] + " " + resultList[i].arguments[1];
+          var exptDir = found.replace('/eVOLVER.py','');
+          var zero = resultList[i].arguments[3];
+          var overwrite = resultList[i].arguments[5];
+          var cont = resultList[i].arguments[7];
+          var parameters = resultList[i].arguments[9];
+          var evolverIP = resultList[i].arguments[11];
+          var evolverPort = resultList[i].arguments[13];
+          var name = resultList[i].arguments[15];
+          var blank = resultList[i].arguments[17];
+          var commands = ['start', {'zero':zero, 'overwrite':overwrite, 'continue':'y', 'parameters':parameters, 'evolver-ip':evolverIP, 'evolver-port':evolverPort, 'name':name, 'script': exptDir, 'blank': blank}, exptDir];
+          ps.kill(resultList[i].pid);
+          tasks.push([commands[0], commands[1], commands[2]]);
+          runPyshells();
+          found = "";
+        };
+      } else {
+        console.log('no experiments found');
+      };
+  });
   createWindow ()
 });
 
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
-  }
+  };
 });
 
 app.setAboutPanelOptions({
