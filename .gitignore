@@ -1,3 +1,11 @@
+# Lock Files
+yarn.lock
+./app/yarn.lock
+
+
+# Text Files
+runningExpts.txt
+
 # Logs
 logs
 *.log
