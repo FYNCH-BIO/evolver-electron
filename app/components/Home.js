@@ -8,6 +8,7 @@ import ConfigModal from './evolverConfigs/ConfigModal';
 
 var fs = require('fs');
 const Store = require('electron-store');
+const { ipcRenderer } = require('electron');
 const store = new Store();
 
 const remote = require('electron').remote;
@@ -82,12 +83,11 @@ export default class Home extends Component<Props> {
       else {
         if (!isPi() && store.has('activeEvolver')){
           var ip = store.get('activeEvolver').value;
-	        //var socketString = "http://" + ip + ":8081/dpu-evolver";
-          //this.state.socket = io.connect(socketString, {reconnect:true});
-          this.state.socket = io.connect("http://localhost:5555/dpu-evolver", {reconnect:true});
-
+          ipcRenderer.send('active-ip', ip)
+	        var socketString = "http://" + ip + ":8081/dpu-evolver";
+          this.state.socket = io.connect(socketString, {reconnect:true});
         } else {
-	  this.state.socket = io.connect("http://localhost:5555/dpu-evolver", {reconnect:true});
+            this.state.socket = io.connect(socketString, {reconnect:true});
         }
         this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
@@ -111,7 +111,7 @@ export default class Home extends Component<Props> {
   }
 
   handleSelectEvolver = (selectedEvolver) => {
-    var socketString = "http://" + selectedEvolver.value + ":5555/dpu-evolver";
+    var socketString = "http://" + selectedEvolver.value + ":8081/dpu-evolver";
     var socket = io.connect(socketString, {reconnect:true});
     this.state.socket.on('connect', function(){console.log("Connected evolver")});
     this.state.socket.on('disconnect', function(){console.log("Disconnected evolver")});

@@ -84,11 +84,9 @@
 		};
 		pyShell = new PythonShell(scriptName, options);
 		logger = setupLogger(arg['script']);
-		//ipcRenderer.send('send-commands', sendOptions);
 		pyShell.on('message', function(message) {
 			console.log(message);
 			logger.info(message);
-
 		});
 	});
 	ready();
