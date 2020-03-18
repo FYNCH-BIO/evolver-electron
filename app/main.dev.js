@@ -32,6 +32,7 @@ const BLANK = 17;
 
 var fs = require('fs');
 var ps = require('ps-node');
+var path = require('path');
 
 var backgroundShells = [];
 var tasks = [];
@@ -91,7 +92,7 @@ function updateExptFile() {
 
   /* Append each experiment path with the commands used to initially launch it */
   runningExpts.forEach( (exp, index) => {
-    runningExpts[index] = runningExpts[index] + "/eVOLVER.py " + exptMap[exp].commands;
+    runningExpts[index] = path.join(runningExpts[index], "/eVOLVER.py ", exptMap[exp].commands);
   });
   runningExpts = runningExpts.join('\n');
   runningExpts = runningExpts + '\n';
@@ -179,7 +180,6 @@ if (
   process.env.DEBUG_PROD === 'true'
 ) {
   require('electron-debug')();
-  const path = require('path');
   const p = path.join(__dirname, '..', 'app', 'node_modules');
   require('module').globalPaths.push(p);
 }
