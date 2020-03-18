@@ -167,7 +167,7 @@ ipcMain.on('ready', (event, arg) => {
 });
 
 ipcMain.on('active-ip', (event, arg) => {
-  ipcRenderer.send('get-ip', arg);
+  mainWindow.webContents.send('get-ip', arg);
   });
 
 if (process.env.NODE_ENV === 'production') {

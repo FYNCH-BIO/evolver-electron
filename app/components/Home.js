@@ -8,6 +8,7 @@ import ConfigModal from './evolverConfigs/ConfigModal';
 
 var fs = require('fs');
 const Store = require('electron-store');
+const { ipcRenderer } = require('electron');
 const store = new Store();
 
 const remote = require('electron').remote;
