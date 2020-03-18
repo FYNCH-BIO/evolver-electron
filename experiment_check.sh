@@ -5,6 +5,7 @@
 #Experiments found in runningExpts.txt but not in RUNNING are then re-launched
 
 while true; do
+  oldIFS=$IFS
   IFS=$'\n'
   RUNNING=($(ps -ax | grep "eVOLVER.py" | tr -s " " | cut -d " " -f 5-))
   length=${#RUNNING[@]}
@@ -26,4 +27,5 @@ while true; do
     fi
   done < "$input"
   sleep 10
+IFS=$oldIFS
 done

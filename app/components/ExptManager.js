@@ -57,7 +57,9 @@ function startScript(exptDir) {
         parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};
     }
     var evolverIp = 'localhost';
-    var evolverPort = 5555;
+    var evolverPort = 5555
+    //var evolverIp = this.state.activeIp;
+    //var evolverPort = 8081;
     var name = 'test_expt';
     ipcRenderer.send('start-script', ['start', {'zero':true, 'overwrite':'y', 'continue':'n', 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir, 'blank': 'y'}, exptDir]);
 };
@@ -73,27 +75,28 @@ class ExptManager extends React.Component {
       alertOpen: false,
       alertDirections: 'Enter new experiment name',
       exptToClone: '',
-      refind: false
+      refind: false,
+      activeIp: ''
     };
 
     ipcRenderer.on('to-renderer', (event, arg) => {
-        //console.log(arg);
     });
 
     ipcRenderer.on('running-expts', (event, arg) => {
-        //console.log('running');
-        //console.log(arg);
         this.setState({runningExpts: arg});
     });
 
     ipcRenderer.on('paused-expts', (event, arg) => {
-        //console.log('paused');
-        //console.log(arg);
         this.setState({pausedExpts: arg});
     });
 
     ipcRenderer.send('paused-expts');
     ipcRenderer.send('running-expts');
+
+    ipcRenderer.on('get-ip', (event, arg) => {
+      this.setState({activeIp: arg});
+      });
+
   }
 
   handleSelectFolder = (activeFolder) => {
@@ -121,7 +124,6 @@ class ExptManager extends React.Component {
   }
 
   handlePause = (script) => {
-    //console.log('pause expt')
     ipcRenderer.send('pause-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
     setTimeout(function () {
         ipcRenderer.send('paused-expts');
@@ -141,7 +143,6 @@ class ExptManager extends React.Component {
     };
 
     handleGraph = (script) => {
-         //console.log(script);
     };
 
     handleClone = (script) => {

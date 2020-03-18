@@ -6,6 +6,9 @@ yarn.lock
 # Text Files
 runningExpts.txt
 
+# Environment variables
+.env
+
 # Logs
 logs
 *.log
