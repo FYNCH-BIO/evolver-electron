@@ -1,3 +1,7 @@
+## Setup
+
+Before running, setup up cron or other job scheduler to call `experiment_check.sh` bash script every 30 seconds to ensure that running experiments are not unintentionally lost. In addition, edit `config.sh` to include the path to `runningExpts.txt` before running `experiment_check.sh`
+
 ## Install
 
 - **If you have installation or compilation issues with this project, please see [the debugging guide](https://github.com/chentsulin/electron-react-boilerplate/issues/400)**
