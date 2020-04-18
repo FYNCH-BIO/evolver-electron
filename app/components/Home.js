@@ -2,11 +2,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
-import io from 'socket.io-client'
+import io from 'socket.io-client';
 import log4js from 'log4js';
-import ConfigModal from './evolverConfigs/ConfigModal'
+import ConfigModal from './evolverConfigs/ConfigModal';
+
 var fs = require('fs');
 const Store = require('electron-store');
+const { ipcRenderer } = require('electron');
 const store = new Store();
 
 const remote = require('electron').remote;
@@ -81,12 +83,11 @@ export default class Home extends Component<Props> {
       else {
         if (!isPi() && store.has('activeEvolver')){
           var ip = store.get('activeEvolver').value;
-          var socketString = "http://" + ip + ":8081/dpu-evolver";
+          ipcRenderer.send('active-ip', ip)
+	        var socketString = "http://" + ip + ":8081/dpu-evolver";
           this.state.socket = io.connect(socketString, {reconnect:true});
-          // this.state.socket = io.connect("http://localhost:5558/dpu-evolver", {reconnect:true});
-
         } else {
-          this.state.socket = io.connect("http://localhost:8081/dpu-evolver", {reconnect:true});
+            this.state.socket = io.connect(socketString, {reconnect:true});
         }
         this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
@@ -131,9 +132,7 @@ export default class Home extends Component<Props> {
 
             <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
             <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
-            {/*
             <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
-            */}
         </div>
         <div className='homeConfigBtn'>
           <ConfigModal socket= {this.state.socket} isPi= {this.state.isPi}  onSelectEvolver={this.handleSelectEvolver}/>
