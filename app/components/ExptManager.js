@@ -16,6 +16,8 @@ const app = remote.app;
 var fs = require('fs');
 var path = require('path');
 
+const filesToCopy = ['custom_script.py', 'eVOLVER.py', 'nbstreamreader.py', 'pump_cal.txt', 'eVOLVER_parameters.json'];
+
 const styles = {
   cardRoot: {
     width: 1000,
@@ -161,12 +163,11 @@ class ExptManager extends React.Component {
         if (!fs.existsSync(newDir)) {
             fs.mkdirSync(newDir);
         }
-        fs.copyFileSync(path.join(oldDir, 'custom_script.py'), path.join(newDir, 'custom_script.py'));
-        fs.copyFileSync(path.join(oldDir, 'eVOLVER.py'), path.join(newDir, 'eVOLVER.py'));
-        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
-        if (fs.existsSync(path.join(oldDir, 'tstat_parameters.json'))) {
-            fs.copyFileSync(path.join(oldDir, 'tstat_parameters.json'), path.join(newDir, 'tstat_parameters.json'));
-        }
+        filesToCopy.forEach(function (filename) {
+          if (fs.existsSync(path.join(oldDir, filename))) {
+            fs.copyFileSync(path.join(oldDir, filename), path.join(newDir, filename));
+          }
+        });      
         this.setState({refind: !this.state.refind});
     }
 

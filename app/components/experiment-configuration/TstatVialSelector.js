@@ -137,7 +137,7 @@ class TstatVialSelector extends Component<Props>  {
 
     return (
         <Card className={classes.card}>
-          <div className="vialArray-gui" style={{display: 'flex', justifyContent:'center', alignItems:'center',}}>
+          <div className="vialArray-gui" style={{display: 'flex'}}>
             <SelectableGroup
               ref={ref => (window.selectableGroup = ref)}
               className="main"

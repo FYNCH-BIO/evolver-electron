@@ -192,7 +192,7 @@ class ScriptFinder extends React.Component {
           showPageSizeOptions= {false}
           loading={false}
           defaultSorted={[{id: "modified",desc: true}]}
-          className="-striped -highlight"
+          className="-striped -highlight -em"
           getTdProps={(state, rowInfo, column, instance) => {
             return {
               onClick: (e, handleOriginal) => {
