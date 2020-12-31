@@ -27,9 +27,9 @@
 .item {
   position: relative;
   width: 125px;
-  min-height: 125px;
+  height: 125px;
   border-radius: 125px;
-  margin: 7px;
+  margin: 2px;
   float: left;
   text-align: center;
   border: 2px solid #cccccc;
@@ -161,12 +161,13 @@ button {
 
 .button-position {
   text-align: center;
+  left: -100px;
 }
 
 .save-button-position {
   text-align: right;
   position: absolute;
-  top: 584px;
+  top: 544px;
   left: 400px;
   width: 120px;
 }

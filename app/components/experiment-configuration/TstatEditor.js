@@ -29,8 +29,8 @@ const styles = {
       border: 'none'
   },
   cardVials: {
-    top: '0px',
-    left: '500px',
+    top: '50px',
+    left: '520px',
     border: 'none',
     position: 'absolute',
     backgroundColor: 'black'
@@ -40,6 +40,8 @@ const styles = {
     backgroundColor: 'black'
   }
 };
+
+const defaultTstatParameters = [{"vial":0,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":1,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":2,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":3,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":4,"temp":30,"stir":10,"upper":0.85,"lower":0.3},{"vial":5,"temp":30,"stir":10,"upper":0.85,"lower":0.3},{"vial":6,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":7,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":8,"temp":30,"stir":10,"upper":0.85,"lower":0.3},{"vial":9,"temp":30,"stir":10,"upper":0.85,"lower":0.3},{"vial":10,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":11,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":12,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":13,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":14,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3},{"vial":15,"temp":30.3,"stir":10,"upper":0.85,"lower":0.3}]
 
 var fs = require('fs');
 var path = require('path');
@@ -52,16 +54,14 @@ class TstatEditor extends React.Component {
             rawData: [],
             selectedItems: []
         };
-
-        this.readParameters(this.props.tstatParameters);
     }
     
     componentDidMount() {
-        this.readParameters(this.props.tstatParameters);
+        this.readParameters(defaultTstatParameters);
     }
-    readParameters = (tstatParameters) => {
-        var parameters = fs.readFileSync(tstatParameters, 'utf8');
-        parameters = JSON.parse(parameters);
+
+    readParameters = (tstatParameters) => {      
+        var parameters = tstatParameters;
         var newRawData = parameters;
         parameters = this.formatVialSelectStrings(parameters, 'upper');
         parameters = this.formatVialSelectStrings(parameters, 'lower');
@@ -121,8 +121,9 @@ class TstatEditor extends React.Component {
     };
     
     handleSave = () => {
-        console.log('trying to save...')    
-        this.props.onSave(this.state.rawData);
+        console.log('trying to save...');
+        var expt_config = {'function': 'turbidostat', 'vial_configuration': this.state.rawData};   
+        this.props.onSave(expt_config);
     }
     
     render() {
