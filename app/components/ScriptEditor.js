@@ -292,7 +292,7 @@ class ScriptEditor extends React.Component {
           </div>;      
     }
     else if (this.state.selectedEditor.value == 'turbidostat') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters}/></div>
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp}/></div>
     }
 
     return (

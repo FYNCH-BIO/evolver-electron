@@ -72,18 +72,17 @@
 
 
 	ipcRenderer.on('start', (event, arg) => {
-		var zero = arg['zero'] ? '-z' : '';
-		var overwrite = arg['overwrite'] ? '-o' : '';
-		var continueExpt = arg['continue'] ? '-c' : '';
-		var scriptName = arg['script'] + '/eVOLVER.py';
-		name = arg['script'];
+	 	console.log(arg);		
+		var scriptName = arg + '/eVOLVER.py';		
 		var options = {
 			mode: 'text',
-			pythonPath: '/usr/local/bin/python3.7',
-			args: ['-z', arg['zero'], '-o', arg['overwrite'], '-c', arg['continue'], '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name'], '-b', arg['blank']]
+            args: ['--always-yes']
+			//pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
+			//args: ['-z', arg['zero'], '-o', arg['overwrite'], '-c', arg['continue'], '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name'], '-b', arg['blank']]
 		};
 		pyShell = new PythonShell(scriptName, options);
-		logger = setupLogger(arg['script']);
+		console.log('starting expt');
+		logger = setupLogger(arg);
 		pyShell.on('message', function(message) {
 			console.log(message);
 			logger.info(message);
