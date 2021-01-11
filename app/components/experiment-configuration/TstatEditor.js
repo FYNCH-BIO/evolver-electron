@@ -122,7 +122,7 @@ class TstatEditor extends React.Component {
     
     handleSave = () => {
         console.log('trying to save...');
-        var expt_config = {'function': 'turbidostat', 'vial_configuration': this.state.rawData};   
+        var expt_config = {'function': 'turbidostat', 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};   
         this.props.onSave(expt_config);
     }
     

@@ -53,7 +53,7 @@ function loadFileDir (subFolder, isScript){
     return []
   } else{
 
-    var dirPath= app.getPath('userData') + subFolder;
+    var dirPath= path.join(app.getPath('userData'), subFolder);
     var resultJSON = {'data': dirTree(dirPath).children};
     if (isScript){
       for (var i = 0; i < resultJSON['data'].length; i++) {
@@ -122,10 +122,10 @@ class ScriptFinder extends React.Component {
   };
   
   getStatus = (expt) => {
-      if (this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + expt)) {
+      if (this.props.pausedExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
           return "Paused";
       }
-      else if (this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + expt)) {
+      else if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
           return "Running";
       }
       else {
@@ -144,7 +144,7 @@ class ScriptFinder extends React.Component {
    };
    
    handlePlay = exptName => {
-       this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + exptName) ? this.props.onContinue(exptName): this.props.onStart(exptName);
+       this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
    }
   
   render() {
@@ -170,9 +170,9 @@ class ScriptFinder extends React.Component {
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData') + this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
-            {this.props.runningExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) && !this.props.pausedExpts.includes(app.getPath('userData') + this.props.subFolder + '/' + cellInfo.row.key) ? (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
+            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) && !this.props.pausedExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)}> <FaPause size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)}> <FaPlay size={13}/> </button>)}
             <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>
             <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
            </div>),

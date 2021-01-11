@@ -53,7 +53,7 @@ function makeBackgroundShell() {
     var pyshellWindow = new BrowserWindow({show:false, nodeIntegrationInWorker: true});
     pyshellWindow.loadURL('file://' + __dirname + '/' + 'background.html');
     //Uncomment to open dev tools for background shells
-    //pyshellWindow.webContents.openDevTools()
+    pyshellWindow.webContents.openDevTools()
     pyshellWindow.on('closed', () => {
     });
 }
@@ -65,50 +65,22 @@ function runPyshells() {
     }
     while (available.length > 0 && tasks.length > 0) {
         var task = tasks.shift();
-        if (task.length === 3) {
-            var pyShell = available.shift();
-            exptMap[task[2]] = pyShell;
-            var commands = '-z ' + task[1]['zero'] + ' -o ' + task[1]['overwrite'] + ' -c ' + task[1]['continue'] + ' -p ' + JSON.stringify(task[1]['parameters']) + ' -i ' + task[1]['evolver-ip'] + ' -t ' + task[1]['evolver-port'] + ' -n ' + task[1]['name'] + ' -b ' + task[1]['blank'];
-            exptMap[task[2]].commands = commands;
-            pyShell.send(task[0], task[1]);
-
-        }
-        else {
-            available.shift().send(task[0], task[1]);
-        }
+        var pyShell = available.shift();
+        exptMap[task[1]] = pyShell;
+        console.log(task[1]);
+        pyShell.send(task[0], task[1]);
         if (available.length === 0 && tasks.length > 0) {
             makeBackgroundShell();
         }
     }
 }
 
-
-/*
-* Create and update a runningExpts.txt file to access list of running experiments off the application
-* updateExptFile() called whenever changes are made to exptMap in application
-*/
-function updateExptFile() {
-  var runningExpts = Object.keys(exptMap);
-
-  /* Append each experiment path with the commands used to initially launch it */
-  runningExpts.forEach( (exp, index) => {
-    runningExpts[index] = path.join(runningExpts[index], "/eVOLVER.py ", exptMap[exp].commands);
-  });
-  runningExpts = runningExpts.join('\n');
-  runningExpts = runningExpts + '\n';
-
-  /* Write running experiments to a text file */
-  fs.writeFile('./runningExpts.txt', runningExpts, (err) => {
-      if (err) throw err;
-  });
-};
-
 ipcMain.on('for-renderer', (event, arg) => {
     mainWindow.webContents.send(arg[0], arg[1]);
 });
 
-ipcMain.on('start-script', (event, arg) => {
-    tasks.push([arg[0], arg[1], arg[2]]);
+ipcMain.on('start-script', (event, arg) => {    
+    tasks.push(['start', arg]);
     runPyshells();
 });
 
@@ -137,7 +109,6 @@ ipcMain.on('stop-script', (event, arg) => {
    var recipientShell = exptMap[arg];
    recipientShell.send('stop-script');
    delete exptMap[arg];
-   updateExptFile();
    for (var i = 0; i < pausedExpts.length; i++) {
        if (pausedExpts[i] === arg) {
            pausedExpts.splice(i, 1);
@@ -159,8 +130,7 @@ ipcMain.on('ready', (event, arg) => {
     }
 
     // remove the thread from the expt map
-    delete exptMap[arg];
-    updateExptFile();
+    delete exptMap[arg];    
 
     available.push(event.sender);
     runPyshells();

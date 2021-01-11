@@ -8,6 +8,6 @@ export default class ScriptEditorPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <ScriptEditor exptDir={this.props.location.exptDir}/>;
+    return <ScriptEditor exptDir={this.props.location.exptDir} evolverIp={this.props.location.evolverIp}/>;
   }
 }

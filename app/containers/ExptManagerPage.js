@@ -8,6 +8,6 @@ export default class ExptManagerPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <ExptManager />;
+    return <ExptManager evolverIp = {this.props.location.evolverIp}/>;
   }
 }

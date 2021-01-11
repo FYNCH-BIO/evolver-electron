@@ -40,37 +40,14 @@ const styles = {
 };
 
 function startScript(exptDir) {
-    var volume = 20;
-    var jsonParams = '';
-    var paramFilename = path.join(exptDir, 'tstat_parameters.json');
-    var parameters = {};
-    var temp = [];
-    var stir = [];
-    var lower = [];
-    var upper = [];
-    if (fs.existsSync(paramFilename)) {
-        jsonParams = JSON.parse(fs.readFileSync(paramFilename, 'utf8'));
-        for (var i = 0; i < jsonParams.length; i++) {
-            temp.push(jsonParams[i].temp);
-            stir.push(jsonParams[i].stir);
-            upper.push(jsonParams[i].upper);
-            lower.push(jsonParams[i].lower);
-        }
-        parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};
-    }
-    var evolverIp = 'localhost';
-    var evolverPort = 5555
-    //var evolverIp = this.state.activeIp;
-    //var evolverPort = 8081;
-    var name = 'test_expt';
-    ipcRenderer.send('start-script', ['start', {'zero':true, 'overwrite':'y', 'continue':'n', 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir, 'blank': 'y'}, exptDir]);
+    ipcRenderer.send('start-script', exptDir);
 };
 
 class ExptManager extends React.Component {
   constructor(props) {
-    super(props);
+    super(props);  
     this.state = {
-      scriptDir: '/legacy/data',
+      scriptDir: 'experiments',
       activeScript: '',
       runningExpts: [],
       pausedExpts: [],
@@ -78,7 +55,7 @@ class ExptManager extends React.Component {
       alertDirections: 'Enter new experiment name',
       exptToClone: '',
       refind: false,
-      activeIp: ''
+      evolverIp: this.props.evolverIp
     };
 
     ipcRenderer.on('to-renderer', (event, arg) => {
@@ -96,13 +73,13 @@ class ExptManager extends React.Component {
     ipcRenderer.send('running-expts');
 
     ipcRenderer.on('get-ip', (event, arg) => {
-      this.setState({activeIp: arg});
+      this.setState({evolverIp: arg});
       });
 
   }
 
   handleSelectFolder = (activeFolder) => {
-    var exptDir = app.getPath('userData') + this.state.scriptDir + '/' + activeFolder;
+    var exptDir = path.join(app.getPath('userData'), this.state.scriptDir, activeFolder);
     var activeScript = activeFolder + '/' + 'custom_script.py';
     if (this.state.exptDir !== exptDir){
       this.setState({exptDir: exptDir, activeScript: activeScript});
@@ -110,7 +87,7 @@ class ExptManager extends React.Component {
   }
 
   handleStart = (script) => {
-    startScript(app.getPath('userData') + this.state.scriptDir + '/' + script);
+    startScript(path.join(app.getPath('userData'), this.state.scriptDir, script));
     setTimeout(function () {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
@@ -118,7 +95,7 @@ class ExptManager extends React.Component {
   }
 
   handleStop = (script) => {
-    ipcRenderer.send('stop-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+    ipcRenderer.send('stop-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
     setTimeout(function () {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
@@ -126,7 +103,7 @@ class ExptManager extends React.Component {
   }
 
   handlePause = (script) => {
-    ipcRenderer.send('pause-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+    ipcRenderer.send('pause-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
     setTimeout(function () {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
@@ -134,7 +111,7 @@ class ExptManager extends React.Component {
   }
 
   handleContinue = (script) => {
-     ipcRenderer.send('continue-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
+     ipcRenderer.send('continue-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
      setTimeout(function() {
         ipcRenderer.send('paused-expts');
         ipcRenderer.send('running-expts');
@@ -158,8 +135,8 @@ class ExptManager extends React.Component {
     };
 
     createNewExperiment = (exptName, exptToClone) => {
-        var newDir = path.join(app.getPath('userData') + this.state.scriptDir, exptName);
-        var oldDir = path.join(app.getPath('userData') + this.state.scriptDir, exptToClone);
+        var newDir = path.join(app.getPath('userData'), this.state.scriptDir, exptName);
+        var oldDir = path.join(app.getPath('userData'), this.state.scriptDir, exptToClone);
         if (!fs.existsSync(newDir)) {
             fs.mkdirSync(newDir);
         }
@@ -190,7 +167,8 @@ class ExptManager extends React.Component {
             onContinue={this.handleContinue}
             runningExpts={this.state.runningExpts}
             pausedExpts={this.state.pausedExpts}
-            refind={this.state.refind}/>
+            refind={this.state.refind}
+            evolverIp = {this.state.evolverIp}/>
         </Card>
 
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>

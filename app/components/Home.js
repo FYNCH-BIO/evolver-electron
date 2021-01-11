@@ -86,8 +86,10 @@ export default class Home extends Component<Props> {
           ipcRenderer.send('active-ip', ip)
 	        var socketString = "http://" + ip + ":8081/dpu-evolver";
           this.state.socket = io.connect(socketString, {reconnect:true});
+          this.state.evolverIp = ip;
         } else {
             this.state.socket = io.connect(socketString, {reconnect:true});
+            this.state.evolverIp = ip;
         }
         this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
       }
@@ -116,7 +118,7 @@ export default class Home extends Component<Props> {
     this.state.socket.on('connect', function(){console.log("Connected evolver")});
     this.state.socket.on('disconnect', function(){console.log("Disconnected evolver")});
     this.state.socket.on('reconnect', function(){console.log("Reconnected evolver")});
-    this.setState({socket: socket})
+    this.setState({'socket': socket, 'evolverIp': selectedEvolver.value})
     store.set('activeEvolver', selectedEvolver)
   }
 
@@ -132,7 +134,7 @@ export default class Home extends Component<Props> {
 
             <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
             <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
-            <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
+            <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger, evolverIp: this.state.evolverIp}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
         </div>
         <div className='homeConfigBtn'>
           <ConfigModal socket= {this.state.socket} isPi= {this.state.isPi}  onSelectEvolver={this.handleSelectEvolver}/>
