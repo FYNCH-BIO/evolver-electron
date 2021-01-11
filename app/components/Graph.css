@@ -31,7 +31,7 @@
   background-color: black;
   border: 1px solid white;
   position: absolute;
-  top: 447px;
+  top: 392px;
   left: 27px;
   color: orange;
   font-size: 17px;
@@ -49,4 +49,15 @@
   top: 37px;
   left: 70px;
   z-index: 10;
+}
+
+.downloadButton {
+  position: absolute;
+  top: 550px;
+  left: 60px;
+  width: 150px;
+}
+
+.downloadButton:active {
+  background: grey;
 }
