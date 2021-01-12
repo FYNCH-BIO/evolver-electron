@@ -9,7 +9,12 @@ import VialArrayGraph from './graphing/VialArrayGraph';
 import VialArrayBtns from './graphing/VialArrayBtns';
 import VialMenu from './graphing/VialMenu';
 
+const { dialog } = require('electron').remote
+
 var path = require('path');
+var os = require('os');
+var zipdir = require('zip-dir');
+var fs = require('fs');
 
 const styles = {
 
@@ -90,6 +95,20 @@ class Graph extends React.Component {
     })
   }
 
+  downloadData = () => {    
+    var pathToDownload;
+    var isWin = os.platform() === 'win32';
+    if (!isWin) {
+      pathToDownload  = dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory']});
+    }
+    else {
+      pathToDownload = dialog.showOpenDialog({properties: ['openDirectory', 'promptToCreate']});
+    }
+
+    var zipFilename = path.join(pathToDownload[0], path.basename(this.props.exptDir) + '.zip');      
+    zipdir(this.props.exptDir, {saveTo: zipFilename});
+  }
+
   handleActivePlot = (event) => {
     this.setState({activePlot: event})
   }
@@ -108,14 +127,14 @@ class Graph extends React.Component {
           timePlotted={this.state.timePlotted}
           downsample = {this.state.downsample}
           xaxisName = {this.state.xaxisName}/>
-        <div style={{position: 'absolute', top: '155px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '100px', left: '-10px'}}>
           <VialArrayBtns
             labels={this.state.parameterChoices}
             radioTitle = {this.state.parameterTitle}
             value={this.state.parameter}
             onSelectRadio={this.handleParameterSelect}/>
         </div>
-        <div style={{position: 'absolute', top: '240px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '185px', left: '-10px'}}>
           <VialArrayBtns
             labels={this.state.timePlottedChoices}
             radioTitle = {this.state.timePlottedTitle}
@@ -128,6 +147,7 @@ class Graph extends React.Component {
             onSelectRadio={this.handleYmax}/>
         </div>
         <VialMenu onSelectGraph={this.handleActivePlot}/>
+        <button className={"downloadButton"} onClick={this.downloadData}>DOWNLOAD</button>
       </div>
 
     );
