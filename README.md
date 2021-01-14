@@ -55,6 +55,23 @@ Package for Raspberry Pi:
 $ yarn package-rpi
 ```
 
+Next, scp the file to the Raspberry Pi:
+
+```bash
+$ scp release/evolver-electron-1.0.0.AppImage pi@<RPI_IP>:~/evolver-electron-1.0.0.AppImage-new
+```
+
+NOTE: Do not directly overwrite the file - add `-new` to the end so that it copies next to the current build.
+
+Now ssh to the Raspberry Pi, backup the old version and replace it with the new. Restart the raspberry pi to finish the installation.
+
+```bash
+$ ssh pi@<RPI_IP>
+$ mv evolver-electron-1.0.0.AppImage evolver-electron-1.0.0.AppImage-old
+$ mv evolver-electron-1.0.0.AppImage-new evolver-electron-1.0.0.AppImage
+$ sudo reboot now
+```
+
 ## Credit
 
 - [Zachary Heins](https://github.com/zheins)
