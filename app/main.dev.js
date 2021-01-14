@@ -30,10 +30,15 @@ const EVOLVERPORT = 13;
 const NAME = 15;
 const BLANK = 17;
 
-var fs = require('fs');
 var ps = require('ps-node');
 var path = require('path');
+const Store = require('electron-store');
 
+const store = new Store({
+  defaults:{
+    running_expts: []
+  }
+});
 var backgroundShells = [];
 var tasks = [];
 var available = [];
@@ -42,7 +47,6 @@ var maxShells = 5;
 var exptMap = {};
 var pausedExpts = [];
 var foundExpts = [];
-
 var activeIp = '';
 
 /* Generate browser window for an experiment */
@@ -66,8 +70,10 @@ function runPyshells() {
     while (available.length > 0 && tasks.length > 0) {
         var task = tasks.shift();
         var pyShell = available.shift();
-        exptMap[task[1]] = pyShell;
-        console.log(task[1]);
+        exptMap[task[1]] = {
+          browser_contents: pyShell,
+          pid: null
+        };
         pyShell.send(task[0], task[1]);
         if (available.length === 0 && tasks.length > 0) {
             makeBackgroundShell();
@@ -75,28 +81,42 @@ function runPyshells() {
     }
 }
 
+function storeRunningExpts() {
+  // Get array of running experiments from exptMap. Store path and pid information only.
+  var runningExpts = Object.keys(exptMap).reduce(function(obj, x) {
+    var data = {
+      path: x,
+      pid: exptMap[x].pid
+    };
+    obj.push(data);
+    return obj;
+  }, []);
+  store.set('running_expts', runningExpts);
+};
+
 ipcMain.on('for-renderer', (event, arg) => {
     mainWindow.webContents.send(arg[0], arg[1]);
 });
 
-ipcMain.on('start-script', (event, arg) => {    
+ipcMain.on('start-script', (event, arg) => {
     tasks.push(['start', arg]);
     runPyshells();
+
 });
 
 ipcMain.on('send-message', (event, arg) => {
-   var recipientShell = exptMap[arg[0]];
+   var recipientShell = exptMap[arg[0]].browser_contents;
    recipientShell.send(arg[1], arg[2]);
 });
 
 ipcMain.on('pause-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
+   var recipientShell = exptMap[arg].browser_contents;
    recipientShell.send('pause-script');
    pausedExpts.push(arg);
 });
 
 ipcMain.on('continue-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
+   var recipientShell = exptMap[arg].browser_contents;
    recipientShell.send('continue-script');
    for (var i = 0; i < pausedExpts.length; i++) {
        if (pausedExpts[i] === arg) {
@@ -106,9 +126,11 @@ ipcMain.on('continue-script', (event, arg) => {
 });
 
 ipcMain.on('stop-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
+   var recipientShell = exptMap[arg].browser_contents;
    recipientShell.send('stop-script');
    delete exptMap[arg];
+   storeRunningExpts();
+
    for (var i = 0; i < pausedExpts.length; i++) {
        if (pausedExpts[i] === arg) {
            pausedExpts.splice(i, 1);
@@ -130,8 +152,8 @@ ipcMain.on('ready', (event, arg) => {
     }
 
     // remove the thread from the expt map
-    delete exptMap[arg];    
-
+    delete exptMap[arg];
+    storeRunningExpts();
     available.push(event.sender);
     runPyshells();
 });
@@ -139,6 +161,11 @@ ipcMain.on('ready', (event, arg) => {
 ipcMain.on('active-ip', (event, arg) => {
   mainWindow.webContents.send('get-ip', arg);
   });
+
+ipcMain.on('store-pid', (event, arg) => {
+  exptMap[arg[0]].pid = arg[1];
+  storeRunningExpts();
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -163,7 +190,6 @@ const installExtensions = async () => {
     extensions.map(name => installer.default(installer[name], forceDownload))
   ).catch(console.log);
 };
-
 
 function createWindow () {
   var position = [];
@@ -244,49 +270,19 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', async () => {
+  console.log('looking for running experiments');
+  if (store.get('running_expts').length > 0) {
+    console.log('found the following experiments');
+    console.log(store.get('running_expts'));
+  } else {
+    console.log('no experiments found');
+  };
   if (
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG_PROD === 'true'
   ) {
     await installExtensions();
   };
-
-  /*
-  * Check for exisitng running experiments, kill them, and re-launch them through the application
-  * User should not change the dpu file name in order for this functionality to work
-  */
-  ps.lookup({
-      command: 'Python',
-      arguments: 'eVOLVER',
-      }, function(err, resultList ) {
-      if (err) {
-          throw new Error( err );
-      };
-
-      /* If experiment processes are found while the app is starting up then experiment arguments are saved before killing process */
-      if (resultList.length > 0) {
-        var found = "";
-        for (var i = 0; i < resultList.length; i++) {
-          found = resultList[i].arguments[0] + " " + resultList[i].arguments[1];
-          var exptDir = found.replace('/eVOLVER.py','');
-          var zero = resultList[i].arguments[ZERO];
-          var overwrite = resultList[i].arguments[OVERWRITE];
-          var cont = resultList[i].arguments[CONTINUE];
-          var parameters = resultList[i].arguments[PARAMETERS];
-          var evolverIP = resultList[i].arguments[EVOLVERIP];
-          var evolverPort = resultList[i].arguments[EVOLVERPORT];
-          var name = resultList[i].arguments[NAME];
-          var blank = resultList[i].arguments[BLANK];
-          var commands = ['start', {'zero':zero, 'overwrite':overwrite, 'continue':'y', 'parameters':parameters, 'evolver-ip':evolverIP, 'evolver-port':evolverPort, 'name':name, 'script': exptDir, 'blank': blank}, exptDir];
-          ps.kill(resultList[i].pid);
-          tasks.push([commands[0], commands[1], commands[2]]);
-          runPyshells();
-          found = "";
-        };
-      } else {
-        console.log('no experiments found');
-      };
-  });
   createWindow ()
 });
 

@@ -45,7 +45,7 @@ function startScript(exptDir) {
 
 class ExptManager extends React.Component {
   constructor(props) {
-    super(props);  
+    super(props);
     this.state = {
       scriptDir: 'experiments',
       activeScript: '',
@@ -144,7 +144,7 @@ class ExptManager extends React.Component {
           if (fs.existsSync(path.join(oldDir, filename))) {
             fs.copyFileSync(path.join(oldDir, filename), path.join(newDir, filename));
           }
-        });      
+        });
         this.setState({refind: !this.state.refind});
     }
 
