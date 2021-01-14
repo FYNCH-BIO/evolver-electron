@@ -123,6 +123,12 @@ export default class Home extends Component<Props> {
   }
 
   render() {
+    var links = (isPi() ? <div><Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link></div> :
+      <div>
+        <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
+        <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
+        <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger, evolverIp: this.state.evolverIp}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
+      </div>);
 
     return (
       <div>
@@ -131,10 +137,7 @@ export default class Home extends Component<Props> {
             <div className="p-5"/>
             <h1 className="display-2 centered">eVOLVER</h1>
             <p className="font-italic"> Continuous Culture </p>
-
-            <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
-            <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
-            <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger, evolverIp: this.state.evolverIp}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
+            {links}
         </div>
         <div className='homeConfigBtn'>
           <ConfigModal socket= {this.state.socket} isPi= {this.state.isPi}  onSelectEvolver={this.handleSelectEvolver}/>
