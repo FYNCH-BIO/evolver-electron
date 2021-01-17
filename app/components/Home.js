@@ -5,6 +5,7 @@ import routes from '../constants/routes.json';
 import io from 'socket.io-client';
 import log4js from 'log4js';
 import ConfigModal from './evolverConfigs/ConfigModal';
+import RelaunchModal from './RelaunchModal';
 
 var fs = require('fs');
 const Store = require('electron-store');
@@ -69,13 +70,20 @@ function isPi() {
   return pi_module_no.indexOf(number) > -1;
 }
 
-
+function checkExpts() {
+  if (store.get('first_visit') == true && store.get('running_expts').length > 0) {
+    return true;
+  } else {
+    return false;
+  };
+};
 
 export default class Home extends Component<Props> {
   constructor(props) {
       super(props);
       this.state = {
-        isPi: false
+        isPi: false,
+        alertOpen: false
       }
       if (this.props.socket && store.has('activeEvolver')) {
         this.state.socket = this.props.socket;
@@ -108,8 +116,17 @@ export default class Home extends Component<Props> {
   props: Props;
 
   componentDidMount() {
+    if (store.get('first_visit') == null) {
+      store.set('first_visit', true);
+    } else {
+      store.set('first_visit', false);
+    };
+
     console.log(this.state.socket)
-    this.setState({isPi:isPi()})
+    this.setState({
+      isPi:isPi(),
+      alertOpen: checkExpts()
+    })
   }
 
   handleSelectEvolver = (selectedEvolver) => {
@@ -122,6 +139,18 @@ export default class Home extends Component<Props> {
     store.set('activeEvolver', selectedEvolver)
   }
 
+  handleYes = () => {
+    ipcRenderer.send('kill-expts', {relaunch: true});
+    this.setState({alertOpen: false,});
+    store.set('first_visit', false);
+  }
+
+  handleNo = () => {
+    ipcRenderer.send('kill-expts', {relaunch: false})
+    this.setState({alertOpen: false});
+    store.set('first_visit', false);
+  };
+
   render() {
     var links = (isPi() ? <div><Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link></div> :
       <div>
@@ -130,8 +159,21 @@ export default class Home extends Component<Props> {
         <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger, evolverIp: this.state.evolverIp}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
       </div>);
 
+    var foundExpts = [];
+    for (var i = 0; i < store.get('running_expts').length; i++) {
+      var temp = store.get('running_expts')[i].path;
+      foundExpts.push(temp.split('/').pop());
+    }
+    var question = `The following experiments were not properly ended prior to opening the application. Would you like to continue them?`;
+
     return (
       <div>
+      <RelaunchModal
+        alertOpen= {this.state.alertOpen}
+        alertQuestion = {question}
+        alertExperiments = {foundExpts.join("\n")}
+        onClickYes = {this.handleYes}
+        onClickNo = {this.handleNo}/>;
         <div className="centered">
             <div className="p-5"/>
             <div className="p-5"/>
