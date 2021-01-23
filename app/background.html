@@ -72,11 +72,11 @@
 
 
 	ipcRenderer.on('start', (event, arg) => {
-		console.log(arg);
-		var scriptName = arg + '/eVOLVER.py';
+		console.log(arg.scriptDir);
+		var scriptName = arg.scriptDir + '/eVOLVER.py';
 		var options = {
 			mode: 'text',
-			args: ['--always-yes']
+			args: arg.flag
 			//pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
 			//args: ['-z', arg['zero'], '-o', arg['overwrite'], '-c', arg['continue'], '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name'], '-b', arg['blank']]
 		};
@@ -88,7 +88,7 @@
 			logger.info(message);
 		});
 		var pid = pyShell.childProcess.pid;
-		ipcRenderer.send('store-pid', [arg, pid]);
+		ipcRenderer.send('store-pid', [arg.scriptDir, pid]);
 	});
 	ready();
 </script>

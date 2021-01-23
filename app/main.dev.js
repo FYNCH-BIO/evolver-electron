@@ -30,13 +30,15 @@ const EVOLVERPORT = 13;
 const NAME = 15;
 const BLANK = 17;
 
-var ps = require('ps-node');
 var path = require('path');
 const Store = require('electron-store');
+const { exec } = require("child_process");
+const { dialog } = require('electron')
 
 const store = new Store({
   defaults:{
-    running_expts: []
+    running_expts: [],
+    first_visit: null
   }
 });
 var backgroundShells = [];
@@ -46,7 +48,6 @@ var maxShells = 5;
 
 var exptMap = {};
 var pausedExpts = [];
-var foundExpts = [];
 var activeIp = '';
 
 /* Generate browser window for an experiment */
@@ -70,7 +71,7 @@ function runPyshells() {
     while (available.length > 0 && tasks.length > 0) {
         var task = tasks.shift();
         var pyShell = available.shift();
-        exptMap[task[1]] = {
+        exptMap[task[1].scriptDir] = {
           browser_contents: pyShell,
           pid: null
         };
@@ -81,8 +82,8 @@ function runPyshells() {
     }
 }
 
+/* Get array of running experiments from exptMap. Store path and pid information only. */
 function storeRunningExpts() {
-  // Get array of running experiments from exptMap. Store path and pid information only.
   var runningExpts = Object.keys(exptMap).reduce(function(obj, x) {
     var data = {
       path: x,
@@ -91,7 +92,40 @@ function storeRunningExpts() {
     obj.push(data);
     return obj;
   }, []);
+  console.log('updating electron store');
   store.set('running_expts', runningExpts);
+  console.log(store.get('running_expts'));
+};
+
+/* Handle killing and relaunching experiments not connected to application. */
+function killExpts(relaunch) {
+  var foundPIDs = [];
+  for (var i = 0; i < store.get('running_expts').length; i++) {
+    foundPIDs.push(store.get('running_expts')[i].pid);
+    if (relaunch) {
+      console.log("Relaunching")
+      tasks.push(['start', {
+        scriptDir: store.get('running_expts')[i].path,
+        flag: '--exp-recover'}
+      ]);
+    };
+  };
+  console.log(`kill ${foundPIDs.join(' ')}`);
+  exec(`kill ${foundPIDs.join(' ')}`, (error, stdout, stderr) => {
+      if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+      }
+      if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+      }
+      console.log(`stdout: ${stdout}`);
+  });
+  store.set('running_expts', []);
+  if (relaunch) {
+    runPyshells();
+  }
 };
 
 ipcMain.on('for-renderer', (event, arg) => {
@@ -99,7 +133,10 @@ ipcMain.on('for-renderer', (event, arg) => {
 });
 
 ipcMain.on('start-script', (event, arg) => {
-    tasks.push(['start', arg]);
+    tasks.push(['start', {
+      scriptDir: arg,
+      flag: '--always-yes'}
+      ]);
     runPyshells();
 
 });
@@ -167,6 +204,10 @@ ipcMain.on('store-pid', (event, arg) => {
   storeRunningExpts();
 });
 
+ipcMain.on('kill-expts', (event, arg) => {
+  killExpts(arg.relaunch);
+  });
+
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -232,13 +273,27 @@ function createWindow () {
   });
 
   mainWindow.on('close', function(e){
-    var choice = require('electron').dialog.showMessageBox(this,
+    if (store.get('running_expts').length > 0) {
+      var runningExpts = [];
+      var message = '';
+      var detail = '';
+
+      for (var i = 0; i < store.get('running_expts').length; i++) {
+        var temp = store.get('running_expts')[i].path;
+        runningExpts.push(temp.split('/').pop())
+      };
+      message = 'The following running experiments have been detected and will persist if the application is closed. Would you still like to close the application?';
+      detail = runningExpts.join('\n');
+
+      var choice = dialog.showMessageBox(this,
         {
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
-          message: 'Are you sure you want to quit? Any running scripts will be terminated.'
-       });
+          message: message,
+          detail: detail
+          });
+    };
        if(choice == 1){
          e.preventDefault();
        }
@@ -270,20 +325,14 @@ app.on('window-all-closed', () => {
 });
 
 app.on('ready', async () => {
-  console.log('looking for running experiments');
-  if (store.get('running_expts').length > 0) {
-    console.log('found the following experiments');
-    console.log(store.get('running_expts'));
-  } else {
-    console.log('no experiments found');
-  };
   if (
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG_PROD === 'true'
   ) {
     await installExtensions();
   };
-  createWindow ()
+  store.set('first_visit', null);
+  createWindow ();
 });
 
 app.on('activate', () => {
