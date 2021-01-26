@@ -66,7 +66,7 @@ class ExptManager extends React.Component {
     });
 
     ipcRenderer.on('paused-expts', (event, arg) => {
-        this.setState({pausedExpts: arg});
+        this.setState({pausedExpts: arg, disablePlay: false});
     });
 
     ipcRenderer.send('paused-expts');
@@ -88,34 +88,19 @@ class ExptManager extends React.Component {
 
   handleStart = (script) => {
     startScript(path.join(app.getPath('userData'), this.state.scriptDir, script));
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
+    this.setState({disablePlay: true});
   }
 
   handleStop = (script) => {
     ipcRenderer.send('stop-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
   }
 
   handlePause = (script) => {
     ipcRenderer.send('pause-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
   }
 
   handleContinue = (script) => {
      ipcRenderer.send('continue-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
-     setTimeout(function() {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-     });
   };
 
     handleEdit = (script) => {
@@ -168,7 +153,8 @@ class ExptManager extends React.Component {
             runningExpts={this.state.runningExpts}
             pausedExpts={this.state.pausedExpts}
             refind={this.state.refind}
-            evolverIp = {this.state.evolverIp}/>
+            evolverIp = {this.state.evolverIp}
+            disablePlay = {this.state.disablePlay}/>
         </Card>
 
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
