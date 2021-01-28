@@ -80,6 +80,8 @@ function runPyshells() {
             makeBackgroundShell();
         }
     }
+    mainWindow.webContents.send('running-expts', Object.keys(exptMap));
+    mainWindow.webContents.send('paused-expts', pausedExpts);
 }
 
 /* Get array of running experiments from exptMap. Store path and pid information only. */
@@ -138,7 +140,6 @@ ipcMain.on('start-script', (event, arg) => {
       flag: '--always-yes'}
       ]);
     runPyshells();
-
 });
 
 ipcMain.on('send-message', (event, arg) => {
@@ -150,6 +151,8 @@ ipcMain.on('pause-script', (event, arg) => {
    var recipientShell = exptMap[arg].browser_contents;
    recipientShell.send('pause-script');
    pausedExpts.push(arg);
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+   mainWindow.webContents.send('paused-expts', pausedExpts);
 });
 
 ipcMain.on('continue-script', (event, arg) => {
@@ -160,6 +163,8 @@ ipcMain.on('continue-script', (event, arg) => {
            pausedExpts.splice(i, 1);
        }
    }
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+   mainWindow.webContents.send('paused-expts', pausedExpts);
 });
 
 ipcMain.on('stop-script', (event, arg) => {
@@ -173,6 +178,8 @@ ipcMain.on('stop-script', (event, arg) => {
            pausedExpts.splice(i, 1);
        }
    }
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+   mainWindow.webContents.send('paused-expts', pausedExpts);
 });
 
 ipcMain.on('running-expts', (event, arg) => {
