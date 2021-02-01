@@ -22,6 +22,7 @@ const remote = require('electron').remote;
 const app = remote.app;
 
 var editorComponent;
+var filesToShow = ['eVOLVER.py', 'custom_script.py'];
 
 const styles = {
   cardRoot: {
@@ -107,7 +108,9 @@ class ScriptEditor extends React.Component {
       var timestamp = new Date(util.inspect(stats.mtime));
       var lastModified = moment(timestamp).valueOf();
       var lastModifiedString = moment(timestamp).fromNow();
-      filesData.push({filename: allFiles[i], modified: lastModified, modifiedString: lastModifiedString});
+      if (filesToShow.includes(allFiles[i])) {
+        filesData.push({filename: allFiles[i], modified: lastModified, modifiedString: lastModifiedString});
+      }
     }
     this.setState({exptDirFiles: filesData});
   };
