@@ -31,6 +31,7 @@ const NAME = 15;
 const BLANK = 17;
 
 var path = require('path');
+var ps = require('ps-node');
 const Store = require('electron-store');
 const { exec } = require("child_process");
 const { dialog } = require('electron')
@@ -101,9 +102,26 @@ function storeRunningExpts() {
 
 /* Handle killing and relaunching experiments not connected to application. */
 function killExpts(relaunch) {
-  var foundPIDs = [];
   for (var i = 0; i < store.get('running_expts').length; i++) {
-    foundPIDs.push(store.get('running_expts')[i].pid);
+    ps.lookup({pid: store.get('running_expts')[i].pid}, function(err, resultList) {
+      if (err) {
+        throw new Error(err);
+      }
+      var process = resultList[0];
+      for (var i = 0; i < process.arguments.length; i++) {
+        if (process.arguments[i].includes('eVOLVER')) {
+          ps.kill(process.pid, function(err) {
+            if (err) {
+              throw new Error(err);
+            }
+            else {
+              console.log('Process %s has been killed!', process.pid);
+            }
+          });
+          break;
+        }
+      }
+    });
     if (relaunch) {
       console.log("Relaunching")
       tasks.push(['start', {
@@ -112,18 +130,6 @@ function killExpts(relaunch) {
       ]);
     };
   };
-  console.log(`kill ${foundPIDs.join(' ')}`);
-  exec(`kill ${foundPIDs.join(' ')}`, (error, stdout, stderr) => {
-      if (error) {
-          console.log(`error: ${error.message}`);
-          return;
-      }
-      if (stderr) {
-          console.log(`stderr: ${stderr}`);
-          return;
-      }
-      console.log(`stdout: ${stdout}`);
-  });
   store.set('running_expts', []);
   if (relaunch) {
     runPyshells();
