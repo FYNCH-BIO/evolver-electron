@@ -1,6 +1,15 @@
-## Install
+## About
+A desktop app created to control the basic functions of the eVOLVER and perform calibrations via a GUI.
 
+## Install
 - **If you have installation or compilation issues with this project, please see [the debugging guide](https://github.com/chentsulin/electron-react-boilerplate/issues/400)**
+
+Download the latest release for your OS [here](https://github.com/FYNCH-BIO/evolver-electron/releases)
+
+After installing on your computer, start the app. Add your eVOLVER to the app by clicking the '+' in the lower right hand corner and inputting your eVOLVER IP (found in upper right hand corner of your eVOLVER screen).
+
+## Compiling and Installing
+If you need to compile the app before installation, follow these instructions.
 
 Install dependencies with yarn.
 
@@ -9,14 +18,14 @@ $ cd your_directory/evolver-electron
 $ yarn
 ```
 
-## Run
+### Run
 
 Start the app in the `dev` environment. This starts the renderer process in [**hot-module-replacement**](https://webpack.js.org/guides/hmr-react/) mode and starts a webpack dev server that sends hot updates to the renderer process:
 
 ```bash
 $ yarn dev
 ```
-## Github
+### Github
 
 Use the command line to commit to the repo, using the Github App will throw errors:
 
@@ -25,7 +34,7 @@ git add .
 git commit -a --no-verify -m "Put comment here"
 ```
 
-## Packaging
+### Packaging
 
 To package apps for the local platform (Does not work well when compiling in other platforms. e.g. compile in OSX for OSX):
 
