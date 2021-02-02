@@ -40,6 +40,7 @@ class ModalClone extends React.Component {
 
   onCloseModal = () => {
     this.setState({open: false, value:''});
+    this.props.onAlertAnswer(false);
   };
 
   handleAnswer = () => {
@@ -66,7 +67,7 @@ class ModalClone extends React.Component {
              modal: styles.newExptModal,
              overlay: styles.customOverlay
            }}>
-           <div style={{height: '120px'}}>
+           <div style={{height: '180px'}}>
               <p style={{textAlign: 'center', margin: '20px 50px 15px 50px', fontStyle: 'italic', fontSize: '24px',fontWeight: 'bold'}}>
                 {this.state.question}
               </p>

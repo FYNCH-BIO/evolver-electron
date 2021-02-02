@@ -8,7 +8,7 @@ import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
 import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
-import {FaPlay, FaStop, FaPause, FaPen, FaChartBar } from 'react-icons/fa';
+import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
 
@@ -122,10 +122,7 @@ class ScriptFinder extends React.Component {
   };
   
   getStatus = (expt) => {
-      if (this.props.pausedExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
-          return "Paused";
-      }
-      else if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
+      if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
           return "Running";
       }
       else {
@@ -154,17 +151,17 @@ class ScriptFinder extends React.Component {
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
-        width: 295
+        width: 280
       },
       {
         Header: 'Last Modified',
         accessor: 'modified',
         Cell: props => <span> {props.original.modifiedString} </span>,
-        width: 215
+        width: 205
       },
       {
           Header: 'Status',
-          width: 150,
+          width: 135,
           Cell: cellInfo => <span>{this.getStatus(cellInfo.row.key)}</span>
       },
       {
@@ -172,8 +169,8 @@ class ScriptFinder extends React.Component {
           Cell: (cellInfo) => (<div>
             <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
             <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
-            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) && !this.props.pausedExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? (<button className="tableIconButton" onClick={() => this.props.onPause(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPause size={13}/> </button>) : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
-            <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button>
+            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
+            <button className="tableTextButton" onClick={() => this.props.onReset(cellInfo.row.key, this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)))}> RESET </button>
             <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
            </div>),
           width: 400
