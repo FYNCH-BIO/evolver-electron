@@ -5,6 +5,7 @@
   "CALMENU": "/calibrationsmenu",
   "DENSITYCALIBRATIONS": "/densitycalibrate",
   "TEMPCALIBRATIONS": "/tempcalibrate",
+  "PUMPCALIBRATIONS": "/pumpcalibrate",
   "GRAPHING": "/graph",
   "EXPTMANAGER": "/exptmanager",
   "EDITOR": "/scripteditor"
