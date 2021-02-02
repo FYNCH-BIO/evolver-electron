@@ -9,11 +9,13 @@ import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 const { ipcRenderer } = require('electron');
 import ModalClone from './python-shell/ModalClone';
+import ModalReset from './python-shell/ModalReset';
 
 const remote = require('electron').remote;
 const app = remote.app;
 
 var fs = require('fs');
+var rimraf = require('rimraf');
 var path = require('path');
 
 const filesToCopy = ['custom_script.py', 'eVOLVER.py', 'nbstreamreader.py', 'pump_cal.txt', 'eVOLVER_parameters.json'];
@@ -50,8 +52,9 @@ class ExptManager extends React.Component {
       scriptDir: 'experiments',
       activeScript: '',
       runningExpts: [],
-      pausedExpts: [],
       alertOpen: false,
+      resetOpen: false,
+      resetQuestion: 'Are you sure you want to reset this experiment? All data will be deleted.',
       alertDirections: 'Enter new experiment name',
       exptToClone: '',
       refind: false,
@@ -63,13 +66,9 @@ class ExptManager extends React.Component {
 
     ipcRenderer.on('running-expts', (event, arg) => {
         this.setState({runningExpts: arg});
+        this.setState({disablePlay: false});
     });
 
-    ipcRenderer.on('paused-expts', (event, arg) => {
-        this.setState({pausedExpts: arg, disablePlay: false});
-    });
-
-    ipcRenderer.send('paused-expts');
     ipcRenderer.send('running-expts');
 
     ipcRenderer.on('get-ip', (event, arg) => {
@@ -89,14 +88,11 @@ class ExptManager extends React.Component {
   handleStart = (script) => {
     startScript(path.join(app.getPath('userData'), this.state.scriptDir, script));
     this.setState({disablePlay: true});
+    console.log("starting received");
   }
 
   handleStop = (script) => {
     ipcRenderer.send('stop-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
-  }
-
-  handlePause = (script) => {
-    ipcRenderer.send('pause-script', path.join(app.getPath('userData'), this.state.scriptDir, script));
   }
 
   handleContinue = (script) => {
@@ -113,10 +109,27 @@ class ExptManager extends React.Component {
         this.setState({alertOpen: true, exptToClone: script});
     };
 
+    handleReset = (script, running) => {
+      if (running) {
+        this.setState({resetOpen: true, resetQuestion: 'Cannot reset a running experiment. Please stop the experiment before resetting.', ableToReset: false});
+      }
+      else {
+        this.setState({resetOpen: true, resetQuestion: 'Are you sure you want to reset this experiment? All data will be deleted.', exptToReset: script, ableToReset: true});
+      }
+    };
+
+    onResumeReset = (reset) => {
+      this.setState({resetOpen: false});
+      if (reset) {
+        rimraf(path.join(app.getPath('userData'), this.state.scriptDir, this.state.exptToReset, 'data'), function() {console.log('removed expt data')});
+      }
+    };
+
     onResumeClone = (exptName) => {
         this.setState({alertOpen: false});
-        this.createNewExperiment(exptName, this.state.exptToClone);
-
+        if (exptName !== false) {
+          this.createNewExperiment(exptName, this.state.exptToClone);
+        }
     };
 
     createNewExperiment = (exptName, exptToClone) => {
@@ -148,10 +161,9 @@ class ExptManager extends React.Component {
             onGraph={this.handleGraph}
             onStart={this.handleStart}
             onStop={this.handleStop}
-            onPause={this.handlePause}
+            onReset={this.handleReset}
             onContinue={this.handleContinue}
             runningExpts={this.state.runningExpts}
-            pausedExpts={this.state.pausedExpts}
             refind={this.state.refind}
             evolverIp = {this.state.evolverIp}
             disablePlay = {this.state.disablePlay}/>
@@ -162,6 +174,11 @@ class ExptManager extends React.Component {
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertDirections}
           onAlertAnswer = {this.onResumeClone}/>
+        <ModalReset
+          resetOpen = {this.state.resetOpen}
+          resetQuestion = {this.state.resetQuestion}
+          onResetAnswer = {this.onResumeReset}
+          ableToReset = {this.state.ableToReset}/>
       </div>
     );
   }

@@ -47,7 +47,6 @@ var available = [];
 var maxShells = 5;
 
 var exptMap = {};
-var pausedExpts = [];
 var activeIp = '';
 
 /* Generate browser window for an experiment */
@@ -81,7 +80,6 @@ function runPyshells() {
         }
     }
     mainWindow.webContents.send('running-expts', Object.keys(exptMap));
-    mainWindow.webContents.send('paused-expts', pausedExpts);
 }
 
 /* Get array of running experiments from exptMap. Store path and pid information only. */
@@ -147,47 +145,17 @@ ipcMain.on('send-message', (event, arg) => {
    recipientShell.send(arg[1], arg[2]);
 });
 
-ipcMain.on('pause-script', (event, arg) => {
-   var recipientShell = exptMap[arg].browser_contents;
-   recipientShell.send('pause-script');
-   pausedExpts.push(arg);
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
-   mainWindow.webContents.send('paused-expts', pausedExpts);
-});
-
-ipcMain.on('continue-script', (event, arg) => {
-   var recipientShell = exptMap[arg].browser_contents;
-   recipientShell.send('continue-script');
-   for (var i = 0; i < pausedExpts.length; i++) {
-       if (pausedExpts[i] === arg) {
-           pausedExpts.splice(i, 1);
-       }
-   }
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
-   mainWindow.webContents.send('paused-expts', pausedExpts);
-});
-
 ipcMain.on('stop-script', (event, arg) => {
    var recipientShell = exptMap[arg].browser_contents;
    recipientShell.send('stop-script');
    delete exptMap[arg];
    storeRunningExpts();
 
-   for (var i = 0; i < pausedExpts.length; i++) {
-       if (pausedExpts[i] === arg) {
-           pausedExpts.splice(i, 1);
-       }
-   }
    mainWindow.webContents.send('running-expts',Object.keys(exptMap));
-   mainWindow.webContents.send('paused-expts', pausedExpts);
 });
 
 ipcMain.on('running-expts', (event, arg) => {
    mainWindow.webContents.send('running-expts',Object.keys(exptMap));
-});
-
-ipcMain.on('paused-expts', (event, arg) => {
-   mainWindow.webContents.send('paused-expts', pausedExpts);
 });
 
 ipcMain.on('ready', (event, arg) => {
