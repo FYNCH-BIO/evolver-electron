@@ -338,3 +338,34 @@ ul {
  .alertBtnRow {
    text-align: center;
  }
+
+ .configInstructions {
+  text-align: center;
+  font-size: 25px;
+  font-weight: bold;
+  word-wrap: break-word;
+ }
+
+ .instructionsDiv {
+  width: 400px;
+ }
+
+ .radioBtnTitles {
+  width: 400px;
+  text-align: center;
+  margin: 0px 0px 10px 0px;
+ }
+
+ .radioBtnTitleText {
+  font-size: 30px;
+  text-align: center;
+  margin: 0px 35px 0px 0px;
+ }
+
+ .radioBtnRowLabel {
+  font-size: 25px;
+  text-align: center;
+  margin: -6px 0px 0px 0px;
+ }
+
+
