@@ -24,8 +24,10 @@ export default class Setup extends Component<Props> {
             vialData: data,
             tempCalFiles: [],
             odCalFiles: [],
+            pumpCalFile: [],
             activeTempCal: 'Retreiving...',
             activeODCal: 'Retreiving...',
+            activePumpCal: 'Retreiving...',
             tempCal: {},
             odCal: {},
             command: {},
@@ -40,6 +42,7 @@ export default class Setup extends Component<Props> {
       this.props.socket.on('fitnames', function(response) {
         var odCalFiles = [];
         var tempCalFiles = [];
+        var pumpCalFiles = [];
         for (var i = 0; i < response.length; i++) {
             if (response[i].calibrationType == "od") {
               odCalFiles.push(response[i].name);
@@ -47,28 +50,36 @@ export default class Setup extends Component<Props> {
             else if (response[i].calibrationType == "temperature") {
               tempCalFiles.push(response[i].name);
             }
+            else if (response[i].calibrationType == "pump") {
+              pumpCalFiles.push(response[i].name);
+            }
         }
-        this.setState({odCalFiles: odCalFiles, tempCalFiles: tempCalFiles})
+        this.setState({odCalFiles: odCalFiles, tempCalFiles: tempCalFiles, pumpCalFiles: pumpCalFiles})
 
       }.bind(this))
       this.props.socket.on('activecalibrations', function(response) {
         var activeODCal;
         var activeTempCal;
+        var activePumpCal;
         for (var i = 0; i < response.length; i++) {
           for (var j = 0; j < response[i].fits.length; j++) {
             if (response[i].fits[j].active) {
               if (response[i].calibrationType == 'od') {
-                activeODCal = response[i].fits[j]
+                activeODCal = response[i].fits[j];
               }
               else if (response[i].calibrationType == 'temperature') {
-                activeTempCal = response[i].fits[j]
+                activeTempCal = response[i].fits[j];
+              }
+              else if (response[i].calibrationType == 'pump') {
+                activePumpCal = response[i].fits[j];
               }
             }
           }
         }
-        this.setState({odCal: activeODCal, tempCal: activeTempCal, activeODCal: activeODCal.name, activeTempCal: activeTempCal.name});
+        this.setState({odCal: activeODCal, tempCal: activeTempCal, activeODCal: activeODCal.name, activeTempCal: activeTempCal.name, activePumpCal: activePumpCal.name});
         store.set('activeODCal', activeODCal.name);
         store.set('activeTempCal', activeTempCal.name);
+        store.set('activePumpCal', activePumpCal.name);
         }.bind(this))
     }
 
@@ -81,8 +92,9 @@ export default class Setup extends Component<Props> {
     initialData = this.formatVialSelectStrings(initialData, 'temp');
     this.setState({
       vialData: initialData,
-      activeODCal:store.get('activeODCal'),
-      activeTempCal:store.get('activeTempCal'),
+        activeODCal: store.get('activeODCal'),
+        activeTempCal: store.get('activeTempCal'),
+        activePumpCal: store.get('activePumpCal')
       });
   };
 
@@ -195,6 +207,9 @@ export default class Setup extends Component<Props> {
       this.setState({showRawTemp: false});
       this.handleRawData(this.state.rawVialData, this.state.showRawOD, false)
     }
+    if (parameter == 'pump') {
+      this.props.socket.emit("setactivecal", {'calibration_names': filenames});
+    }
     if (parameter == 'rawod'){
       this.setState({showRawOD: !this.state.showRawOD});
       this.handleRawData(this.state.rawVialData, !this.state.showRawOD, this.state.showRawTemp)
@@ -269,8 +284,10 @@ export default class Setup extends Component<Props> {
                   onSubmitButton={this.onSubmitButton}
                   activeTempCal={this.state.activeTempCal}
                   activeODCal={this.state.activeODCal}
+                  activePumpCal={this.state.activePumpCal}
                   tempCalFiles= {this.state.tempCalFiles}
                   odCalFiles={this.state.odCalFiles}
+                  pumpCalFiles={this.state.pumpCalFiles}
                   showRawTemp= {this.state.showRawTemp}
                   showRawOD= {this.state.showRawOD}
                   onSelectNewCal = {this.onSelectNewCal}
@@ -281,7 +298,8 @@ export default class Setup extends Component<Props> {
                 ref={this.child}
                 command={this.state.command}
                 activeTempCal={this.state.activeTempCal}
-                activeODCal={this.state.activeODCal}/>
+                activeODCal={this.state.activeODCal}
+                activePumpCal={this.state.activePumpCal}/>
               <div>
                 <VialSelector
                   items={this.state.vialData}
