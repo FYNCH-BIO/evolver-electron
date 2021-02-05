@@ -31,15 +31,15 @@ const styles = {
   },
 };
 
-const Label = ({ selecting, selected, vial, od, temp}) => (
+const Label = ({ selecting, selected, vial, IN1, IN2, E}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="temp-label">{`${temp}`}</span><br/>
-    <span className="OD-label">{`${od}`}</span>
-    <br />
+    <span className="IN2-label">{`${IN2}`}</span><br/>
+    <span className="IN1-label">{`${IN1}`}</span><br/>
+    <span className="E-label">{`${E}`}</span><br/>
   </div>
 )
 
@@ -53,7 +53,7 @@ class List extends Component {
       <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
+            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} IN1={item.IN1} IN2={item.IN2} E={item.E}/>
           ))}
         </div>
       </div>
@@ -62,7 +62,7 @@ class List extends Component {
 }
 
 const Album = ({
-  selectableRef, selected, selecting, strain, vial, od, temp
+  selectableRef, selected, selecting, strain, vial, IN1, IN2, E
 }) => (
   <div
     id = {"vialID-" + vial}
@@ -75,7 +75,7 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} od={od} temp={temp}/>
+    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} IN1={IN1} IN2={IN2} E={E}/>
   </div>
 )
 
