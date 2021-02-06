@@ -5,9 +5,9 @@ import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
-import TempcalInput from './calibrationInputs/CalInputs';
+import PumpcalInput from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import TempCalGUI from './calibrationInputs/CalGUI';
+import PumpCalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -21,7 +21,7 @@ const store = new Store(); //runningPumpCal
 
 
 const styles = {
-  cardTempCalGUI: {
+  cardPumpCalGUI: {
     width: 570,
     height: 800,
     backgroundColor: 'transparent',
@@ -80,50 +80,25 @@ const styles = {
   focused: {}
 };
 
-function generateVialLabel (response, oldTempStream, roomTempAvg) {
-  var tempStream = Array(16).fill('...');
-  var deltaTempStream = Array(16).fill('...');
-  var valueInputs = Array(16).fill('...')
-  for (var i = 0; i < response.data.temp.length; i++) {
-    //  To Not show value during RT reading
-    // if (roomTempAvg.length !== 0){
-      tempStream[i] = response.data.temp[i]
-      deltaTempStream[i] = tempStream[i] - oldTempStream[i];
-      if (isNaN(deltaTempStream[i])){
-        deltaTempStream[i] = "0"
-      }
-      valueInputs[i] = tempStream[i] + " (" + (deltaTempStream[i]<0?"":"+") + deltaTempStream[i] + ")"
-    // }
-  }
-
-  return [tempStream, valueInputs]
-}
-
-function calculateVialProgress (currentTemp, previousLockedTemp, targetTemp){
-  var percentCompleted = []
-  for (var i = 0; i < currentTemp.length; i++) {
-    percentCompleted[i] = Math.round(5 + (95 *Math.abs(((currentTemp[i] - previousLockedTemp[i])/(targetTemp[i] - previousLockedTemp[i])))));
-  }
-  return percentCompleted
-}
-
 
 class PumpCal extends React.Component {
   constructor(props) {
     super(props);
     this.keyboard = React.createRef();
+    var vialData = []
+    for (var i = 0; i < data.length; i++) {
+      vialData.push(Object.assign({},data[i]));
+    }
     this.state = {
       currentStep: 0,
-      pumpCalModes: {
-        IN1: null,
-        IN2: null,
-        E: null
-        },
-      enteredValues: Array(16).fill(''),
-      vialData: data,
+      pumpCalModes: [{arrayName: 'IN1', arrayMode: 'NA'}, {arrayName: 'IN2', arrayMode: 'NA'}, {arrayName: 'E', arrayMode: 'NA'}],
+      pumpCalModesFiltered: [],
+      pumpTimes: {slow: 100, fast: 10},
+      enteredValues: {IN1: Array(16).fill(''), IN2: Array(16).fill(''), E: Array(16).fill('')},
+      vialData: vialData,
       buttonAdvanceText: '',
       buttonBackText: '',
-      pumpButtonText: 'PUMP!',
+      pumpButtonText: 'PUMP',
       statusText: '',
       experimentName:'',
       alertOpen: false,
@@ -151,7 +126,7 @@ class PumpCal extends React.Component {
   }
 
   componentDidMount() {
-    this.props.logger.info('Routed to Temperature Calibration Page.')
+    this.props.logger.info('Routed to Pump Calibration Page.');
     var initialData = this.state.vialData;
     initialData = this.formatVialSelectStrings(initialData, 'IN1');
     initialData = this.formatVialSelectStrings(initialData, 'IN2');
@@ -163,8 +138,9 @@ class PumpCal extends React.Component {
       this.keyboard.current.onOpenModal();
     }
 
-    var buttonAdvanceText = 'IN2';
+    var buttonAdvanceText = 'IN1';
     var buttonBackText = 'Pump Config';
+    console.log(initialData);
     this.setState({
       vialData: initialData,
       buttonAdvanceText: buttonAdvanceText,
@@ -172,68 +148,52 @@ class PumpCal extends React.Component {
       })
   };
 
+  generateButtonText = (currentStep) => {
+    var pumpCalModes = this.state.pumpCalModes.filter(function (mode) {
+      return mode.arrayMode !== "NA";
+    });
+    var pumpTime = pumpCalModes[currentStep-1].arrayMode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
+    var statusText = `Press PUMP to run ${pumpCalModes[currentStep-1].arrayName} for ${pumpTime} seconds`;
+    var buttonBackText;
+    var buttonAdvanceText;
+    if (currentStep === 1) {
+      buttonBackText = 'Pump Config';
+    }
+    else {
+      buttonBackText = pumpCalModes[currentStep-2].arrayName;
+    }
+    if (currentStep !== pumpCalModes.length) {
+      buttonAdvanceText = pumpCalModes[currentStep].arrayName;
+    }
+    this.setState({statusText: statusText, buttonAdvanceText: buttonAdvanceText, buttonBackText: buttonBackText, pumpCalModesFiltered: pumpCalModes});
+  };
+
   handleBack = () => {
    var currentStep = this.state.currentStep - 1;
-   var statusText = '';
-   if (currentStep == 1) {
-     statusText = 'Click PUMP to run IN1 for 10 seconds. Record volume.'
-     buttonAdvanceText = 'IN2'
-     buttonBackText = 'Pump Config'
-   } else if (currentStep == 2) {
-     statusText = 'Click PUMP to run IN2 for 10 seconds. Record volume.'
-     buttonAdvanceText = 'E';
-     buttonBackText = 'IN1';
-   } else if (currentStep == 3) {
-     statusText = 'Click PUMP to run E for 10 seconds. Record volume.'
-     buttonAdvanceText = 'Submit';
-     buttonBackText = 'IN2'
-   };
-
-   this.handleRecordedData(currentStep);
-   this.setState({
-     currentStep: currentStep,
-     statusText: statusText
-     });
+   if (currentStep != 0) {
+      this.generateButtonText(currentStep);
+   }
+   this.setState({currentStep: currentStep});
   };
 
   handleAdvance = () => {
     var currentStep = this.state.currentStep + 1;
-    var statusText = '';
-    if (currentStep == 1) {
-      statusText = 'Click PUMP to run IN1 for 10 seconds. Record volume.'
-      buttonAdvanceText = 'IN2'
-      buttonBackText = 'Pump Config'
-    } else if (currentStep == 2) {
-      statusText = 'Click PUMP to run IN2 for 10 seconds. Record volume.'
-      buttonAdvanceText = 'E';
-      buttonBackText = 'IN1';
-    } else if (currentStep == 3) {
-      statusText = 'Click PUMP to run E for 10 seconds. Record volume.'
-      buttonAdvanceText = 'Submit';
-      buttonBackText = 'IN2'
-    };
-
-    this.handleRecordedData(currentStep);
-    this.setState({
-     currentStep: currentStep,
-     statusText: statusText
-     });
+    this.generateButtonText(currentStep);
+    this.setState({currentStep: currentStep});
   };
 
-  handleRecordedData = (currentStep) => {
-    var displayedData = Array(16).fill('');
-    var vialData = this.state.vialData
+  handlePumpAmountInput = (pumpAmountValues) => {
+    var enteredValues = this.state.enteredValues;
+    enteredValues[this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayName] = pumpAmountValues;
+    var vialData = this.state.vialData;
+    console.log(vialData);
     for (var i = 0; i < vialData.length; i++) {
-        if (currentStep === this.state.vialData[i].step) {
-            displayedData = this.state.vialData[i].enteredValues;
-            break;
-        }
+      vialData[i][this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayName] = pumpAmountValues[i] !== '' ? pumpAmountValues[i] / this.state.pumpTimes[this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayMode] : '--';
     }
-    this.setState({enteredValues: displayedData})
-  }
 
-  handlePumpInput = (tempValues) => {
-    this.setState({enteredValues: tempValues});
+    vialData = this.formatVialSelectStrings(vialData, this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayName);
+
+    this.setState({vialData: vialData, enteredValues: enteredValues});
    }
 
    handleKeyboardInput = (input) => {
@@ -251,22 +211,33 @@ class PumpCal extends React.Component {
       console.log("Experiment Finished!");
       var d = new Date();
       var currentTime = d.getTime();
-      var enteredValuesStructured = [];
-      var vialDataStructured = [];
-
-      // TODO: Change data structure so that we don't have to do this transformation. Would require other code restructure
-      // Data should be saved vial -> step -> data format, not step -> vial -> data as it is here.
-      for(var i = 0; i < this.state.vialData.length; i++) {
-        for(var j = 0; j < this.state.vialData[i].enteredValues.length; j++) {
-          if(!enteredValuesStructured[j]) {
-            enteredValuesStructured.push([]);
-            vialDataStructured.push(new Array(3).fill([]));
-          }
-          enteredValuesStructured[j].push(parseFloat(this.state.vialData[i].enteredValues[j]));
-          vialDataStructured[j][i] = this.state.vialData[i].temp[j];
+      var measuredData = [];
+      var vialDataStructured = this.state.enteredValues['IN1'].concat(this.state.enteredValues['E']).concat(this.state.enteredValues['IN2']);
+      var mode;
+      var coefficients = [];
+      for (var i = 0; i < 48; i++) {
+        if (i < 16) {
+          mode = this.state.pumpCalModes[0].arrayMode;
         }
+        else if (i < 32) {
+          mode = this.state.pumpCalModes[2].arrayMode;
+        }
+        else {
+          mode = this.state.pumpCalModes[1].arrayMode;
+        }
+        measuredData[i] = mode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
+        if (vialDataStructured[i] !== '') {
+          coefficients.push(vialDataStructured[i] / measuredData[i]);
+        }
+        else {
+          coefficients.push('');
+        }
+        vialDataStructured[i] = [vialDataStructured[i]];
       }
-      var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', vialData: vialDataStructured}]}
+
+
+      var fit = {name: this.state.experimentName + '-fit', type: 'constant', timeFit: currentTime, active: false, params: ['pump'], coefficients: coefficients};
+      var saveData = {name: this.state.experimentName, calibrationType: "pump", timeCollected: currentTime, measuredData: measuredData, fits: [fit], raw: [{param: 'pump', vialData: vialDataStructured}]}
       console.log(saveData);
       this.props.socket.emit('setrawcalibration', saveData);
    }
@@ -295,35 +266,65 @@ class PumpCal extends React.Component {
        this.setState(previousState);
      }
      this.setState({resumeOpen:false})
-   }
-
-   onSelectVials = (selectedVials) =>    {
-     this.setState({selectedItems: selectedVials});
    };
 
-   formatVialSelectStrings = (vialData, parameter) => {
-     var newData = JSON.parse(JSON.stringify(vialData));
+   onSelectVials = (selectedVials) =>    {
+     this.setState({selectedVials: selectedVials});
+   };
+
+   formatVialSelectStrings = (newData, parameter) => {
      for(var i = 0; i < newData.length; i++) {
+       var value;
        if (parameter == 'IN1'){
-         newData[i].IN1 = 'IN1: ' + newData[i].IN1;
+         value = newData[i].IN1 === '--' ? '--' : newData[i].IN1.toFixed(2);
+         newData[i].IN1 = 'IN1: ' + value + ' ml/s';
        }
        if (parameter == 'IN2'){
-         newData[i].IN2 = 'IN2: ' + newData[i].IN2;
+         value = newData[i].IN2 === '--' ? '--' : newData[i].IN2.toFixed(2);
+         newData[i].IN2 = 'IN2: ' + value + ' ml/s';
        }
        if (parameter == 'E'){
-         newData[i].E = 'E: ' + newData[i].E;
+        value = newData[i].E === '--' ? '--' : newData[i].E.toFixed(2);
+         newData[i].E = 'E: ' + value + ' ml/s';
        }
      }
      return newData
-   }
+   };
 
    handleSelectRadio = (name,value) => {
-     var pumpCalModes = this.state.pumpCalModes;
-     pumpCalModes[name] = value;
-     this.setState({
-       pumpCalModes: pumpCalModes,
-       });
+    console.log(value);
+     var pumpCalModes = this.state.pumpCalModes
+     for (var i = 0; i < pumpCalModes.length; i++) {
+      if (pumpCalModes[i].arrayName === name) {
+        pumpCalModes[i].arrayMode = value;
+      }
+     }
+     this.setState({pumpCalModes: pumpCalModes});
    };
+
+   handleSubmit = () => {
+    console.log("Submitting pump calibration to server");
+   };
+
+   runPumps = () => {
+    console.log("Running Pumps");
+    var vials = this.state.selectedVials.map(item => item.props.vial);
+    var evolverMessage = Array(48).fill("--");
+    var pumpArray = this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayName;
+    var pumpTime = this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayMode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
+    for (var i = 0; i < vials.length; i++) {
+      if (pumpArray == 'IN1') {
+        evolverMessage[vials[i]] = pumpTime;
+      }
+      if (pumpArray == 'E') {
+        evolverMessage[vials[i] + 16] = pumpTime;
+      }
+      if (pumpArray == 'IN2') {
+        evolverMessage[vials[i] + 32] = pumpTime;
+      }
+    }
+    this.props.socket.emit("command", {param: 'pump', value: evolverMessage, immediate: true});
+   }
 
   render() {
     const { classes, theme } = this.props;
@@ -334,13 +335,6 @@ class PumpCal extends React.Component {
     var progressButtons;
     var leftButton = null;
     var pumpButton = null;
-    var rightButton =
-      <button
-        className="tempAdvanceBtn"
-        disabled={this.state.disableForward}
-        onClick={this.handleAdvance}>
-        <FaArrowRight size={13}/>
-      </button>
 
     if (this.state.currentStep == 0) {
       pumpConfig = <div style={{position: 'absolute', top: '100px', left: '100px'}}>
@@ -350,41 +344,59 @@ class PumpCal extends React.Component {
           <div> <h4>Fast Slow N/A</h4> </div>
           <div className='row'>
             <h4>IN1</h4>
-            <PumpCalRadioButtons name='IN1' onSelectRadio={this.handleSelectRadio}/>
+            <PumpCalRadioButtons name='IN1' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[0].arrayMode}/>
           </div>
           <div className='row'>
             <h4>IN2</h4>
-            <PumpCalRadioButtons name='IN2' onSelectRadio={this.handleSelectRadio}/>
+            <PumpCalRadioButtons name='IN2' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[1].arrayMode}/>
           </div>
           <div className='row'>
             <h4 style={{marginRight:'10px'}}>E</h4>
             <div style={{marginLeft:'10px'}}>
-              <PumpCalRadioButtons name='E' onSelectRadio={this.handleSelectRadio}/>
+              <PumpCalRadioButtons name='E' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[2].arrayMode}/>
             </div>
           </div>
         </div>
       </div>
     } else {
       pumpConfig =
-      <TempcalInput
-        onChangeValue={this.handlePumpInput}
+      <PumpcalInput
+        onChangeValue={this.handlePumpAmountInput}
         onInputsEntered = {this.state.inputsEntered}
-        enteredValues = {this.state.enteredValues}/>
+        enteredValues = {this.state.enteredValues[this.state.pumpCalModesFiltered[currentStep-1].arrayName]}/>
     }
 
     if (this.state.currentStep != 0) {
         pumpButton =
         <button
           className="tempMeasureBtn"
-          onClick = {this.startPump}>
+          onClick = {this.runPumps}>
           {this.state.pumpButtonText}
         </button>;
+        var rightButton;
+        if (this.state.currentStep == this.state.pumpCalModesFiltered.length) {
+          rightButton =
+          <button
+            className="tempAdvanceBtn"
+            onClick={this.handleFinishExpt}>
+            <FaPen/>
+          </button>
+        }
+        else {
+          rightButton =
+            <button
+              className="tempAdvanceBtn"
+              disabled={this.state.disableForward}
+              onClick={this.handleAdvance}>
+              {this.state.buttonAdvanceText}<FaArrowRight size={13}/>
+            </button>
+        }
         leftButton =
         <button
           className="tempBackBtn"
           disabled={this.state.disableBackward}
           onClick={this.handleBack}>
-          <FaArrowLeft size={13}/>
+          <FaArrowLeft size={13}/>{this.state.buttonBackText}
         </button>
         progressButtons =
           <div className="row" style={{position: 'absolute'}}>
@@ -414,7 +426,7 @@ class PumpCal extends React.Component {
         {pumpConfig}
         {progressButtons}
 
-        <Card className={classes.cardTempCalGUI}>
+        <Card className={classes.cardPumpCalGUI}>
         <VialSelectorPumpCal
           items={this.state.vialData}
           vialSelectionFinish={this.onSelectVials}/>

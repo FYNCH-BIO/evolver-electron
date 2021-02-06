@@ -37,8 +37,8 @@ const Label = ({ selecting, selected, vial, IN1, IN2, E}) => (
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="IN2-label">{`${IN2}`}</span><br/>
     <span className="IN1-label">{`${IN1}`}</span><br/>
+    <span className="IN2-label">{`${IN2}`}</span><br/>
     <span className="E-label">{`${E}`}</span><br/>
   </div>
 )

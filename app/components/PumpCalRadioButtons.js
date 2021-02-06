@@ -54,7 +54,8 @@ class PumpCalRadioButtons extends React.Component {
     this.state = {
       value: this.props.value,
       labels: this.props.labels,
-      title: this.props.radioTitle
+      title: this.props.radioTitle,
+      name: this.props.name
     };
   }
 
@@ -70,8 +71,9 @@ class PumpCalRadioButtons extends React.Component {
   }
 
   handleChange = event => {
-    this.props.onSelectRadio(event.target.value);
     this.setState({ value: event.target.value });
+    this.props.onSelectRadio(this.state.name, event.target.value);
+
   };
 
   render() {
