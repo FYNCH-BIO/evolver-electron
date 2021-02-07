@@ -26,7 +26,7 @@ function ActiveButtons(state) {
 const styles = {
   card: {
     width: 580,
-    height: 620,
+    height: 600,
     margin: '3px 5px 15px 20px',
   },
 };

@@ -150,11 +150,21 @@ class PumpCal extends React.Component {
   };
 
   generateButtonText = (currentStep) => {
+    if (currentStep === 0) {
+      this.setState({statusText: ''});
+      return;
+    }
     var pumpCalModes = this.state.pumpCalModes.filter(function (mode) {
       return mode.arrayMode !== "NA";
     });
     var pumpTime = pumpCalModes[currentStep-1].arrayMode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
-    var statusText = `Press PUMP to run ${pumpCalModes[currentStep-1].arrayName} for ${pumpTime} seconds`;
+    var statusText = this.state.statusText;
+    if (currentStep === 0) {
+      statusText = '';
+    }
+    else {
+      statusText = `Press PUMP to run ${pumpCalModes[currentStep-1].arrayName} for ${pumpTime} seconds`;
+    }    
     var buttonBackText;
     var buttonAdvanceText;
     if (currentStep === 1) {
@@ -171,9 +181,7 @@ class PumpCal extends React.Component {
 
   handleBack = () => {
    var currentStep = this.state.currentStep - 1;
-   if (currentStep != 0) {
-      this.generateButtonText(currentStep);
-   }
+   this.generateButtonText(currentStep);
    this.setState({currentStep: currentStep});
   };
 
@@ -332,7 +340,7 @@ class PumpCal extends React.Component {
     const { currentStep } = this.state;
 
     var pumpConfig;
-    var statusText = <p className="statusText" style={{paddingBottom:'200px'}}>{this.state.statusText}</p>
+    var statusText = <p className="statusText" style={{position: 'absolute', top: '600px', left: '100px'}}>{this.state.statusText}</p>
     var progressButtons;
     var leftButton = null;
     var pumpButton = null;
@@ -368,11 +376,12 @@ class PumpCal extends React.Component {
     }
 
     if (this.state.currentStep != 0) {
+        var pumpButtonText = this.state.pumpButtonText + ' ' + this.state.pumpCalModesFiltered[currentStep-1].arrayName;
         pumpButton =
         <button
           className="tempMeasureBtn"
           onClick = {this.runPumps}>
-          {this.state.pumpButtonText}
+          {pumpButtonText}
         </button>;
         var rightButton;
         if (this.state.currentStep == this.state.pumpCalModesFiltered.length) {
