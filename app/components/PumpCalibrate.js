@@ -67,14 +67,15 @@ const styles = {
     textAlign: 'center'
   },
   labelRoot: {
-    margin: '0px 6px 0px 6px'
+    margin: '0px 50px 0px 6px'
   },
   radio: {
     color: 'white',
+    width: '5em',
     '&$checked': {
       color: 'orange',
     },
-    padding: '0px 5px 0px 0px'
+    padding: '0px 10px 0px 0px'
   },
   checked: {},
   focused: {}
@@ -337,21 +338,21 @@ class PumpCal extends React.Component {
     var pumpButton = null;
 
     if (this.state.currentStep == 0) {
-      pumpConfig = <div style={{position: 'absolute', top: '100px', left: '100px'}}>
-        <h3>Select the pump configuration for your eVOLVER setup</h3>
+      pumpConfig = <div style={{position: 'absolute', top: '140px', left: '60px'}}>
+        <div className="instructionsDiv"><p className="configInstructions">Select the pump configuration for your eVOLVER setup</p></div>
         <br />
-        <div className='col'>
-          <div> <h4>Fast Slow N/A</h4> </div>
+        <div className='col' style={{position: 'absolute', left: '20px'}}>
+          <div className="radioBtnTitles"><span className="radioBtnTitleText">Fast</span><span className="radioBtnTitleText">Slow</span><span className="radioBtnTitleText">NA</span></div>
           <div className='row'>
-            <h4>IN1</h4>
+            <span className="radioBtnRowLabel">IN1</span>
             <PumpCalRadioButtons name='IN1' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[0].arrayMode}/>
           </div>
           <div className='row'>
-            <h4>IN2</h4>
+            <span className="radioBtnRowLabel">IN2</span>
             <PumpCalRadioButtons name='IN2' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[1].arrayMode}/>
           </div>
           <div className='row'>
-            <h4 style={{marginRight:'10px'}}>E</h4>
+            <span className="radioBtnRowLabel" style={{margin:'-5px 1px 0px 10px'}}>E</span>
             <div style={{marginLeft:'10px'}}>
               <PumpCalRadioButtons name='E' onSelectRadio={this.handleSelectRadio} value={this.state.pumpCalModes[2].arrayMode}/>
             </div>

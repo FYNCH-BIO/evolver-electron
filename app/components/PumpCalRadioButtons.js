@@ -34,14 +34,14 @@ const styles = theme => ({
     textAlign: 'center'
   },
   labelRoot: {
-    margin: '0px 6px 0px 6px'
+    margin: '0px 0px 35px 55px'
   },
   radio: {
     color: 'white',
     '&$checked': {
       color: 'orange',
     },
-    padding: '0px 5px 0px 0px'
+    padding: '0px 17px 0px 0px'
   },
   checked: {},
   focused: {},
