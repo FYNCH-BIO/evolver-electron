@@ -1,7 +1,5 @@
 import React from 'react';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import {Switch, FormGroup, FormControlLabel, Tooltip} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import moment from 'moment'
 import parsePath from 'parse-filepath';
@@ -16,8 +14,12 @@ import routes from '../../constants/routes.json';
 const remote = require('electron').remote;
 const app = remote.app;
 
-const styles = {
-};
+const styles = theme => ({
+  tooltip: {
+    backgroundColor: '#f58245',
+    fontSize: '14px'
+  }
+});
 
 
 var fs = require('fs');
@@ -60,11 +62,11 @@ function loadFileDir (subFolder, isScript){
         if (resultJSON['data'][i]['type'] == 'folder'){
           var modifiedString;
           var modified;
-          var scriptName = 'tstat_parameters.json';          
+          var scriptName = 'tstat_parameters.json';
           for (var j = 0; j < resultJSON['data'][i]['children'].length; j++) {
             if (resultJSON['data'][i]['children'][j]['key'] == scriptName) {
               modifiedString = resultJSON['data'][i]['children'][j]['modifiedString'];
-              modified = resultJSON['data'][i]['children'][j]['modified'];          
+              modified = resultJSON['data'][i]['children'][j]['modified'];
             }
           }
           resultJSON['data'][i]['modified'] = modified;
@@ -95,7 +97,7 @@ class ScriptFinder extends React.Component {
 
   componentDidMount(){
     var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
-    var showPagination = (filequery.length > 5) 
+    var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination});
   }
 
@@ -107,7 +109,7 @@ class ScriptFinder extends React.Component {
       })
     }
   }
-  
+
   componentWillReceiveProps(props) {
       const {refind} = this.props;
       if (props.refind !== refind) {
@@ -120,7 +122,7 @@ class ScriptFinder extends React.Component {
     var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
-  
+
   getStatus = (expt) => {
       if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
           return "Running";
@@ -139,14 +141,14 @@ class ScriptFinder extends React.Component {
       }
     }
    };
-   
+
    handlePlay = exptName => {
        this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
    }
-  
+
   render() {
     const { classes } = this.props;
-    const { fileJSON, dirLength } = this.state; 
+    const { fileJSON, dirLength } = this.state;
   var columns = [
       {
         Header: 'Name',
@@ -167,16 +169,16 @@ class ScriptFinder extends React.Component {
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
-            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
-            <button className="tableTextButton" onClick={() => this.props.onReset(cellInfo.row.key, this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)))}> RESET </button>
-            <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}> <Tooltip enterDelay={250} title={"Edit experiment scripts"} arrow classes={{tooltip:classes.tooltip}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Tooltip></Link>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}> <Tooltip enterDelay={250} title={"View data and experiment logs"} arrow classes={{tooltip:classes.tooltip}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Tooltip></Link>
+            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <Tooltip enterDelay={250} title={"Stop running experiment"} arrow classes={{tooltip:classes.tooltip}}><button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button></Tooltip> : (<Tooltip enterDelay={250} title={"Start experiment"} arrow classes={{tooltip:classes.tooltip}}><button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button></Tooltip>)}
+            <Tooltip enterDelay={250} title={"Clear data files to reset experiment"} arrow classes={{tooltip:classes.tooltip}}><button className="tableTextButton" onClick={() => this.props.onReset(cellInfo.row.key, this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)))}> RESET </button></Tooltip>
+            <Tooltip enterDelay={250} title={"Clone experiment directory"} arrow classes={{tooltip:classes.tooltip}}><button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button></Tooltip>
            </div>),
           width: 400
-      }];    
+      }];
     return (
-                        
+
       <div>
         <ReactTable
           data={fileJSON}

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
+import {Typography, Tooltip} from '@material-ui/core';
 import styles from './modal-styling.css';
 import Modal from 'react-responsive-modal';
 
@@ -24,6 +24,11 @@ const materialStyles = {
     width: '80px',
     textAlign: 'left'
   },
+  tooltip: {
+    backgroundColor: '#f58245',
+    fontSize: '14px',
+    maxWidth: 400
+  }
 };
 
 
@@ -144,17 +149,17 @@ class CalibrationButtons extends React.Component {
         <Card className={classes.card}>
           <div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Temp: </Typography>
-            <button className='calibrationBtns' onClick={this.changeActiveTempCal}>{this.state.activeTempCal}</button>
-            <button className={tempRawBtn} onClick={this.toggleRawTemp}>RAW</button>
+            <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"Change temperature calibration file"} placement={"bottom"}><button className='calibrationBtns' onClick={this.changeActiveTempCal}>{this.state.activeTempCal}</button></Tooltip>
+            <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"View live RAW Temperature data"} placement={"bottom"}><button className={tempRawBtn} onClick={this.toggleRawTemp}>RAW</button></Tooltip>
           </div>
           <div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> OD: </Typography>
-            <button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button>
-            <button className={odRawBtn} onClick={this.toggleRawOD}>RAW</button>
+              <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"Change OD calibration file"} placement={"bottom"}><button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button></Tooltip>
+            <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"View live RAW OD data"} placement={"bottom"}><button className={odRawBtn} onClick={this.toggleRawOD}>RAW</button></Tooltip>
           </div>
           <div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Pump: </Typography>
-            <button className='calibrationBtns' onClick={this.changeActivePumpCal}>{this.state.activePumpCal}</button>
+              <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"Change Pump calibration file"} placement={"bottom"}><button className='calibrationBtns' onClick={this.changeActivePumpCal}>{this.state.activePumpCal}</button></Tooltip>
           </div>
           {/*<div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Pump: </Typography>
