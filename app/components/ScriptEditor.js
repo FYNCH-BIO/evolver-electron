@@ -80,7 +80,10 @@ class ScriptEditor extends React.Component {
       newFileAlertDirections: "Enter the new filename",
       deleteFileAlertDirections: "",
       deleteFileAlertOpen: false,
-      selectedEditor:exptEditorOptions[0],    
+      selectedEditor:exptEditorOptions[0],
+      showAllFilesButtonTextOptions: ['Show All Files', 'Hide Files'],
+      showAllFilesButtonText: 'Show All Files',
+      showAllFiles: false
     };        
   }
 
@@ -108,7 +111,7 @@ class ScriptEditor extends React.Component {
       var timestamp = new Date(util.inspect(stats.mtime));
       var lastModified = moment(timestamp).valueOf();
       var lastModifiedString = moment(timestamp).fromNow();
-      if (filesToShow.includes(allFiles[i])) {
+      if ((filesToShow.includes(allFiles[i]) || this.state.showAllFiles) && !stats.isDirectory()) {
         filesData.push({filename: allFiles[i], modified: lastModified, modifiedString: lastModifiedString});
       }
     }
@@ -198,6 +201,12 @@ class ScriptEditor extends React.Component {
       console.log(vialData);
       var filehandle = fs.openSync(filename, 'w');      
       fs.writeSync(filehandle, JSON.stringify(vialData));
+  };
+
+  showAllFilesToggle = () => {
+    var showAllFiles = !this.state.showAllFiles;
+    var showAllFilesButtonText = showAllFiles ? this.state.showAllFilesButtonTextOptions[1] : this.state.showAllFilesButtonTextOptions[0];
+    this.setState({showAllFiles: showAllFiles, showAllFilesButtonText}, function () {this.loadTable();});
   }
 
   render() {
@@ -220,6 +229,7 @@ class ScriptEditor extends React.Component {
       <button class="eb" onClick={this.newfile}>New File</button>
       <button class="eb" onClick={this.deletefile}>Delete</button>
       <button class="eb" onClick={this.resetparams}>Reset Params</button>
+      <button class="eb" onClick={this.showAllFilesToggle}>{this.state.showAllFilesButtonText}</button>
     </div>;
 
     var selector = <div class="select-div">

@@ -100,7 +100,7 @@
 }
 
 .editor-buttons .eb {
-  margin-right: 5px;
+  margin: 10px 0px 0px 10px;
   font-size: 15px;
 }
 
@@ -110,8 +110,10 @@
 
 .editor-buttons {
   position: absolute;
-  left: 5px;
-  top: 580px;
+  left: 45px;
+  top: 500px;
+  width: 400px;
+  overflow-y: auto;
 }
 
 .select-div {
