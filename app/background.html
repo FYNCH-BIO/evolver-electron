@@ -77,8 +77,6 @@
 		var options = {
 			mode: 'text',
 			args: arg.flag
-			//pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
-			//args: ['-z', arg['zero'], '-o', arg['overwrite'], '-c', arg['continue'], '-p', JSON.stringify(arg['parameters']), '-i', arg['evolver-ip'], '-t', arg['evolver-port'], '-n', arg['name'], '-b', arg['blank']]
 		};
 		pyShell = new PythonShell(scriptName, options);
 		console.log('starting expt');
@@ -88,6 +86,11 @@
 			logger.info(message);
 		});
 		var pid = pyShell.childProcess.pid;
+		pyShell.on('close', function() {
+			console.log('eVOLVER script with PID ' + pid + ' closed.');
+			ipcRenderer.send('close', pid);
+			ready();
+		});
 		ipcRenderer.send('store-pid', [arg.scriptDir, pid]);
 	});
 	ready();

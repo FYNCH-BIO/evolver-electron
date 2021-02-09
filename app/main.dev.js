@@ -156,8 +156,19 @@ ipcMain.on('stop-script', (event, arg) => {
    recipientShell.send('stop-script');
    delete exptMap[arg];
    storeRunningExpts();
-
    mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+});
+
+ipcMain.on('close', (event, arg) => {
+  var exptMapKeys = Object.keys(exptMap);
+  for (var i = 0; i < exptMapKeys.length; i++) {
+    if (exptMap[exptMapKeys[i]].pid === arg) {
+      delete exptMap[exptMapKeys[i]];
+      storeRunningExpts();
+      mainWindow.webContents.send('running-expts', Object.keys(exptMap));
+      break;
+    }
+  }
 });
 
 ipcMain.on('running-expts', (event, arg) => {
