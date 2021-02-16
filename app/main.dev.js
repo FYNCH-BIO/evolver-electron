@@ -35,6 +35,7 @@ var ps = require('ps-node');
 const Store = require('electron-store');
 const { exec } = require("child_process");
 const { dialog } = require('electron')
+const { PythonShell } = require('python-shell');
 
 const store = new Store({
   defaults:{
@@ -50,45 +51,12 @@ var maxShells = 5;
 var exptMap = {};
 var activeIp = '';
 
-/* Generate browser window for an experiment */
-function makeBackgroundShell() {
-    if (backgroundShells.length >= maxShells) {
-        return;
-    }
-    var pyshellWindow = new BrowserWindow({show:false, nodeIntegrationInWorker: true});
-    pyshellWindow.loadURL('file://' + __dirname + '/' + 'background.html');
-    //Uncomment to open dev tools for background shells
-    pyshellWindow.webContents.openDevTools()
-    pyshellWindow.on('closed', () => {
-    });
-}
-
-/* Manage the launching of background shells for experiments and handling of experiment arguments */
-function runPyshells() {
-    if (available.length === 0) {
-        makeBackgroundShell();
-    }
-    while (available.length > 0 && tasks.length > 0) {
-        var task = tasks.shift();
-        var pyShell = available.shift();
-        exptMap[task[1].scriptDir] = {
-          browser_contents: pyShell,
-          pid: null
-        };
-        pyShell.send(task[0], task[1]);
-        if (available.length === 0 && tasks.length > 0) {
-            makeBackgroundShell();
-        }
-    }
-    mainWindow.webContents.send('running-expts', Object.keys(exptMap));
-}
-
 /* Get array of running experiments from exptMap. Store path and pid information only. */
 function storeRunningExpts() {
   var runningExpts = Object.keys(exptMap).reduce(function(obj, x) {
     var data = {
       path: x,
-      pid: exptMap[x].pid
+      pid: exptMap[x].childProcess.pid
     };
     obj.push(data);
     return obj;
@@ -98,16 +66,49 @@ function storeRunningExpts() {
   console.log(store.get('running_expts'));
 };
 
+/* Handle startup of a python shell instance to run the DPU */
+function startPythonExpt(exptDir, flag) {
+  var scriptName = path.join(exptDir, 'eVOLVER.py');
+  // We need to make the path a variable - needs to be either set by user or we require it to be installed at a specific location.
+  var options = {
+      mode: 'text',
+      pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
+      args: flag
+    };
+  var pyShell = new PythonShell(scriptName, options);
+  pyShell.on('message', function(message) {
+    console.log(message);
+  });
+  exptMap[exptDir] = pyShell;
+  var pid = pyShell.childProcess.pid;
+  pyShell.on('close', function() {
+    console.log('eVOLVER script with PID ' + pid + ' closed.');
+     delete exptMap[exptDir];
+     storeRunningExpts();
+     mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+  });
+  storeRunningExpts();
+  mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+}
+
 /* Handle killing and relaunching experiments not connected to application. */
 function killExpts(relaunch) {
+  var running_expts_copy = []
   for (var i = 0; i < store.get('running_expts').length; i++) {
-    ps.lookup({pid: store.get('running_expts')[i].pid}, function(err, resultList) {
+    running_expts_copy.push(store.get('running_expts')[i]);
+  }
+  store.set('running_expts', []);
+  for (var i = 0; i < running_expts_copy.length; i++) {
+    ps.lookup({pid: running_expts_copy[i].pid}, function(err, resultList) {
       if (err) {
         throw new Error(err);
       }
+      if (resultList.length === 0) {
+        return;
+      }
       var process = resultList[0];
       for (var i = 0; i < process.arguments.length; i++) {
-        if (process.arguments[i].includes('eVOLVER')) {
+        if (process.arguments[i].includes('eVOLVER.py')) {
           ps.kill(process.pid, function(err) {
             if (err) {
               throw new Error(err);
@@ -122,79 +123,29 @@ function killExpts(relaunch) {
     });
     if (relaunch) {
       console.log("Relaunching")
-      tasks.push(['start', {
-        scriptDir: store.get('running_expts')[i].path,
-        flag: '--exp-recover'}
-      ]);
-    };
-  };
-  store.set('running_expts', []);
-  if (relaunch) {
-    runPyshells();
+      startPythonExpt(running_expts_copy[i].path, '--always-yes');
+    }
   }
-};
-
-ipcMain.on('for-renderer', (event, arg) => {
-    mainWindow.webContents.send(arg[0], arg[1]);
-});
+}
 
 ipcMain.on('start-script', (event, arg) => {
-    tasks.push(['start', {
-      scriptDir: arg,
-      flag: '--always-yes'}
-      ]);
-    runPyshells();
-});
-
-ipcMain.on('send-message', (event, arg) => {
-   var recipientShell = exptMap[arg[0]].browser_contents;
-   recipientShell.send(arg[1], arg[2]);
+  startPythonExpt(arg, '--always-yes');
 });
 
 ipcMain.on('stop-script', (event, arg) => {
-   var recipientShell = exptMap[arg].browser_contents;
-   recipientShell.send('stop-script');
-   delete exptMap[arg];
+   exptMap[arg].childProcess.kill();
+   delete exptMap[arg]
    storeRunningExpts();
    mainWindow.webContents.send('running-expts',Object.keys(exptMap));
-});
-
-ipcMain.on('close', (event, arg) => {
-  var exptMapKeys = Object.keys(exptMap);
-  for (var i = 0; i < exptMapKeys.length; i++) {
-    if (exptMap[exptMapKeys[i]].pid === arg) {
-      delete exptMap[exptMapKeys[i]];
-      storeRunningExpts();
-      mainWindow.webContents.send('running-expts', Object.keys(exptMap));
-      break;
-    }
-  }
 });
 
 ipcMain.on('running-expts', (event, arg) => {
    mainWindow.webContents.send('running-expts',Object.keys(exptMap));
 });
 
-ipcMain.on('ready', (event, arg) => {
-    if (!backgroundShells.includes(event.sender)) {
-        backgroundShells.push(event.sender);
-    }
-
-    // remove the thread from the expt map
-    delete exptMap[arg];
-    storeRunningExpts();
-    available.push(event.sender);
-    runPyshells();
-});
-
 ipcMain.on('active-ip', (event, arg) => {
   mainWindow.webContents.send('get-ip', arg);
   });
-
-ipcMain.on('store-pid', (event, arg) => {
-  exptMap[arg[0]].pid = arg[1];
-  storeRunningExpts();
-});
 
 ipcMain.on('kill-expts', (event, arg) => {
   killExpts(arg.relaunch);
@@ -232,6 +183,7 @@ function createWindow () {
   else {
     position = [0,0];
   }
+
   mainWindow = new BrowserWindow({
     show: false,
     width: 1110,
@@ -241,14 +193,20 @@ function createWindow () {
     minHeight: 666,
     resizable: false,
     x: position[0]+20,
-    y: position[1]+20
-
+    y: position[1]+20,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
+
   if (process.env.START_FULLSCREEN) {
     mainWindow.setFullScreen(true);
   }
   mainWindow.setMenu(null);
   mainWindow.loadURL(`file://${__dirname}/app.html`);
+
+  // Uncomment to view dev tools on startup.
+  //mainWindow.webContents.openDevTools();
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -290,21 +248,6 @@ function createWindow () {
          e.preventDefault();
        }
     });
-
-   if (!process.env.START_FULLSCREEN) {
-     const menuBuilder = new MenuBuilder(mainWindow);
-     const template = menuBuilder.buildMenu();
-     // template[1].submenu[0] = {
-     //     label: 'New Window',
-     //     accelerator: 'Command+N',
-     //     click: () => {
-     //       createWindow()
-     //     }
-     //   }
-     const menu = Menu.buildFromTemplate(template);
-
-     Menu.setApplicationMenu(menu);
-   };
  };
 
 
