@@ -276,6 +276,8 @@ app.on('activate', () => {
   };
 });
 
+/*
+setAboutPanelOptions() only available for macOS
 app.setAboutPanelOptions({
   copyright: "Copyright © 2019 Fynch Biosciences Inc."
-});
+});*/
