@@ -5,10 +5,10 @@ import routes from '../constants/routes.json';
 import data from './sample-data'
 import VialSelector from './VialSelector'
 import Navbar from './Navbar'
-import SetupButtons from './SetupButtons/SetupButtons'
-import ButtonCards from './SetupButtons/ButtonCards';
+import SetupButtons from './setupButtons/SetupButtons'
+import ButtonCards from './setupButtons/ButtonCards';
 import {FaArrowLeft} from 'react-icons/fa';
-import SetupLog from './SetupButtons/SetupLog'
+import SetupLog from './setupButtons/SetupLog'
 const Store = require('electron-store');
 const store = new Store();
 

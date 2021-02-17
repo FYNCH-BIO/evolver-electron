@@ -3,7 +3,7 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 @import './components/bootstrap.min.css';
-@import './components/vialSelector.css';
+@import './components/VialSelector.css';
 @import './components/stylesheet.css';
 @import './components/dashboard-layout.css';
 @import '~@fortawesome/fontawesome-free/css/all.css';
