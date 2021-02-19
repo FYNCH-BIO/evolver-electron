@@ -26,8 +26,9 @@ class CalibrationsMenu extends React.Component {
         <div className="centered">
             <h1 className="display-4 centered" style={{margin: '218px 0px 15px 0px', fontStyle: 'italic'}}>Calibration Menu</h1>
             <p style={{fontStyle: 'italic', fontSize: '22px'}}> Before eVOLVER use, please calibrate experimental parameters. </p>
-            <Link to={{pathname:routes.DENSITYCALIBRATIONS, socket:this.props.socket, logger:this.props.logger}}><button className = "btn btn-lg homeButtons">O.D</button></Link>
+            <Link to={{pathname:routes.DENSITYCALIBRATIONS, socket:this.props.socket, logger:this.props.logger}}><button className = "btn btn-lg homeButtons">O.D.</button></Link>
             <Link to={{pathname:routes.TEMPCALIBRATIONS, socket:this.props.socket, logger:this.props.logger}}><button className = "btn btn-lg homeButtons">TEMP</button></Link>
+            <Link to={{pathname:routes.PUMPCALIBRATIONS, socket:this.props.socket, logger:this.props.logger}}><button className = "btn btn-lg homeButtons">PUMP</button></Link>
         </div>
 
       </div>

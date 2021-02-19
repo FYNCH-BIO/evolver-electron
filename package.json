@@ -244,7 +244,7 @@
     "react-router-redux": "^5.0.0-alpha.6",
     "react-select": "^2.4.0",
     "react-selectable-fast": "^2.1.1",
-    "react-simple-keyboard": "^1.15.2",
+    "react-simple-keyboard": "1.15.2",
     "react-swipeable-views": "^0.13.0",
     "react-swipeable-views-utils": "^0.13.0",
     "react-table": "^6.9.2",
