@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip'
 import {FaArrowLeft} from 'react-icons/fa';
 import VialArrayGraph from './graphing/VialArrayGraph';
 import VialArrayBtns from './graphing/VialArrayBtns';
@@ -16,9 +17,14 @@ var os = require('os');
 var zipdir = require('zip-dir');
 var fs = require('fs');
 
-const styles = {
+const styles = theme => ({
+  tooltip: {
+    backgroundColor: '#f58245',
+    fontSize: '14px',
+    maxWidth: 400
+  }
+});
 
-};
 
 const ymaxChoicesOD = ['0.1', '0.5', '1.0', '2.0'];
 const ymaxChoicesTemp = ['30', '35', '40', '45'];
@@ -95,7 +101,7 @@ class Graph extends React.Component {
     })
   }
 
-  downloadData = () => {    
+  downloadData = () => {
     var pathToDownload;
     var isWin = os.platform() === 'win32';
     if (!isWin) {
@@ -105,7 +111,7 @@ class Graph extends React.Component {
       pathToDownload = dialog.showOpenDialog({properties: ['openDirectory', 'promptToCreate']});
     }
 
-    var zipFilename = path.join(pathToDownload[0], path.basename(this.props.exptDir) + '.zip');      
+    var zipFilename = path.join(pathToDownload[0], path.basename(this.props.exptDir) + '.zip');
     zipdir(this.props.exptDir, {saveTo: zipFilename});
   }
 
@@ -114,7 +120,8 @@ class Graph extends React.Component {
   }
 
   render() {
-      var exptName = path.basename(this.props.exptDir);
+    const { classes } = this.props;
+    var exptName = path.basename(this.props.exptDir);
     return (
       <div>
         <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
@@ -147,7 +154,7 @@ class Graph extends React.Component {
             onSelectRadio={this.handleYmax}/>
         </div>
         <VialMenu onSelectGraph={this.handleActivePlot}/>
-        <button className={"downloadButton"} onClick={this.downloadData}>DOWNLOAD</button>
+        <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Download experiment files to desired directory"} placement={"bottom"}><button className={"downloadButton"} onClick={this.downloadData}>DOWNLOAD</button></Tooltip>
       </div>
 
     );

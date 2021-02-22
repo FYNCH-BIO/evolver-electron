@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { SelectableGroup, createSelectable,  SelectAll, DeselectAll  } from 'react-selectable-fast'
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
+import {Card, Tooltip} from '@material-ui/core';
 
 
 const disabledVial = []
@@ -29,6 +29,11 @@ const styles = {
     height: 620,
     margin: '3px 5px 15px 20px',
   },
+  tooltip: {
+    backgroundColor: '#f58245',
+    fontSize: '14px',
+    maxWidth: 400
+  }
 };
 
 const Label = ({ selecting, selected, vial, od, temp}) => (
@@ -156,7 +161,7 @@ class VialSelector extends Component<Props>  {
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+              <Tooltip arrow classes={{tooltip:classes.tooltip}}title={"Toggle vial layout"} placement={"bottom"}><button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button></Tooltip>
           </div>
           <div className="stop-button-position">
           <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
