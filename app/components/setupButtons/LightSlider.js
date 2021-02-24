@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/lab/Slider';
-import {Card, Tooltip} from '@material-ui/core';
+import Card from '@material-ui/core/Card';
 
 const styles = {
   root: {
@@ -26,11 +26,6 @@ const styles = {
     backgroundColor: 'black',
     padding: '0px 0px 0px 0px',
   },
-  tooltip: {
-    backgroundColor: '#f58245',
-    fontSize: '14px',
-    maxWidth: 400
-  }
 };
 
 class LightSlider extends React.Component {
@@ -73,11 +68,11 @@ class LightSlider extends React.Component {
         <Card className={classes.card}>
           <span id="label">
               <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickSubtract}><i className="fa fa-minus"></i></button>
-                <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"(Not currently active)"} placement={"bottom"}><button className = "btn btn-lg btn-outline-secondary setupButton" onClick={this.clickSubmit}>
+                <button className = "btn btn-lg btn-outline-secondary setupButton" onClick={this.clickSubmit}>
                   <span className="slider-label">
                     Light: {(Math.round(this.state.value * 100)/100).toFixed(0)} %
                   </span>
-                </button></Tooltip>
+                </button>
               <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
             <Slider
             value={value}

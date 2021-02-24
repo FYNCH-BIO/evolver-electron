@@ -1,7 +1,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import AceEditor from 'react-ace';
-import {Tooltip, Card} from '@material-ui/core';
+import Card from '@material-ui/core/Card';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import moment from 'moment'
@@ -40,10 +40,6 @@ const styles = {
     top: '150px',
     left: '-100px',
     overflowY: 'auto'
-  },
-  tooltip: {
-    backgroundColor: '#f58245',
-    fontSize: '14px'
   }
 };
 
@@ -88,28 +84,28 @@ class ScriptEditor extends React.Component {
       showAllFilesButtonTextOptions: ['Show All Files', 'Hide Files'],
       showAllFilesButtonText: 'Show All Files',
       showAllFiles: false
-    };
+    };        
   }
 
 
 
   componentDidMount(){
     this.loadTable();
-    this.readfile('custom_script.py');
+    this.readfile('custom_script.py');    
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.exptDir !== prevProps.exptDir) {
+    if (this.props.exptDir !== prevProps.exptDir) {      
       if (this.props.exptDir !== 'undefined'){
-        this.readfile('custom_script.py');
-        this.setState({exptDir: this.props.exptDir})
+        this.readfile('custom_script.py');        
+        this.setState({exptDir: this.props.exptDir})        
       }
     }
   }
 
   loadTable = () => {
     var allFiles = fs.readdirSync(this.state.exptDir);
-    var filesData = [];
+    var filesData = [];    
     for (var i = 0; i < allFiles.length; i++) {
       var stats = fs.lstatSync(path.join(this.state.exptDir, allFiles[i]));
       var timestamp = new Date(util.inspect(stats.mtime));
@@ -149,7 +145,7 @@ class ScriptEditor extends React.Component {
     fs.readFile(filename, 'utf8', function(err, data) {
       if (err) throw err;
       console.log('OK: ' + filename);
-      this.setState({scriptContent: data})
+      this.setState({scriptContent: data})      
     }.bind(this));
   };
 
@@ -169,7 +165,7 @@ class ScriptEditor extends React.Component {
     var directions = "Are you sure you want to delete " + this.state.selection + "?";
     this.setState({deleteFileAlertDirections: directions}, function() {
       this.setState({deleteFileAlertOpen: true});
-    }.bind(this));
+    }.bind(this));    
 };
 
   resetparams = () => {
@@ -195,15 +191,15 @@ class ScriptEditor extends React.Component {
     this.loadTable();
   };
 
-  selectorChange = (value_selected) => {
+  selectorChange = (value_selected) => {  
   this.setState({selectedEditor: exptEditorOptions.find(a => a.value == value_selected.value)})
   this.loadTable();
 };
-
+  
   handleSaveParameters = (vialData) => {
       var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
       console.log(vialData);
-      var filehandle = fs.openSync(filename, 'w');
+      var filehandle = fs.openSync(filename, 'w');      
       fs.writeSync(filehandle, JSON.stringify(vialData));
   };
 
@@ -214,7 +210,7 @@ class ScriptEditor extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes } = this.props;    
     var columns = [
       {
         Header: "File",
@@ -229,15 +225,15 @@ class ScriptEditor extends React.Component {
     ];
 
     var buttons = <div class="editor-buttons">
-      <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Save edits made"} placement={"bottom"}><button class="eb" onClick={this.savefile}>Save</button></Tooltip>
-      <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Create a new file"} placement={"bottom"}><button class="eb" onClick={this.newfile}>New File</button></Tooltip>
-      <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Delete current file"} placement={"bottom"}><button class="eb" onClick={this.deletefile}>Delete</button></Tooltip>
-      <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Reset experiment parameters"} placement={"bottom"}><button class="eb" onClick={this.resetparams}>Reset Params</button></Tooltip>
-      <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Toggle showing all files"} placement={"bottom"}><button class="eb" onClick={this.showAllFilesToggle}>{this.state.showAllFilesButtonText}</button></Tooltip>
+      <button class="eb" onClick={this.savefile}>Save</button>
+      <button class="eb" onClick={this.newfile}>New File</button>
+      <button class="eb" onClick={this.deletefile}>Delete</button>
+      <button class="eb" onClick={this.resetparams}>Reset Params</button>
+      <button class="eb" onClick={this.showAllFilesToggle}>{this.state.showAllFilesButtonText}</button>
     </div>;
 
     var selector = <div class="select-div">
-      <Select
+      <Select 
         options={exptEditorOptions}
         class-name="select-dropdown"
         styles={selectorStyles}
@@ -249,7 +245,7 @@ class ScriptEditor extends React.Component {
 
     var filesComponent =
       <div class="filesTable">
-           <ReactTable
+           <ReactTable              
               data={this.state.exptDirFiles}
               columns={columns}
               showPagination={false}
@@ -263,11 +259,11 @@ class ScriptEditor extends React.Component {
               getTdProps={(state, rowInfo, column, instance) => {
                 return {
                   onClick: (e, handleOriginal) => {
-                    if (rowInfo && this.state.selection !== rowInfo.row.filename) {
+                    if (rowInfo && this.state.selection !== rowInfo.row.filename) {                      
                       this.setState({selection: rowInfo.row.filename}, () => {
                         this.readfile();
-                      })
-                    }
+                      })                    
+                    }                    
                   },
                   onMouseEnter: (e) => {
                     if (rowInfo) {
@@ -277,17 +273,17 @@ class ScriptEditor extends React.Component {
                   onMouseLeave: (e) => {
                     if (rowInfo) {
                       this.setState({hoveredRow: null})
-                    }
+                    }                    
                   },
                   style: {
                       fontWeight: this.isSelected(rowInfo) ? "bold" : null,
                       color: this.isSelected(rowInfo) ? "#f58245" : null,
-                      background: this.isHovered(rowInfo) ? "#2a2a2a" : null
+                      background: this.isHovered(rowInfo) ? "#2a2a2a" : null                      
                   }
                 }
-              }}
+              }}              
            />
-
+           
       </div>
 
     editorComponent = null;
@@ -302,11 +298,11 @@ class ScriptEditor extends React.Component {
               onChange={this.onChange}
               name="pythonScriptEditor"
               editorProps={{$blockScrolling: true}}
-              />
+              />              
           </Card>
           {buttons}
           {filesComponent}
-          </div>;
+          </div>;      
     }
     else if (this.state.selectedEditor.value == 'turbidostat') {
       editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp}/></div>
@@ -314,23 +310,23 @@ class ScriptEditor extends React.Component {
 
     return (
       <div>
-
+          
           <h2 className="editorTitle"> Experiment Editor: <span style={{color:"#f58245"}}>{this.state.exptName}</span></h2>
-
+          
           {editorComponent}
-
+          
           {selector}
           <NewFileModal
             alertOpen = {this.state.newFileAlertOpen}
             alertQuestion = {this.state.newFileAlertDirections}
-            onAlertAnswer = {this.newFileAlertAnswer} />
+            onAlertAnswer = {this.newFileAlertAnswer} />     
 
           <DeleteFileModal
             alertOpen = {this.state.deleteFileAlertOpen}
             alertQuestion = {this.state.deleteFileAlertDirections}
             onAlertAnswer = {this.deleteFileAlertAnswer} />
 
-        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>
+        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>                  
       </div>
     );
   }
