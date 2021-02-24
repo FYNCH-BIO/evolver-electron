@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/lab/Slider';
-import Tooltip from '@material-ui/core/Tooltip'
 
 const styles = {
   root: {
@@ -20,11 +19,6 @@ const styles = {
     opacity: 1,
     backgroundColor: '#f58245',
   },
-  tooltip: {
-    backgroundColor: '#f58245',
-    fontSize: '14px',
-    maxWidth: 400
-  }
 };
 
 class TempSlider extends React.Component {
@@ -66,11 +60,11 @@ class TempSlider extends React.Component {
       <div className="slider-style">
         <span id="label">
             <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickSubtract}><i className="fa fa-minus"></i></button>
-              <Tooltip arrow classes={{tooltip:classes.tooltip}} enterDelay={250} title={"Set temperature for selected vials"} placement={"bottom"}><button className = "btn btn-lg btn-outline-secondary setupButton" onClick={this.clickSubmit}>
+              <button className = "btn btn-lg btn-outline-secondary setupButton" onClick={this.clickSubmit}>
                 <span className="slider-label">
                   Temp: {(Math.round(this.state.value * 100)/100).toFixed(1)} C
                 </span>
-              </button></Tooltip>
+              </button>
             <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
           <Slider
           value={value}
