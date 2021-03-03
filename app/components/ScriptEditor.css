@@ -116,6 +116,14 @@
   overflow-y: auto;
 }
 
+.editor-control-buttons {
+  position: absolute;
+  left: 280px;
+  top: 579px;
+  width: 100px;
+  overflow-y: auto;
+}
+
 .select-div {
   position: absolute;
   left: 900px;

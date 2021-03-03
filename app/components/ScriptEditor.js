@@ -5,12 +5,13 @@ import Card from '@material-ui/core/Card';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import moment from 'moment'
-import {FaArrowLeft} from 'react-icons/fa';
+import {FaArrowLeft, FaPlay, FaChartBar, FaStop} from 'react-icons/fa';
 import TstatEditor from './experiment-configuration/TstatEditor'
 import ReactTable from "react-table";
 import Select from 'react-select';
 import NewFileModal from './NewFileModal';
 import DeleteFileModal from './DeleteFileModal';
+const { ipcRenderer } = require('electron');
 
 import 'brace/mode/python';
 import 'brace/theme/monokai';
@@ -83,29 +84,44 @@ class ScriptEditor extends React.Component {
       selectedEditor:exptEditorOptions[0],
       showAllFilesButtonTextOptions: ['Show All Files', 'Hide Files'],
       showAllFilesButtonText: 'Show All Files',
+      disablePlay: false,
       showAllFiles: false
-    };        
+    };
+
+    ipcRenderer.on('running-expts', (event, arg) => {
+      var disablePlay = false
+      for (var i = 0; i < arg.length; i++) {
+        if (arg[i] === path.join(this.state.exptDir)) {
+          disablePlay = true;
+        }
+      }
+      this.setState({disablePlay: disablePlay});
+    });
+
+    ipcRenderer.send('running-expts');
   }
 
 
 
   componentDidMount(){
     this.loadTable();
-    this.readfile('custom_script.py');    
+    this.readfile('custom_script.py');
+    ipcRenderer.send('running-expts');
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.exptDir !== prevProps.exptDir) {      
+    if (this.props.exptDir !== prevProps.exptDir) {
       if (this.props.exptDir !== 'undefined'){
-        this.readfile('custom_script.py');        
-        this.setState({exptDir: this.props.exptDir})        
+        this.readfile('custom_script.py');
+        this.setState({exptDir: this.props.exptDir})
       }
     }
+    ipcRenderer.send('running-expts');
   }
 
   loadTable = () => {
     var allFiles = fs.readdirSync(this.state.exptDir);
-    var filesData = [];    
+    var filesData = [];
     for (var i = 0; i < allFiles.length; i++) {
       var stats = fs.lstatSync(path.join(this.state.exptDir, allFiles[i]));
       var timestamp = new Date(util.inspect(stats.mtime));
@@ -145,7 +161,7 @@ class ScriptEditor extends React.Component {
     fs.readFile(filename, 'utf8', function(err, data) {
       if (err) throw err;
       console.log('OK: ' + filename);
-      this.setState({scriptContent: data})      
+      this.setState({scriptContent: data})
     }.bind(this));
   };
 
@@ -165,7 +181,7 @@ class ScriptEditor extends React.Component {
     var directions = "Are you sure you want to delete " + this.state.selection + "?";
     this.setState({deleteFileAlertDirections: directions}, function() {
       this.setState({deleteFileAlertOpen: true});
-    }.bind(this));    
+    }.bind(this));
 };
 
   resetparams = () => {
@@ -191,15 +207,15 @@ class ScriptEditor extends React.Component {
     this.loadTable();
   };
 
-  selectorChange = (value_selected) => {  
+  selectorChange = (value_selected) => {
   this.setState({selectedEditor: exptEditorOptions.find(a => a.value == value_selected.value)})
   this.loadTable();
 };
-  
+
   handleSaveParameters = (vialData) => {
       var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
       console.log(vialData);
-      var filehandle = fs.openSync(filename, 'w');      
+      var filehandle = fs.openSync(filename, 'w');
       fs.writeSync(filehandle, JSON.stringify(vialData));
   };
 
@@ -209,8 +225,21 @@ class ScriptEditor extends React.Component {
     this.setState({showAllFiles: showAllFiles, showAllFilesButtonText}, function () {this.loadTable();});
   }
 
+  handlePlay = (exptToPlay) => {
+    ipcRenderer.send('start-script', exptToPlay);
+    this.setState({disablePlay: true});
+  }
+
+  onStop = (exptToStop) =>  {
+    ipcRenderer.send('stop-script', exptToStop);
+  }
+
+  onGraph = (exptToGraph) => {
+    console.log('to the plots');
+  }
+
   render() {
-    const { classes } = this.props;    
+    const { classes } = this.props;
     var columns = [
       {
         Header: "File",
@@ -224,6 +253,11 @@ class ScriptEditor extends React.Component {
       }
     ];
 
+    var exptControlButtons = <div class="editor-control-buttons">
+      {this.state.disablePlay ? <button className="tableIconButton" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={13}/> </button> : (<button class="tableIconButton" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.disablePlay}><FaPlay size={13}/></button>)}
+      <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir, this.state.exptName)}}><button className="tableIconButton" onClick={() => this.onGraph()}> <FaChartBar size={18}/> </button></Link>
+    </div>;
+
     var buttons = <div class="editor-buttons">
       <button class="eb" onClick={this.savefile}>Save</button>
       <button class="eb" onClick={this.newfile}>New File</button>
@@ -233,7 +267,7 @@ class ScriptEditor extends React.Component {
     </div>;
 
     var selector = <div class="select-div">
-      <Select 
+      <Select
         options={exptEditorOptions}
         class-name="select-dropdown"
         styles={selectorStyles}
@@ -245,7 +279,7 @@ class ScriptEditor extends React.Component {
 
     var filesComponent =
       <div class="filesTable">
-           <ReactTable              
+           <ReactTable
               data={this.state.exptDirFiles}
               columns={columns}
               showPagination={false}
@@ -259,11 +293,11 @@ class ScriptEditor extends React.Component {
               getTdProps={(state, rowInfo, column, instance) => {
                 return {
                   onClick: (e, handleOriginal) => {
-                    if (rowInfo && this.state.selection !== rowInfo.row.filename) {                      
+                    if (rowInfo && this.state.selection !== rowInfo.row.filename) {
                       this.setState({selection: rowInfo.row.filename}, () => {
                         this.readfile();
-                      })                    
-                    }                    
+                      })
+                    }
                   },
                   onMouseEnter: (e) => {
                     if (rowInfo) {
@@ -273,17 +307,17 @@ class ScriptEditor extends React.Component {
                   onMouseLeave: (e) => {
                     if (rowInfo) {
                       this.setState({hoveredRow: null})
-                    }                    
+                    }
                   },
                   style: {
                       fontWeight: this.isSelected(rowInfo) ? "bold" : null,
                       color: this.isSelected(rowInfo) ? "#f58245" : null,
-                      background: this.isHovered(rowInfo) ? "#2a2a2a" : null                      
+                      background: this.isHovered(rowInfo) ? "#2a2a2a" : null
                   }
                 }
-              }}              
+              }}
            />
-           
+
       </div>
 
     editorComponent = null;
@@ -298,11 +332,12 @@ class ScriptEditor extends React.Component {
               onChange={this.onChange}
               name="pythonScriptEditor"
               editorProps={{$blockScrolling: true}}
-              />              
+              />
           </Card>
           {buttons}
+          {exptControlButtons}
           {filesComponent}
-          </div>;      
+          </div>;
     }
     else if (this.state.selectedEditor.value == 'turbidostat') {
       editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp}/></div>
@@ -310,23 +345,23 @@ class ScriptEditor extends React.Component {
 
     return (
       <div>
-          
+
           <h2 className="editorTitle"> Experiment Editor: <span style={{color:"#f58245"}}>{this.state.exptName}</span></h2>
-          
+
           {editorComponent}
-          
+
           {selector}
           <NewFileModal
             alertOpen = {this.state.newFileAlertOpen}
             alertQuestion = {this.state.newFileAlertDirections}
-            onAlertAnswer = {this.newFileAlertAnswer} />     
+            onAlertAnswer = {this.newFileAlertAnswer} />
 
           <DeleteFileModal
             alertOpen = {this.state.deleteFileAlertOpen}
             alertQuestion = {this.state.deleteFileAlertDirections}
             onAlertAnswer = {this.deleteFileAlertAnswer} />
 
-        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>                  
+        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>
       </div>
     );
   }
