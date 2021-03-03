@@ -23,7 +23,7 @@ const styles = {
 
 class StirSlider extends React.Component {
   state = {
-    value: 10,
+    value: 8,
     min: 0,
     max: 15,
   };
