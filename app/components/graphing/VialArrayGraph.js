@@ -124,7 +124,7 @@ class VialArrayGraph extends React.Component {
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
         if (this.state.parameter == 'OD'){
-          ymin = 0;
+          ymin = -0.1;
           var odArray;
           try {
             odArray = fs.readFileSync(odPath).toString().split('\n');
@@ -183,7 +183,7 @@ class VialArrayGraph extends React.Component {
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
         if (this.state.parameter == 'OD'){
-          ymin = 0;
+          ymin = -0.1;
           var odArray;
           try {
             odArray = fs.readFileSync(odPath).toString().split('\n');
