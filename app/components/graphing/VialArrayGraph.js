@@ -50,7 +50,8 @@ class VialArrayGraph extends React.Component {
       xaxisName: this.props.xaxisName,
       activePlot: this.props.activePlot,
       data: [],
-      loaded: false
+      loaded: false,
+      missingData: false
     };
   }
 
@@ -62,7 +63,7 @@ class VialArrayGraph extends React.Component {
         () => this.getData())
     }
     if (this.props.ymax !== prevProps.ymax) {
-      this.setState({ ymax: this.props.ymax, loaded: false},
+      this.setState({ ymax: this.props.ymax, loaded: false, missingData: false},
         () => this.getData())
     }
     if (this.props.parameter !== prevProps.parameter) {
@@ -70,6 +71,7 @@ class VialArrayGraph extends React.Component {
         parameter: this.props.parameter,
         ymax: this.props.ymax,
         loaded: false,
+        missingData: false,
         xaxisName: this.props.xaxisName,
       },
         () => this.getData())
@@ -78,6 +80,7 @@ class VialArrayGraph extends React.Component {
       this.setState({
         timePlotted: this.props.timePlotted,
         loaded: false,
+        missingData: false,
         downsample: this.props.downsample
         },
         () => this.getData())
@@ -110,6 +113,10 @@ class VialArrayGraph extends React.Component {
     var option = []; var compiled_data = [];
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
+      if (!fs.existsSync(path.join(this.props.exptDir,'data'))) {
+        this.setState({missingData: true});
+        return;
+      }
       for (var i = 0; i < 16; i++) {
         var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
@@ -118,7 +125,14 @@ class VialArrayGraph extends React.Component {
 
         if (this.state.parameter == 'OD'){
           ymin = 0;
-          var odArray = fs.readFileSync(odPath).toString().split('\n');
+          var odArray;
+          try {
+            odArray = fs.readFileSync(odPath).toString().split('\n');
+          }
+          catch (error) {
+            this.setState({missingData: true});
+            return;
+          }
           var lastTime = odArray[odArray.length -2].split(',')[0]
           for (var j = odArray.length -1 ; j > 1; j=j-this.state.downsample) {
             var parsed_value = odArray[j].split(',')
@@ -134,7 +148,14 @@ class VialArrayGraph extends React.Component {
 
         if (this.state.parameter == 'Temp'){
           ymin = 20;
-          var tempArray = fs.readFileSync(tempPath).toString().split('\n');
+          var tempArray;
+          try {
+            tempArray = fs.readFileSync(tempPath).toString().split('\n');
+          }
+          catch (error) {
+            this.setState({missingData: true});
+            return;
+          }
           var lastTime = tempArray[tempArray.length -2].split(',')[0]
           for (var j = tempArray.length -1 ; j > 1; j=j-this.state.downsample) {
             var parsed_value = tempArray[j].split(',')
@@ -163,7 +184,14 @@ class VialArrayGraph extends React.Component {
 
         if (this.state.parameter == 'OD'){
           ymin = 0;
-          var odArray = fs.readFileSync(odPath).toString().split('\n');
+          var odArray;
+          try {
+            odArray = fs.readFileSync(odPath).toString().split('\n');
+          }
+          catch (error) {
+            this.setState({missingData: true});
+            return;
+          }
           var lastTime = odArray[odArray.length -2].split(',')[0]
           for (var j = 2 ; j < odArray.length; j=j+3) {
             var parsed_value = odArray[j].split(',')
@@ -175,7 +203,14 @@ class VialArrayGraph extends React.Component {
 
         if (this.state.parameter == 'Temp'){
           ymin = 20;
-          var tempArray = fs.readFileSync(tempPath).toString().split('\n');
+          var tempArray;
+          try {
+            tempArray = fs.readFileSync(tempPath).toString().split('\n');
+          }
+          catch (error) {
+            this.setState({missingData: true});
+            return;
+          }
           var lastTime = tempArray[tempArray.length -2].split(',')[0]
           for (var j = 2 ; j < tempArray.length; j=j+3) {
             var parsed_value = tempArray[j].split(',')
@@ -188,7 +223,7 @@ class VialArrayGraph extends React.Component {
         option.push(this.singleVial(this.state.activePlot, data, ymin, this.state.ymax))
       }
       console.log(option)
-      this.setState({data: compiled_data, option: option, loaded: true})
+      this.setState({data: compiled_data, option: option, loaded: true, missingData: false})
     }
 
   allVials = (vial, data, ymin, ymax) => ({
@@ -365,9 +400,14 @@ class VialArrayGraph extends React.Component {
 
     let loadingText;
     if (!this.state.loaded) {
+      if (this.state.missingData) {
+        loadingText = <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-94px 0px 0px 68px'}}> No Data! </p>
+      }
+      else {
         loadingText =
           <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-94px 0px 0px 68px'}}> Loading... </p>
-        }
+      }
+    }
 
     let graph;
     if (this.state.activePlot == 'ALL'){
@@ -388,6 +428,7 @@ class VialArrayGraph extends React.Component {
           <ReactEcharts
             option={this.state.option[0]}
             style={{height: 530, width: 730}} />
+            <p style={{fontSize: '50px', position: 'absolute', color: 'orange', margin: '-290px 0px 0px 275px'}}> No Data! </p>
         </div>
     }
 
