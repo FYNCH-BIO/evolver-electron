@@ -20,9 +20,7 @@ var Tail = require('tail').Tail;
 var readline = require('readline');
 
 const styles = {
-  
 };
-
 
 const ymaxChoicesOD = ['0.1', '0.5', '1.0', '2.0'];
 const ymaxChoicesTemp = ['30', '35', '40', '45'];
@@ -54,7 +52,7 @@ class Graph extends React.Component {
 
   componentDidMount() {
     var options = {fromBeginning: false, follow: true, nLines: 200}
-    var logFilename = path.join(this.props.exptDir, '/data/evolver.log');
+    var logFilename = path.join(this.props.exptDir, 'data', 'evolver.log');
 
     if (fs.existsSync(logFilename)) {
       var tail = new Tail(logFilename, options);
@@ -170,7 +168,7 @@ class Graph extends React.Component {
             value={this.state.logData}
             width='750px'
             height='570px'
-            mode="python"
+            mode="elixer"
             theme="terminal"
             readOnly={true}
             name="logViewer"
