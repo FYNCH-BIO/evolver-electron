@@ -13,6 +13,7 @@ import ModalReset from './python-shell/ModalReset';
 
 const remote = require('electron').remote;
 const app = remote.app;
+const http = require('https');
 
 var fs = require('fs');
 var rimraf = require('rimraf');
@@ -74,7 +75,16 @@ class ExptManager extends React.Component {
     ipcRenderer.on('get-ip', (event, arg) => {
       this.setState({evolverIp: arg});
       });
-
+    if (!fs.existsSync(path.join(app.getPath('userData'), this.state.scriptDir))) {
+      fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir));
+      fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir, 'template'));
+      var customScriptFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'custom_script.py'));
+      var evolverFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'eVOLVER.py'));
+      var nbstreamreaderFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'nbstreamreader.py'));
+      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile)});
+      var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
+      var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
+    }
   }
 
   handleSelectFolder = (activeFolder) => {
