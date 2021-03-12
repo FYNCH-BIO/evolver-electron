@@ -58,7 +58,6 @@ const selectorStyles = {
   },
 };
 
-
 const exptEditorOptions = [
   {value: 'fileEditor', label: 'File Editor'},
   {value: 'turbidostat', label: 'Turbidostat'},
@@ -255,7 +254,7 @@ class ScriptEditor extends React.Component {
 
     var exptControlButtons = <div class="editor-control-buttons">
       {this.state.disablePlay ? <button className="tableIconButton" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={13}/> </button> : (<button class="tableIconButton" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.disablePlay}><FaPlay size={13}/></button>)}
-      <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir, this.state.exptName)}}><button className="tableIconButton" onClick={() => this.onGraph()}> <FaChartBar size={18}/> </button></Link>
+      <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir)}}><button className="tableIconButton" onClick={() => this.onGraph()}> <FaChartBar size={18}/> </button></Link>
     </div>;
 
     var buttons = <div class="editor-buttons">
