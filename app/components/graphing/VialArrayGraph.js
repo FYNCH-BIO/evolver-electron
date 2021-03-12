@@ -423,12 +423,16 @@ class VialArrayGraph extends React.Component {
             ))}
           </div>
     } else {
+      loadingText = '';
+      if (this.state.missingData) {
+        loadingText = <p style={{fontSize: '50px', position: 'absolute', color: 'orange', margin: '-290px 0px 0px 275px'}}> No Data! </p>
+      }
       graph =
         <div style={{position: 'absolute', margin: '25px 0px 0px 0px'}}>
           <ReactEcharts
             option={this.state.option[0]}
             style={{height: 530, width: 730}} />
-            <p style={{fontSize: '50px', position: 'absolute', color: 'orange', margin: '-290px 0px 0px 275px'}}> No Data! </p>
+            {loadingText}
         </div>
     }
 
