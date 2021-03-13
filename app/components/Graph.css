@@ -51,13 +51,25 @@
   z-index: 10;
 }
 
-.downloadButton {
+.dataActionButtons {
   position: absolute;
   top: 550px;
-  left: 60px;
-  width: 150px;
+  left: 20px;
+  width: 400px;
+  overflow-y: auto;
 }
 
-.downloadButton:active {
+.dataActionButton {
+  width: 150px;
+  margin: 0px 10px 0px 0px;
+}
+
+.dataActionButton:active {
   background: grey;
+}
+
+.logViewer {
+  position: absolute;
+  top: 10px;
+  left: 350px;
 }
