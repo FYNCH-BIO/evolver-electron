@@ -176,7 +176,6 @@ class Graph extends React.Component {
             setOptions={{autoScrollEditorIntoView:true}}
             editorProps={{$blockScrolling: true}}/></div>
 
-
     return (
       <div>
         <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
