@@ -12,7 +12,6 @@ import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
 
-
 const remote = require('electron').remote;
 const app = remote.app;
 
@@ -40,7 +39,8 @@ function dirTree(dirname) {
         info.children = fs.readdirSync(dirname).map(function(child) {
             return dirTree(dirname + '/' + child);
         });
-    } else {
+    }
+    else {
 
         info.type = "file";
     }
@@ -51,25 +51,28 @@ function dirTree(dirname) {
 function loadFileDir (subFolder, isScript){
   if (subFolder == 'undefined'){
     return []
-  } else{
-
+  }
+  else{
     var dirPath= path.join(app.getPath('userData'), subFolder);
     var resultJSON = {'data': dirTree(dirPath).children};
-    if (isScript){
+    if (isScript) {
       for (var i = 0; i < resultJSON['data'].length; i++) {
         if (resultJSON['data'][i]['type'] == 'folder'){
           var modifiedString;
           var modified;
-          var scriptName = 'tstat_parameters.json';          
-          for (var j = 0; j < resultJSON['data'][i]['children'].length; j++) {
-            if (resultJSON['data'][i]['children'][j]['key'] == scriptName) {
-              modifiedString = resultJSON['data'][i]['children'][j]['modifiedString'];
-              modified = resultJSON['data'][i]['children'][j]['modified'];          
-            }
+          var logLocation = path.join(dirPath, resultJSON['data'][i]['key'], 'data', 'evolver.log');
+          if (fs.existsSync(logLocation)) {
+            var logData = fs.readFileSync(logLocation, 'utf8');
+            var dataLines = logData.split('\n');
+            var lastTime = dataLines[dataLines.length - 2].split(' ')[0]
+            lastTime = lastTime.substring(1, lastTime.length-1);
+            var d = new Date(lastTime);
+            modifiedString = moment(d).fromNow();
+            modified = moment(d).valueOf();
           }
           resultJSON['data'][i]['modified'] = modified;
           resultJSON['data'][i]['modifiedString'] = modifiedString;
-          resultJSON['data'][i]['fullPath'] = subFolder + '/' + resultJSON['data'][i]['key'];
+          resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
         }
       }
     };
@@ -154,7 +157,7 @@ class ScriptFinder extends React.Component {
         width: 280
       },
       {
-        Header: 'Last Modified',
+        Header: 'Last Run',
         accessor: 'modified',
         Cell: props => <span> {props.original.modifiedString} </span>,
         width: 205
