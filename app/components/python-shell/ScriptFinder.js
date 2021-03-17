@@ -18,7 +18,6 @@ const app = remote.app;
 const styles = {
 };
 
-
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -94,11 +93,11 @@ class ScriptFinder extends React.Component {
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,
     };
-    }
+  }
 
   componentDidMount(){
     var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
-    var showPagination = (filequery.length > 5) 
+    var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination});
   }
 
@@ -110,7 +109,7 @@ class ScriptFinder extends React.Component {
       })
     }
   }
-  
+
   componentWillReceiveProps(props) {
       const {refind} = this.props;
       if (props.refind !== refind) {
@@ -123,7 +122,7 @@ class ScriptFinder extends React.Component {
     var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
-  
+
   getStatus = (expt) => {
       if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
           return "Running";
@@ -133,7 +132,6 @@ class ScriptFinder extends React.Component {
       }
   }
 
-
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
@@ -142,14 +140,14 @@ class ScriptFinder extends React.Component {
       }
     }
    };
-   
+
    handlePlay = exptName => {
        this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
    }
-  
+
   render() {
     const { classes } = this.props;
-    const { fileJSON, dirLength } = this.state; 
+    const { fileJSON, dirLength } = this.state;
   var columns = [
       {
         Header: 'Name',
@@ -173,18 +171,16 @@ class ScriptFinder extends React.Component {
             <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
             <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
             {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
-            <button className="tableTextButton" onClick={() => this.props.onReset(cellInfo.row.key, this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)))}> RESET </button>
-            <button className="tableTextButton" onClick={() => this.props.onClone(cellInfo.row.key)}> CLONE </button>
            </div>),
           width: 400
-      }];    
+      }];
     return (
-                        
+
       <div>
         <ReactTable
           data={fileJSON}
           columns={columns}
-          noDataText="Select an Experiment Type"
+          noDataText="No Experiments Found"
           showPagination={this.state.showPagination}
           pageSize={8}
           height={100}

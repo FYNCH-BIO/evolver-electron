@@ -13,6 +13,13 @@
   height: 40px;
 }
 
+.newExptButton {
+  position: absolute;
+  top: 500px;
+  left: 375px;
+  width: 300px;
+}
+
 .RunScript{
   position: absolute;
   align-items: center;
@@ -43,7 +50,6 @@
   background-color: black;
   border: none;
   color: #f58245;
-
 }
 
 

@@ -77,10 +77,10 @@ class ExptManager extends React.Component {
       });
     if (!fs.existsSync(path.join(app.getPath('userData'), this.state.scriptDir))) {
       fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir));
-      fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir, 'template'));
-      var customScriptFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'custom_script.py'));
-      var evolverFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'eVOLVER.py'));
-      var nbstreamreaderFile = fs.createWriteStream(path.join(app.getPath('userData'), this.state.scriptDir, 'template', 'nbstreamreader.py'));
+      fs.mkdirSync(path.join(app.getPath('userData'), 'template'));
+      var customScriptFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'custom_script.py'));
+      var evolverFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'eVOLVER.py'));
+      var nbstreamreaderFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'nbstreamreader.py'));
       var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile)});
       var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
       var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
@@ -116,7 +116,7 @@ class ExptManager extends React.Component {
     };
 
     handleClone = (script) => {
-        this.setState({alertOpen: true, exptToClone: script});
+        this.setState({alertOpen: true});
     };
 
     handleReset = (script, running) => {
@@ -142,9 +142,9 @@ class ExptManager extends React.Component {
         }
     };
 
-    createNewExperiment = (exptName, exptToClone) => {
+    createNewExperiment = (exptName) => {
         var newDir = path.join(app.getPath('userData'), this.state.scriptDir, exptName);
-        var oldDir = path.join(app.getPath('userData'), this.state.scriptDir, exptToClone);
+        var oldDir = path.join(app.getPath('userData'), "template");
         if (!fs.existsSync(newDir)) {
             fs.mkdirSync(newDir);
         }
@@ -166,20 +166,18 @@ class ExptManager extends React.Component {
           <ScriptFinder subFolder={this.state.scriptDir}
             isScript= {true}
             onSelectFolder={this.handleSelectFolder}
-            onClone={this.handleClone}
             onEdit={this.handleEdit}
             onGraph={this.handleGraph}
             onStart={this.handleStart}
             onStop={this.handleStop}
-            onReset={this.handleReset}
             onContinue={this.handleContinue}
             runningExpts={this.state.runningExpts}
             refind={this.state.refind}
             evolverIp = {this.state.evolverIp}
             disablePlay = {this.state.disablePlay}/>
         </Card>
-
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <button className="newExptButton" onClick={this.handleClone}>New Experiment</button>
         <ModalClone
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertDirections}
