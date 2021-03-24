@@ -13,7 +13,10 @@ import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
 
 const remote = require('electron').remote;
+const Store = require('electron-store');
+
 const app = remote.app;
+const store = new Store();
 
 const styles = {
 };
@@ -124,6 +127,12 @@ loadFileDir = (subFolder, isScript) => {
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
 
+  getEvolver = (expt) => {
+    var evolverExptMap = store.get('evolverExptMap', {});
+    var evolver = evolverExptMap[path.join(app.getPath('userData'), this.props.subFolder, expt)] === undefined ? 'Not run yet' : evolverExptMap[path.join(app.getPath('userData'), this.props.subFolder, expt)];
+    return evolver;
+  };
+
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
       if (rowInfo.index == this.state.selection) {
@@ -147,7 +156,7 @@ loadFileDir = (subFolder, isScript) => {
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
-        width: 280
+        width: 250
       },
       {
         Header: 'Last Run',
@@ -157,8 +166,14 @@ loadFileDir = (subFolder, isScript) => {
       },
       {
           Header: 'Status',
-          width: 135,
-          accessor: 'status'
+          accessor: 'status',
+          width: 125,
+      },
+      {
+        Header: 'eVOLVER',
+        accessor: 'evolver',
+        width: 270,
+        Cell: cellInfo => <span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span>,
       },
       {
           Header: '',

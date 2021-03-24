@@ -11,7 +11,9 @@ import ReactTable from "react-table";
 import Select from 'react-select';
 import NewFileModal from './NewFileModal';
 import DeleteFileModal from './DeleteFileModal';
+import EvolverSelect from './evolverConfigs/EvolverSelect'
 const { ipcRenderer } = require('electron');
+const Store = require('electron-store');
 
 import 'brace/mode/python';
 import 'brace/theme/monokai';
@@ -21,6 +23,7 @@ var path = require('path');
 var util = require('util');
 const remote = require('electron').remote;
 const app = remote.app;
+const store = new Store();
 
 var editorComponent;
 var filesToShow = ['eVOLVER.py', 'custom_script.py'];
@@ -237,6 +240,12 @@ class ScriptEditor extends React.Component {
     console.log('to the plots');
   }
 
+  handleSelectEvolver = (evolver) => {
+    var evolverExptMap = store.get('evolverExptMap', {});
+    evolverExptMap[this.state.exptDir] = evolver.label;
+    store.set('evolverExptMap', evolverExptMap);
+  }
+
   render() {
     const { classes } = this.props;
     var columns = [
@@ -344,7 +353,9 @@ class ScriptEditor extends React.Component {
 
     return (
       <div>
-
+          <div className="editorEvolverSelect">
+            <EvolverSelect title="SELECT eVOLVER" onRef={function (ref) {}} selectEvolver = {this.handleSelectEvolver} selectedExperiment = {this.state.exptDir}/>
+          </div>
           <h2 className="editorTitle"> Experiment Editor: <span style={{color:"#f58245"}}>{this.state.exptName}</span></h2>
 
           {editorComponent}

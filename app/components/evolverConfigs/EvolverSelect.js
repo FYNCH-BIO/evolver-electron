@@ -71,7 +71,8 @@ class EvolverSelect extends React.Component {
     super(props);
     this.state = {
       selectedOption: null,
-      registeredEvolvers: []
+      registeredEvolvers: [],
+      title: "ACTIVE EVOLVER"
     };
   }
 
@@ -81,16 +82,23 @@ class EvolverSelect extends React.Component {
     var scanTimer = setInterval(this.scanEvolvers, 1000);
     var selectedOption = this.state.selectedOption;
     var registeredEvolvers = this.state.registeredEvolvers;
+    var title = this.state.title;
     if (store.has('registeredEvolvers')){
-      selectedOption = store.get('activeEvolver')
-      registeredEvolvers = store.get('registeredEvolvers')
-      console.log(registeredEvolvers)
+      selectedOption = store.get('activeEvolver');
+      registeredEvolvers = store.get('registeredEvolvers');
+      console.log(registeredEvolvers);
+    }
+    if (store.has('evolverExptMap') && this.props.selectedExperiment) {
+      selectedOption = registeredEvolvers.filter(evo => evo.label === store.get('evolverExptMap')[this.props.selectedExperiment]);
+    }
+    if (this.props.title !== undefined) {
+      title = this.props.title;
     }
     this.setState({
       scanTimer: scanTimer,
       selectedOption: selectedOption,
-      registeredEvolvers: registeredEvolvers},
-      console.log(registeredEvolvers));
+      registeredEvolvers: registeredEvolvers,
+      title: title})
   }
 
   componentWillUnmount() {
@@ -162,7 +170,7 @@ class EvolverSelect extends React.Component {
             placeholder={<div>Select Registered Devices</div>}
           />
           <div style={{position:'absolute',right:'26px',top:'-10px'}}>
-            <Typography className={classes.title}> ACTIVE EVOLVER </Typography>
+            <Typography className={classes.title}> {this.state.title} </Typography>
           </div>
       </div>
 
