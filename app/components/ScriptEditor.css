@@ -135,3 +135,9 @@
   height: 570px;
   width: 675px;
 }
+
+.editorEvolverSelect {
+  position: absolute;
+  left: 400px;
+  top: 15px;
+}
