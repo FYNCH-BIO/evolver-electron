@@ -47,7 +47,42 @@ function dirTree(dirname) {
     return info;
 }
 
-function loadFileDir (subFolder, isScript){
+class ScriptFinder extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      fileJSON:[],
+      showPagination: true,
+      selection: 'undefined',
+      subFolder: this.props.subFolder,
+      isScript: this.props.isScript,
+    };
+  }
+
+  componentDidMount(){
+    var filequery = this.loadFileDir(this.state.subFolder, this.state.isScript);
+    var showPagination = (filequery.length > 5);
+    this.setState({fileJSON: filequery, showPagination: showPagination});
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.subFolder !== prevProps.subFolder) {
+      this.handleRefresh(this.props.subFolder);
+      this.setState({
+        subFolder: this.props.subFolder,
+      })
+    }
+  }
+
+  componentWillReceiveProps(props) {
+      const {refind} = this.props;
+      if (props.refind !== refind) {
+          this.handleRefresh(props);
+      }
+  }
+
+loadFileDir = (subFolder, isScript) => {
   if (subFolder == 'undefined'){
     return []
   }
@@ -72,6 +107,7 @@ function loadFileDir (subFolder, isScript){
           resultJSON['data'][i]['modified'] = modified;
           resultJSON['data'][i]['modifiedString'] = modifiedString;
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
+          resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
         }
       }
     };
@@ -80,57 +116,13 @@ function loadFileDir (subFolder, isScript){
     var filequery = jsonQuery(searchString, {data: resultJSON}).value;
     return filequery;
   }
-}
-
-class ScriptFinder extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      fileJSON:[],
-      showPagination: true,
-      selection: 'undefined',
-      subFolder: this.props.subFolder,
-      isScript: this.props.isScript,
-    };
-  }
-
-  componentDidMount(){
-    var filequery = loadFileDir (this.state.subFolder, this.state.isScript);
-    var showPagination = (filequery.length > 5)
-    this.setState({fileJSON: filequery, showPagination: showPagination});
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.subFolder !== prevProps.subFolder) {
-      this.handleRefresh(this.props.subFolder);
-      this.setState({
-        subFolder: this.props.subFolder,
-      })
-    }
-  }
-
-  componentWillReceiveProps(props) {
-      const {refind} = this.props;
-      if (props.refind !== refind) {
-          this.handleRefresh(props);
-      }
-  }
+};
 
   handleRefresh = (newProps) => {
-    var filequery = loadFileDir(this.state.subFolder, this.state.isScript);
+    var filequery = this.loadFileDir(this.state.subFolder, this.state.isScript);
     var showPagination = (filequery.length > 5)
     this.setState({fileJSON: filequery, showPagination: showPagination})
   };
-
-  getStatus = (expt) => {
-      if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, expt))) {
-          return "Running";
-      }
-      else {
-          return "Stopped";
-      }
-  }
 
   isSelected = rowInfo => {
     if (typeof rowInfo !== 'undefined'){
@@ -148,6 +140,9 @@ class ScriptFinder extends React.Component {
   render() {
     const { classes } = this.props;
     const { fileJSON, dirLength } = this.state;
+    for (var i = 0; i < fileJSON.length; i++) {
+      fileJSON[i].status = this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, fileJSON[i].key)) ? "Running" : "Stopped";
+    }
   var columns = [
       {
         Header: 'Name',
@@ -163,7 +158,7 @@ class ScriptFinder extends React.Component {
       {
           Header: 'Status',
           width: 135,
-          Cell: cellInfo => <span>{this.getStatus(cellInfo.row.key)}</span>
+          accessor: 'status'
       },
       {
           Header: '',
