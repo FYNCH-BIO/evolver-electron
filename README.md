@@ -1,6 +1,6 @@
 ## Setup
 
-Before running, setup up cron or other job scheduler to call `experiment_check.sh` bash script every 30 seconds to ensure that running experiments are not unintentionally lost. In addition, edit `config.sh` to include the path to `runningExpts.txt` before running `experiment_check.sh`
+This application uses the yarn package manager. Visit https://classic.yarnpkg.com/en/docs/install#debian-stable for additional information on installing yarn on your computer. The documentation also includes OS specific installation instructions under 'Alternatives'. Note that development of this application was done using Yarn 1 and not Yarn 2.  
 
 ## Install
 
