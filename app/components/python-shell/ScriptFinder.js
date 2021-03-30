@@ -11,6 +11,7 @@ import ReactTable from "react-table";
 import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
+import Circle from '../Circle'
 
 const remote = require('electron').remote;
 const Store = require('electron-store');
@@ -24,6 +25,27 @@ const styles = {
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
+
+moment.updateLocale('en', {
+    relativeTime : {
+        future: "in %s",
+        past:   "%s",
+        s  : 'a few s',
+        ss : '%d s',
+        m:  "a minute",
+        mm: "%d m",
+        h:  "an h",
+        hh: "%d h",
+        d:  "a d",
+        dd: "%d d",
+        w:  "a w",
+        ww: "%d w",
+        M:  "a m",
+        MM: "%d m",
+        y:  "a y",
+        yy: "%d y"
+    }
+});
 
 function dirTree(dirname) {
     var folderStats = fs.lstatSync(dirname),
@@ -111,6 +133,8 @@ loadFileDir = (subFolder, isScript) => {
           resultJSON['data'][i]['modifiedString'] = modifiedString;
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
           resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
+          resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+
         }
       }
     };
@@ -151,28 +175,30 @@ loadFileDir = (subFolder, isScript) => {
     const { fileJSON, dirLength } = this.state;
     for (var i = 0; i < fileJSON.length; i++) {
       fileJSON[i].status = this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, fileJSON[i].key)) ? "Running" : "Stopped";
+      fileJSON[i].statusDot = fileJSON[i].status === "Running" ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
     }
   var columns = [
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
-        width: 250
+        width: 400
       },
       {
         Header: 'Last Run',
         accessor: 'modified',
         Cell: props => <span> {props.original.modifiedString} </span>,
-        width: 205
+        width: 120
       },
       {
           Header: 'Status',
           accessor: 'status',
-          width: 125,
+          width: 90,
+          Cell: props => <div>{props.original.statusDot}</div>
       },
       {
         Header: 'eVOLVER',
         accessor: 'evolver',
-        width: 270,
+        width: 250,
         Cell: cellInfo => <span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span>,
       },
       {
