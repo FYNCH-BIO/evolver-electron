@@ -12,9 +12,10 @@
 
 .editorTitle {
   position: absolute;
-  top: 15px;
-  left: 90px;
+  top: 19px;
+  left: 80px;
   z-index: 10;
+  font-size: 25px;
 }
 
 .expEditorHomeBtn {
@@ -99,20 +100,25 @@
   color: black;
 }
 
-.editor-buttons .eb {
-  margin: 10px 0px 0px 10px;
+.ebfe {
+  width: 60px;
+  height: 50px;
+}
+
+.editor-buttons .ebfe {
+  margin: 5px 5px 5px 5px;
   font-size: 15px;
 }
 
-.editor-buttons .eb:active {
+.editor-buttons .ebfe:active {
   background: grey;
 }
 
 .editor-buttons {
   position: absolute;
-  left: 45px;
-  top: 500px;
-  width: 400px;
+  left: 5px;
+  top: 565px;
+  overflow: auto;
   overflow-y: auto;
 }
 

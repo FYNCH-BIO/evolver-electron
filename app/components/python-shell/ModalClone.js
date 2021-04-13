@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
+import routes from '../../constants/routes.json';
 
 
 
@@ -29,7 +30,7 @@ class ModalClone extends React.Component {
       this.setState({ open: this.props.alertOpen})
     }
   }
-  
+
   componentWillReceiveProps(nextProps) {
       this.setState({open:nextProps.alertOpen});
   }
@@ -47,7 +48,7 @@ class ModalClone extends React.Component {
     this.props.onAlertAnswer(this.state.value);
     this.setState({open: false, value: ''});
   }
-  
+
   handleChange = (event) => {
       this.setState({value: event.target.value});
   }
@@ -72,7 +73,7 @@ class ModalClone extends React.Component {
                 {this.state.question}
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
-                  <input                    
+                  <input
                     className={styles.alertInput}
                     type="text"
                     value={this.state.value}
@@ -80,11 +81,11 @@ class ModalClone extends React.Component {
                     id="cloneAlertExperimentInput">
                   </input>
               </div>
-              <button
-              onClick={this.handleAnswer}
+              <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
+              onClick={() => this.handleAnswer()}
               className={styles.alertBtns}>
               Submit
-              </button>              
+              </button></Link>
             </div>
           </Modal>
       </div>
