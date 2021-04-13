@@ -340,6 +340,7 @@ class ScriptEditor extends React.Component {
               onChange={this.onChange}
               name="pythonScriptEditor"
               editorProps={{$blockScrolling: true}}
+              commands={[{name: 'saveFile', bindKey: {win: 'Ctrl+S', mac: 'Cmd+S'}, exec: this.savefile}]}
               />
           </Card>
           {buttons}
