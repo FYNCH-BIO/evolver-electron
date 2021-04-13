@@ -40,8 +40,8 @@ moment.updateLocale('en', {
         dd: "%d d",
         w:  "a w",
         ww: "%d w",
-        M:  "a m",
-        MM: "%d m",
+        M:  "a month",
+        MM: "%d month",
         y:  "a y",
         yy: "%d y"
     }
