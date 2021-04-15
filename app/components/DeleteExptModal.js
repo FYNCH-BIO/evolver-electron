@@ -21,6 +21,7 @@ class DeleteExptModal extends React.Component {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
       answers: this.props.alertAnswers,
+      buttonText: this.props.buttonText,
       value: ''
     };
   }
