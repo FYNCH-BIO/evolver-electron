@@ -125,7 +125,7 @@ class ScriptEditor extends React.Component {
     this.loadTable();
     this.readfile('custom_script.py');
     ipcRenderer.send('running-expts');
-    var editedExpts = store.get('editedExpts');
+    var editedExpts = store.get('editedExpts', {});
     if (editedExpts[this.state.exptName] && !this.state.option) {
       this.setState({option: 1, selectedEditor: exptEditorOptions.find(a => a.value == 'fileEditor')});
     }
