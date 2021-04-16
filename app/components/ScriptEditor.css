@@ -49,8 +49,8 @@
 
 .ReactTable.ft {
   position: absolute;
-  left: -5px;
-  width: 400px;
+  left: 5px;
+  width: 600px;
   color: white;
 }
 
@@ -116,7 +116,7 @@
 
 .editor-buttons {
   position: absolute;
-  left: 5px;
+  left: 53px;
   top: 565px;
   overflow: auto;
   overflow-y: auto;

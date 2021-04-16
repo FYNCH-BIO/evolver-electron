@@ -43,7 +43,7 @@ const styles = {
   },
   cardEditor:{
     top: '63px',
-    left: '430px',
+    left: '520px',
     overflowY: 'auto'
   },
   cardFiles: {
@@ -327,12 +327,12 @@ class ScriptEditor extends React.Component {
       {
         Header: "File",
         accessor: "filename",
-        width: 250
+        width: 325
       },
       {
         Header: "Last Modified",
         accessor: "modifiedString",
-        width: 200
+        width: 150
       }
     ];
 
@@ -399,7 +399,7 @@ class ScriptEditor extends React.Component {
                 }
               }}
            />
-           <p style={{position: 'absolute', left: '5px', top: '200px', width: '375px', textAlign: 'center'}}>NOTE: If you are running a t-stat or other pre-defined module, you do not need to modify these files!</p>
+           <p style={{position: 'absolute', left: '53px', top: '250px', width: '375px', textAlign: 'center'}}>NOTE: If you are running a t-stat or other pre-defined module, you do not need to modify these files!</p>
 
       </div>
 
@@ -408,7 +408,7 @@ class ScriptEditor extends React.Component {
       editorComponent = <div><Card classes={{root:classes.cardRoot}} className={classes.cardEditor}>
             <AceEditor
               value={this.state.scriptContent}
-              width='675px'
+              width='585px'
               height='570px'
               mode="python"
               theme="monokai"
