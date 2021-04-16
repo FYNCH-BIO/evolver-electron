@@ -218,7 +218,7 @@ loadFileDir = (subFolder, isScript) => {
           columns={columns}
           noDataText="No Experiments Found"
           showPagination={this.state.showPagination}
-          pageSize={8}
+          pageSize={7}
           height={100}
           resizable={false}
           showPageSizeOptions= {false}
