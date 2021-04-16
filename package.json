@@ -224,6 +224,7 @@
     "json-query": "^2.2.2",
     "lodash.clonedeep": "^4.5.0",
     "log4js": "^4.0.2",
+    "md5-file": "5.0.0",
     "moment": "^2.24.0",
     "parse-filepath": "^1.0.2",
     "prop-types": "^15.7.2",

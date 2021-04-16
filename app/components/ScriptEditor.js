@@ -15,6 +15,7 @@ import EvolverSelect from './evolverConfigs/EvolverSelect'
 import ReactTooltip from 'react-tooltip';
 const { ipcRenderer } = require('electron');
 const Store = require('electron-store');
+const md5File = require('md5-file');
 
 import 'brace/mode/python';
 import 'brace/theme/monokai';
@@ -52,24 +53,9 @@ const styles = {
   }
 };
 
-const selectorStyles = {
-  control: styles => ({...styles, backgroundColor: 'black', height: '2px', 'width': '200px'}),
-  menu: styles => ({...styles, width:'200px', backgroundColor: 'black', border: '2px', borderStyle: 'solid', borderColor:'white'}),
-  singleValue: styles => ({...styles, color: 'white'}),
-  option: provided => {
-    return {
-      ...provided,
-      backgroundColor: 'black',
-      width: '200px',
-
-    };
-  },
-};
-
 const exptEditorOptions = [
-  {value: 'fileEditor', label: 'File Editor'},
   {value: 'turbidostat', label: 'Turbidostat'},
-  {value: 'chemostat', label: 'Chemostat'}
+  {value: 'fileEditor', label: 'File Editor'},
 ]
 
 class ScriptEditor extends React.Component {
@@ -88,12 +74,37 @@ class ScriptEditor extends React.Component {
       cloneExptAlertDirections: "Enter new experiment name",
       deleteExptAlertDirections: "",
       deleteExptAlertOpen: false,
+      newFileAlertDirections: "Enter the new filename",
+      deleteExptAlertButtonText: "Delete",
+      saveAlertButtonText: "Save File",
+      saveFileAlertDirections: "By saving, you will no longer be able to use the graphical experiment editor features. Continue?",
+      saveFileAlertOpen: false,
       selectedEditor:exptEditorOptions[0],
       showAllFilesButtonTextOptions: ['Show All Files', 'Hide Files'],
       showAllFilesButtonText: 'Show All Files',
       disablePlay: false,
-      showAllFiles: false
+      showAllFiles: false,
+      option: 0
     };
+
+    var customScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'custom_script.py'));
+    var evolverScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'eVOLVER.py'));
+
+    var templateCustomScriptMd5 = md5File.sync(path.join(app.getPath('userData'), 'template', 'custom_script.py'));
+    var templateEvolverScriptMd5 = md5File.sync(path.join(app.getPath('userData'), 'template', 'eVOLVER.py'));
+
+    var editedExpts = store.get('editedExpts', {});
+
+    if (customScriptMd5 != templateCustomScriptMd5 || evolverScriptMd5 != templateEvolverScriptMd5) {
+      if (!editedExpts[this.state.exptName]) {
+        editedExpts[this.state.exptName] = 1;
+        store.set('editedExpts', editedExpts);
+      }
+    }
+
+    if (editedExpts[this.state.exptName]) {
+      this.setState({option: 1, selectedEditor: exptEditorOptions[1]});
+    }
 
     ipcRenderer.on('running-expts', (event, arg) => {
       var disablePlay = false
@@ -114,6 +125,10 @@ class ScriptEditor extends React.Component {
     this.loadTable();
     this.readfile('custom_script.py');
     ipcRenderer.send('running-expts');
+    var editedExpts = store.get('editedExpts');
+    if (editedExpts[this.state.exptName] && !this.state.option) {
+      this.setState({option: 1, selectedEditor: exptEditorOptions.find(a => a.value == 'fileEditor')});
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -122,6 +137,10 @@ class ScriptEditor extends React.Component {
         this.readfile('custom_script.py');
         this.setState({exptDir: this.props.exptDir})
       }
+    }
+    var editedExpts = store.get('editedExpts', {});
+    if (editedExpts[this.state.exptName] && !this.state.option) {
+      this.setState({option: 1, selectedEditor: exptEditorOptions.find(a => a.value == 'fileEditor')});
     }
     ipcRenderer.send('running-expts');
   }
@@ -164,7 +183,6 @@ class ScriptEditor extends React.Component {
   readfile = () => {
     var filename = path.join(this.state.exptDir, this.state.selection);
     var scriptContent;
-    console.log(filename)
     fs.readFile(filename, 'utf8', function(err, data) {
       if (err) throw err;
       console.log('OK: ' + filename);
@@ -173,10 +191,31 @@ class ScriptEditor extends React.Component {
   };
 
   savefile = () => {
+    var editedExpts = store.get('editedExpts', {});
+    if (!editedExpts[this.state.exptName]) {
+      this.setState({saveFileAlertOpen: true});
+    }
+    else {
+      this.saveFileAlertAnswer(true);
+    }
+  };
+
+  saveFileAlertAnswer = (response) => {
+    this.setState({saveFileAlertOpen: false});
+    if (!response) {
+      return;
+    }
     var filename = path.join(this.state.exptDir, this.state.selection);
     var data = editorComponent.props.children[0].props.children.props.value;
     fs.writeFileSync(filename, data);
     console.log('saved!');
+    var editedExpts = store.get('editedExpts', {});
+    if (!editedExpts[this.state.exptName]) {
+      editedExpts[this.state.exptName] = 1;
+    }
+    store.set('editedExpts', editedExpts);
+    this.setState({option: 1});
+    console.log(store.get('editedExpts', {}));
   };
 
   newfile = () => {
@@ -232,6 +271,10 @@ class ScriptEditor extends React.Component {
 
   selectorChange = (value_selected) => {
   this.setState({selectedEditor: exptEditorOptions.find(a => a.value == value_selected.value)})
+  var editedExpts = store.get('editedExpts', {});
+  if (editedExpts[this.state.exptName] && !this.state.option) {
+    this.setState({option: 1});
+  }
   this.loadTable();
 };
 
@@ -262,10 +305,23 @@ class ScriptEditor extends React.Component {
   handleSelectEvolver = (evolver) => {
     var evolverExptMap = store.get('evolverExptMap', {});
     evolverExptMap[this.state.exptDir] = evolver.label;
-    store.set('evolverExptMap', evolverExptMap);
   }
 
   render() {
+    const opacity = this.state.option ? .3 : 1;
+    const selectorStyles = {
+      control: styles => ({...styles, backgroundColor: 'black', height: '2px', 'width': '200px'}),
+      menu: styles => ({...styles, width:'200px', backgroundColor: 'black', border: '2px', borderStyle: 'solid', borderColor:'white'}),
+      singleValue: styles => ({...styles, color: 'white', opacity: opacity}),
+      option: provided => {
+        return {
+          ...provided,
+          backgroundColor: 'black',
+          width: '200px',
+
+        };
+      },
+    };
     const { classes } = this.props;
     var columns = [
       {
@@ -295,8 +351,10 @@ class ScriptEditor extends React.Component {
         options={exptEditorOptions}
         class-name="select-dropdown"
         styles={selectorStyles}
-        defaultValue={exptEditorOptions[0]}
+        defaultValue={exptEditorOptions[this.state.option]}
         onChange = {this.selectorChange}
+        isDisabled = {this.state.option}
+        value = {this.state.selectedEditor}
       />
     </div>;
 
@@ -341,6 +399,7 @@ class ScriptEditor extends React.Component {
                 }
               }}
            />
+           <p style={{position: 'absolute', left: '5px', top: '200px', width: '375px', textAlign: 'center'}}>NOTE: If you are running a t-stat or other pre-defined module, you do not need to modify these files!</p>
 
       </div>
 
@@ -379,7 +438,6 @@ class ScriptEditor extends React.Component {
             alertOpen = {this.state.cloneExptAlertOpen}
             alertQuestion = {this.state.cloneExptAlertDirections}
             onAlertAnswer = {this.cloneExptAlertAnswer} />
-
           <DeleteExptModal
             alertOpen = {this.state.deleteExptAlertOpen}
             alertQuestion = {this.state.deleteExptAlertDirections}
