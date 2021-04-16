@@ -134,6 +134,7 @@ loadFileDir = (subFolder, isScript) => {
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
           resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
           resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+          resultJSON['data'][i]['evolver'] = this.getEvolver(resultJSON['data'][i]['key']);
 
         }
       }
