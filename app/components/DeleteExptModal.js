@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
+import routes from '../constants/routes.json';
 
 
 
@@ -13,7 +14,7 @@ const cardStyles = {
 };
 
 
-class DeleteFileModal extends React.Component {
+class DeleteExptModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -69,11 +70,11 @@ class DeleteFileModal extends React.Component {
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
               </div>
-              <button
-              onClick={this.handleAnswer}
+              <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
+              onClick={() => this.handleAnswer()}
               className={styles.alertBtns}>
               Delete
-              </button> 
+              </button></Link>
               <button onClick={this.onCloseModal} className={styles.alertBtns}>Cancel</button>          
             </div>
           </Modal>
@@ -83,4 +84,4 @@ class DeleteFileModal extends React.Component {
   }
 }
 
-export default withStyles(cardStyles)(DeleteFileModal);
+export default withStyles(cardStyles)(DeleteExptModal);

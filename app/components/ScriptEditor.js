@@ -5,13 +5,14 @@ import Card from '@material-ui/core/Card';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import moment from 'moment'
-import {FaArrowLeft, FaPlay, FaChartBar, FaStop} from 'react-icons/fa';
+import {FaArrowLeft, FaPlay, FaChartBar, FaStop, FaCopy, FaSave, FaTrashAlt, FaFolderOpen} from 'react-icons/fa';
 import TstatEditor from './experiment-configuration/TstatEditor'
 import ReactTable from "react-table";
 import Select from 'react-select';
-import NewFileModal from './NewFileModal';
-import DeleteFileModal from './DeleteFileModal';
+import ModalClone from './python-shell/ModalClone';
+import DeleteExptModal from './DeleteExptModal';
 import EvolverSelect from './evolverConfigs/EvolverSelect'
+import ReactTooltip from 'react-tooltip';
 const { ipcRenderer } = require('electron');
 const Store = require('electron-store');
 
@@ -21,12 +22,16 @@ import 'brace/theme/monokai';
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
+var rimraf = require('rimraf');
 const remote = require('electron').remote;
+const {shell} = require('electron').remote;
 const app = remote.app;
 const store = new Store();
 
 var editorComponent;
 var filesToShow = ['eVOLVER.py', 'custom_script.py'];
+
+const filesToCopy = ['custom_script.py', 'eVOLVER.py', 'nbstreamreader.py', 'pump_cal.txt', 'eVOLVER_parameters.json'];
 
 const styles = {
   cardRoot: {
@@ -36,8 +41,8 @@ const styles = {
     horizontalAlign: 'left'
   },
   cardEditor:{
-    top: '65px',
-    left: '425px',
+    top: '63px',
+    left: '430px',
     overflowY: 'auto'
   },
   cardFiles: {
@@ -78,11 +83,11 @@ class ScriptEditor extends React.Component {
       scriptContent: '',
       selection: 'custom_script.py',
       hoveredRow: null,
-      newFileAlertOpen: false,
+      cloneExptAlertOpen: false,
       exptDirFiles: [],
-      newFileAlertDirections: "Enter the new filename",
-      deleteFileAlertDirections: "",
-      deleteFileAlertOpen: false,
+      cloneExptAlertDirections: "Enter new experiment name",
+      deleteExptAlertDirections: "",
+      deleteExptAlertOpen: false,
       selectedEditor:exptEditorOptions[0],
       showAllFilesButtonTextOptions: ['Show All Files', 'Hide Files'],
       showAllFilesButtonText: 'Show All Files',
@@ -179,34 +184,50 @@ class ScriptEditor extends React.Component {
     this.setState({newFileAlertOpen: true});
   };
 
-  deletefile = () => {
-    var directions = "Are you sure you want to delete " + this.state.selection + "?";
-    this.setState({deleteFileAlertDirections: directions}, function() {
-      this.setState({deleteFileAlertOpen: true});
+  deleteexpt = () => {
+    console.log('deleting this shit'  )
+    var directions = "Are you sure you want to delete the experiment " + this.state.exptName + "?";
+    this.setState({deleteExptAlertDirections: directions}, function() {
+      this.setState({deleteExptAlertOpen: true});
     }.bind(this));
 };
+
+  cloneexpt = () => {
+    this.setState({cloneExptAlertOpen: true});
+  }
 
   resetparams = () => {
   fs.unlinkSync(path.join(this.state.exptDir, 'eVOLVER_parameters.json'));
   this.loadTable();
 };
 
-  newFileAlertAnswer = (newFileName) => {
-    this.setState({newFileAlertOpen: false});
-    if(newFileName != '') {
-      var filename = path.join(this.state.exptDir, newFileName);
-      fs.writeFileSync(filename, '');
+  cloneExptAlertAnswer = (newExptName) => {
+    this.setState({cloneExptAlertOpen: false});
+    if(newExptName != '') {
+      this.createNewExperiment(newExptName);
     }
-    this.loadTable();
   };
 
-  deleteFileAlertAnswer = (response) => {
-    this.setState({deleteFileAlertOpen: false});
+  createNewExperiment = (newExptName) => {
+      var newDir = path.join(path.dirname(this.state.exptDir), newExptName);
+      var oldDir = this.state.exptDir;
+      console.log(newDir);
+      if (!fs.existsSync(newDir)) {
+          fs.mkdirSync(newDir);
+      }
+      filesToCopy.forEach(function (filename) {
+        if (fs.existsSync(path.join(oldDir, filename))) {
+          fs.copyFileSync(path.join(oldDir, filename), path.join(newDir, filename));
+        }
+      });
+  }
+
+  deleteExptAlertAnswer = (response) => {
+    this.setState({deleteExptAlertOpen: false});
     if (response) {
-      var filename = path.join(this.state.exptDir, this.state.selection);
-      fs.unlinkSync(filename);
+      console.log(this.state.exptDir);
+      rimraf.sync(this.state.exptDir);
     }
-    this.loadTable();
   };
 
   selectorChange = (value_selected) => {
@@ -221,10 +242,8 @@ class ScriptEditor extends React.Component {
       fs.writeSync(filehandle, JSON.stringify(vialData));
   };
 
-  showAllFilesToggle = () => {
-    var showAllFiles = !this.state.showAllFiles;
-    var showAllFilesButtonText = showAllFiles ? this.state.showAllFilesButtonTextOptions[1] : this.state.showAllFilesButtonTextOptions[0];
-    this.setState({showAllFiles: showAllFiles, showAllFilesButtonText}, function () {this.loadTable();});
+  showFileBrowser = () => {
+    shell.showItemInFolder(this.state.exptDir);
   }
 
   handlePlay = (exptToPlay) => {
@@ -261,17 +280,14 @@ class ScriptEditor extends React.Component {
       }
     ];
 
-    var exptControlButtons = <div class="editor-control-buttons">
-      {this.state.disablePlay ? <button className="tableIconButton" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={13}/> </button> : (<button class="tableIconButton" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.disablePlay}><FaPlay size={13}/></button>)}
-      <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir)}}><button className="tableIconButton" onClick={() => this.onGraph()}> <FaChartBar size={18}/> </button></Link>
-    </div>;
-
     var buttons = <div class="editor-buttons">
-      <button class="eb" onClick={this.savefile}>Save</button>
-      <button class="eb" onClick={this.newfile}>New File</button>
-      <button class="eb" onClick={this.deletefile}>Delete</button>
-      <button class="eb" onClick={this.resetparams}>Reset Params</button>
-      <button class="eb" onClick={this.showAllFilesToggle}>{this.state.showAllFilesButtonText}</button>
+      <ReactTooltip />
+      {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={25}/> </button> : (<button data-tip="Start experiment (begin collecting data and executing culture routine)"class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.disablePlay}><FaPlay size={25}/></button>)}
+      <Link class="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir)}}><button data-tip="View data for this experiment" class="ebfe" onClick={() => this.onGraph()}> <FaChartBar size={25}/> </button></Link>
+      <button class="ebfe" data-tip="Save file" onClick={this.savefile}><FaSave size={25}/></button>
+      <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneexpt()}><FaCopy size={25}/></button>
+      <button class="ebfe" data-tip="View experiments in the file browser" onClick={this.showFileBrowser}><FaFolderOpen size={25}/></button>
+      <button class="ebfe" data-tip="Delete this experiment" onClick={this.deleteexpt}><FaTrashAlt size={25}/></button>
     </div>;
 
     var selector = <div class="select-div">
@@ -342,8 +358,6 @@ class ScriptEditor extends React.Component {
               editorProps={{$blockScrolling: true}}
               />
           </Card>
-          {buttons}
-          {exptControlButtons}
           {filesComponent}
           </div>;
     }
@@ -356,20 +370,19 @@ class ScriptEditor extends React.Component {
           <div className="editorEvolverSelect">
             <EvolverSelect title="SELECT eVOLVER" onRef={function (ref) {}} selectEvolver = {this.handleSelectEvolver} selectedExperiment = {this.state.exptDir}/>
           </div>
-          <h2 className="editorTitle"> Experiment Editor: <span style={{color:"#f58245"}}>{this.state.exptName}</span></h2>
-
+          <div className="editorTitle"> <span style={{fontWeight: "bold"}}>Experiment Editor: </span><span style={{color:"#f58245"}}>{this.state.exptName}</span></div>
+          {buttons}
           {editorComponent}
-
           {selector}
-          <NewFileModal
-            alertOpen = {this.state.newFileAlertOpen}
-            alertQuestion = {this.state.newFileAlertDirections}
-            onAlertAnswer = {this.newFileAlertAnswer} />
+          <ModalClone
+            alertOpen = {this.state.cloneExptAlertOpen}
+            alertQuestion = {this.state.cloneExptAlertDirections}
+            onAlertAnswer = {this.cloneExptAlertAnswer} />
 
-          <DeleteFileModal
-            alertOpen = {this.state.deleteFileAlertOpen}
-            alertQuestion = {this.state.deleteFileAlertDirections}
-            onAlertAnswer = {this.deleteFileAlertAnswer} />
+          <DeleteExptModal
+            alertOpen = {this.state.deleteExptAlertOpen}
+            alertQuestion = {this.state.deleteExptAlertDirections}
+            onAlertAnswer = {this.deleteExptAlertAnswer} />
 
         <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>
       </div>
