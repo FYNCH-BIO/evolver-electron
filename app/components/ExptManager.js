@@ -35,10 +35,6 @@ const styles = {
     top: '60px',
     left: '75px',
     overflowY: 'auto'
-  },
-  cardPyshell: {
-    top: '200px',
-    left: '30px',
   }
 };
 
