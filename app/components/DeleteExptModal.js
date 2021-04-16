@@ -21,6 +21,7 @@ class DeleteExptModal extends React.Component {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
       answers: this.props.alertAnswers,
+      useLink: this.props.useLink,
       buttonText: this.props.buttonText,
       value: ''
     };
@@ -31,7 +32,7 @@ class DeleteExptModal extends React.Component {
       this.setState({ open: this.props.alertOpen, question: this.props.alertQuestion})
     }
   }
-  
+
   componentWillReceiveProps(nextProps) {
       this.setState({open:nextProps.alertOpen, question: this.props.alertQuestion});
   }
@@ -52,6 +53,17 @@ class DeleteExptModal extends React.Component {
 
   render() {
     const { open } = this.state;
+    var confirmButton;
+    if (this.state.useLink) {
+      confirmButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
+              onClick={() => this.handleAnswer()}
+              className={styles.alertBtns}>
+              {this.state.buttonText}
+              </button></Link>
+    }
+    else {
+      confirmButton = <button onClick={() => this.handleAnswer()} className={styles.alertBtns}>{this.state.buttonText}</button>;
+    }
 
     return (
       <div>
@@ -70,13 +82,9 @@ class DeleteExptModal extends React.Component {
                 {this.state.question}
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
+              {confirmButton}
+              <button onClick={this.onCloseModal} className={styles.alertBtns}>Cancel</button>
               </div>
-              <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
-              onClick={() => this.handleAnswer()}
-              className={styles.alertBtns}>
-              Delete
-              </button></Link>
-              <button onClick={this.onCloseModal} className={styles.alertBtns}>Cancel</button>          
             </div>
           </Modal>
       </div>

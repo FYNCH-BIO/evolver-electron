@@ -215,7 +215,6 @@ class ScriptEditor extends React.Component {
     }
     store.set('editedExpts', editedExpts);
     this.setState({option: 1});
-    console.log(store.get('editedExpts', {}));
   };
 
   newfile = () => {
@@ -224,7 +223,9 @@ class ScriptEditor extends React.Component {
   };
 
   deleteexpt = () => {
-    console.log('deleting this shit'  )
+    var editedExpts = store.get('editedExpts', {});
+    delete editedExpts[this.state.exptName];
+    store.set('editedExpts', editedExpts)
     var directions = "Are you sure you want to delete the experiment " + this.state.exptName + "?";
     this.setState({deleteExptAlertDirections: directions}, function() {
       this.setState({deleteExptAlertOpen: true});
@@ -305,6 +306,7 @@ class ScriptEditor extends React.Component {
   handleSelectEvolver = (evolver) => {
     var evolverExptMap = store.get('evolverExptMap', {});
     evolverExptMap[this.state.exptDir] = evolver.label;
+    store.set('evolverExptMap', evolverExptMap)
   }
 
   render() {
@@ -439,8 +441,17 @@ class ScriptEditor extends React.Component {
             alertQuestion = {this.state.cloneExptAlertDirections}
             onAlertAnswer = {this.cloneExptAlertAnswer} />
           <DeleteExptModal
+            alertOpen = {this.state.saveFileAlertOpen}
+            alertQuestion = {this.state.saveFileAlertDirections}
+            buttonText = "Save File"
+            useLink = {false}
+            onAlertAnswer = {this.saveFileAlertAnswer}
+          />
+          <DeleteExptModal
             alertOpen = {this.state.deleteExptAlertOpen}
             alertQuestion = {this.state.deleteExptAlertDirections}
+            buttonText = "Delete"
+            useLink = {true}
             onAlertAnswer = {this.deleteExptAlertAnswer} />
 
         <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>

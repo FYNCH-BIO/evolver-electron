@@ -82,6 +82,7 @@ class ScriptFinder extends React.Component {
       selection: 'undefined',
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,
+      hoveredRow: null
     };
   }
 
@@ -130,6 +131,9 @@ loadFileDir = (subFolder, isScript) => {
             modified = moment(d).valueOf();
           }
           resultJSON['data'][i]['modified'] = modified;
+          if (modifiedString === undefined) {
+            modifiedString = 'Not run yet';
+          }
           resultJSON['data'][i]['modifiedString'] = modifiedString;
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
           resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
@@ -171,6 +175,13 @@ loadFileDir = (subFolder, isScript) => {
        this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
    }
 
+   getPathname = exptName => {
+      if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName))) {
+        return routes.GRAPHING;
+      }
+      return routes.EDITOR;
+   }
+
   render() {
     const { classes } = this.props;
     const { fileJSON, dirLength } = this.state;
@@ -182,25 +193,26 @@ loadFileDir = (subFolder, isScript) => {
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
-        width: 400
+        width: 400,
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><div style={{width: '650px'}}>{cellInfo.row.key}</div></Link>
       },
       {
         Header: 'Last Run',
         accessor: 'modified',
-        Cell: props => <span> {props.original.modifiedString} </span>,
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><span> {cellInfo.original.modifiedString} </span></Link>,
         width: 120
       },
       {
           Header: 'Status',
           accessor: 'status',
           width: 90,
-          Cell: props => <div>{props.original.statusDot}</div>
+          Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><div>{cellInfo.original.statusDot}</div></Link>
       },
       {
         Header: 'eVOLVER',
         accessor: 'evolver',
         width: 250,
-        Cell: cellInfo => <span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span>,
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span></Link>,
       },
       {
           Header: '',
@@ -231,6 +243,7 @@ loadFileDir = (subFolder, isScript) => {
               onClick: (e, handleOriginal) => {
                 this.setState({selection: rowInfo.index})
                 if (handleOriginal) {
+                  console.log('handling original')
                   handleOriginal()
                 }
               },
