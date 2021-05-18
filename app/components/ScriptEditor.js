@@ -5,7 +5,7 @@ import Card from '@material-ui/core/Card';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import moment from 'moment'
-import {FaArrowLeft, FaPlay, FaChartBar, FaStop, FaCopy, FaSave, FaTrashAlt, FaFolderOpen} from 'react-icons/fa';
+import {FaArrowLeft, FaPlay, FaChartBar, FaStop, FaCopy, FaSave, FaTrashAlt, FaFolderOpen, FaPen} from 'react-icons/fa';
 import TstatEditor from './experiment-configuration/TstatEditor'
 import ReactTable from "react-table";
 import Select from 'react-select';
@@ -71,6 +71,8 @@ class ScriptEditor extends React.Component {
       hoveredRow: null,
       cloneExptAlertOpen: false,
       exptDirFiles: [],
+      changeNameAlertOpen: false,
+      changeExptNameDirections: "Enter new experiment name",
       cloneExptAlertDirections: "Enter new experiment name",
       deleteExptAlertDirections: "",
       deleteExptAlertOpen: false,
@@ -84,7 +86,8 @@ class ScriptEditor extends React.Component {
       showAllFilesButtonText: 'Show All Files',
       disablePlay: false,
       showAllFiles: false,
-      option: 0
+      option: 0,
+      changeNameDisabled: false
     };
 
     var customScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'custom_script.py'));
@@ -107,13 +110,15 @@ class ScriptEditor extends React.Component {
     }
 
     ipcRenderer.on('running-expts', (event, arg) => {
-      var disablePlay = false
+      var disablePlay = false;
+      var changeNameDisabled = false;
       for (var i = 0; i < arg.length; i++) {
         if (arg[i] === path.join(this.state.exptDir)) {
           disablePlay = true;
+          changeNameDisabled = true;
         }
       }
-      this.setState({disablePlay: disablePlay});
+      this.setState({disablePlay: disablePlay, changeNameDisabled: changeNameDisabled});
     });
 
     ipcRenderer.send('running-expts');
@@ -309,7 +314,23 @@ class ScriptEditor extends React.Component {
     store.set('evolverExptMap', evolverExptMap)
   }
 
+  changeExptName = () => {
+    this.setState({changeNameAlertOpen: true});
+  }
+
+  changeNameAlertAnswer = (response) => {
+    this.setState({changeNameAlertOpen: false});
+    if (response) {
+      this.setState({exptName: response})
+      fs.rename(this.state.exptDir, path.join(path.dirname(this.state.exptDir), response));
+    }
+  }
+
   render() {
+    var exptNameFormatted = this.state.exptName;
+    if (exptNameFormatted.length > 17) {
+      exptNameFormatted = exptNameFormatted.substring(0, 17) + "...";
+    }
     const opacity = this.state.option ? .3 : 1;
     const selectorStyles = {
       control: styles => ({...styles, backgroundColor: 'black', height: '2px', 'width': '200px'}),
@@ -340,7 +361,7 @@ class ScriptEditor extends React.Component {
 
     var buttons = <div class="editor-buttons">
       <ReactTooltip />
-      {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={25}/> </button> : (<button data-tip="Start experiment (begin collecting data and executing culture routine)"class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.disablePlay}><FaPlay size={25}/></button>)}
+      {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={25}/> </button> : (<button data-tip="Start experiment (begin collecting data and executing culture routine)"class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.changeNameDisabled}><FaPlay size={25}/></button>)}
       <Link class="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir)}}><button data-tip="View data for this experiment" class="ebfe" onClick={() => this.onGraph()}> <FaChartBar size={25}/> </button></Link>
       <button class="ebfe" data-tip="Save file" onClick={this.savefile}><FaSave size={25}/></button>
       <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneexpt()}><FaCopy size={25}/></button>
@@ -432,10 +453,16 @@ class ScriptEditor extends React.Component {
           <div className="editorEvolverSelect">
             <EvolverSelect title="SELECT eVOLVER" onRef={function (ref) {}} selectEvolver = {this.handleSelectEvolver} selectedExperiment = {this.state.exptDir}/>
           </div>
-          <div className="editorTitle"> <span style={{fontWeight: "bold"}}>Experiment Editor: </span><span style={{color:"#f58245"}}>{this.state.exptName}</span></div>
+          <div className="editorTitle"><ReactTooltip /><span style={{fontWeight: "bold"}}>Expt Editor: </span><span style={{color:"#f58245"}} data-tip={this.state.exptName}>{exptNameFormatted}</span><button class="edit-expt-name-btn" data-tip="Change Experiment Name" onClick={this.changeExptName} disabled={this.state.changeNameDisabled}><FaPen size={15}/></button></div>
           {buttons}
           {editorComponent}
           {selector}
+          <ModalClone
+            alertOpen = {this.state.changeNameAlertOpen}
+            alertQuestion = {this.state.changeExptNameDirections}
+            onAlertAnswer = {this.changeNameAlertAnswer}
+            stayOnPage = {true}
+          />
           <ModalClone
             alertOpen = {this.state.cloneExptAlertOpen}
             alertQuestion = {this.state.cloneExptAlertDirections}
