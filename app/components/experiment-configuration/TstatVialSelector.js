@@ -31,21 +31,34 @@ const styles = {
   }
 };
 
-const Label = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
+const LabelTStat = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
     <span className="upper-label"> {`${upper}`} </span><br/>
-    <span className="lower-label"> {`${lower}`} </span><br/>       
+    <span className="lower-label"> {`${lower}`} </span><br/>
     <span className="temp-label"> {`${temp}`} </span>
-    <span className="stir-label"> {`${stir}`} </span>     
+    <span className="stir-label"> {`${stir}`} </span>
     <br />
   </div>
 )
 
-class List extends Component {
+const LabelGrowthCurve = ({ selecting, selected, vial, temp, stir}) => (
+  <div
+  className="album-label">
+    <h2>
+    Vial <span>{`${vial}`}</span>
+    </h2>
+    <br/>
+    <span className="temp-label"> {`${temp}`} </span>
+    <span className="stir-label"> {`${stir}`} </span>
+    <br />
+  </div>
+)
+
+class TStatList extends Component {
   componentDidUpdate(nextProps) {
     return nextProps.items !== this.props.items
   }
@@ -55,7 +68,7 @@ class List extends Component {
       <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
+            <SelectableAlbumTStat key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
           ))}
         </div>
       </div>
@@ -63,7 +76,25 @@ class List extends Component {
   }
 }
 
-const Album = ({
+class GrowthCurveList extends Component {
+  componentDidUpdate(nextProps) {
+    return nextProps.items !== this.props.items
+  }
+
+  render() {
+    return (
+      <div style={{width: 560}}>
+        <div className="centered">
+          {this.props.items.map((item) => (
+            <SelectableAlbumGrowthCurve key={item.vial} vial={item.vial} selected={item.selected} temp={item.temp} stir={item.stir}/>
+          ))}
+        </div>
+      </div>
+    )
+  }
+}
+
+const AlbumTStat = ({
   selectableRef, selected, selecting, strain, vial, upper, lower, temp, stir
 }) => (
   <div
@@ -77,11 +108,30 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} upper={upper} lower={lower} temp={temp} stir={stir}/>
+    <LabelTStat selected={selected} selecting={selecting} vial={vial} strain={strain} upper={upper} lower={lower} temp={temp} stir={stir}/>
   </div>
 )
 
-const SelectableAlbum = createSelectable(Album)
+const AlbumGrowthCurve = ({
+  selectableRef, selected, selecting, strain, vial, temp, stir
+}) => (
+  <div
+    id = {"vialID-" + vial}
+    ref={selectableRef}
+    className={`
+      ${(isDisabled(vial)) && 'not-selectable'}
+      item
+      ${selecting && 'selecting'}
+      ${selected && 'selected'}
+    `}
+  >
+    <div className="tick">+</div>
+    <LabelGrowthCurve selected={selected} selecting={selecting} vial={vial} strain={strain} temp={temp} stir={stir}/>
+  </div>
+)
+
+const SelectableAlbumTStat = createSelectable(AlbumTStat)
+const SelectableAlbumGrowthCurve = createSelectable(AlbumGrowthCurve)
 
 
 
@@ -131,9 +181,17 @@ class TstatVialSelector extends Component<Props>  {
     const { classes } = this.props;
     const { items } = this.props
     const { reversed } = this.state
-    
+
     const orderedItems = reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
     const buttonLabel = reversed ? this.state.buttonBack: this.state.buttonFront
+
+    var list;
+    if (this.props.function == 'turbidostat') {
+      list = <TStatList items={orderedItems}/>
+    }
+    else if (this.props.function == 'growthcurve') {
+      list = <GrowthCurveList items={orderedItems}/>;
+    }
 
     return (
         <Card className={classes.card}>
@@ -151,7 +209,7 @@ class TstatVialSelector extends Component<Props>  {
               onSelectionFinish={this.handleSelectionFinish}
               ignoreList={['.not-selectable']}
             >
-              <List items={orderedItems} />
+              {list}
 
               <div className="button-position">
                 <ActiveButtons selectedItems={this.state.selectedItems}/>
