@@ -147,3 +147,12 @@
   left: 400px;
   top: 15px;
 }
+
+.edit-expt-name-btn {
+  position: absolute;
+  left: 390px;
+  top: -5px;
+  border: none;
+  width: 50px;
+  background-color: #000000;
+}
