@@ -41,7 +41,8 @@ const styles = {
   }
 };
 
-const defaultTstatParameters = [{"vial":0,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":1,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":2,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":3,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":4,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":5,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":6,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":7,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":8,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":9,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":10,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":11,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":12,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":13,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":14,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":15,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3}]
+const defaultTstatParameters = [{"vial":0,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":1,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":2,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":3,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":4,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":5,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":6,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":7,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":8,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":9,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":10,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":11,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":12,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":13,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":14,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3},{"vial":15,"temp":30.3,"stir":8,"upper":0.85,"lower":0.3}];
+const defaultGrowthRateParameters = [{"vial":0,"temp":30.3,"stir":8},{"vial":1,"temp":30.3,"stir":8},{"vial":2,"temp":30.3,"stir":8},{"vial":3,"temp":30.3,"stir":8},{"vial":4,"temp":30,"stir":8},{"vial":5,"temp":30,"stir":8},{"vial":6,"temp":30.3,"stir":8},{"vial":7,"temp":30.3,"stir":8},{"vial":8,"temp":30,"stir":8},{"vial":9,"temp":30,"stir":8},{"vial":10,"temp":30.3,"stir":8},{"vial":11,"temp":30.3,"stir":8},{"vial":12,"temp":30.3,"stir":8},{"vial":13,"temp":30.3,"stir":8},{"vial":14,"temp":30.3,"stir":8},{"vial":15,"temp":30.3,"stir":8}];
 
 var fs = require('fs');
 var path = require('path');
@@ -52,15 +53,20 @@ class TstatEditor extends React.Component {
         this.state = {
             vialData: data,
             rawData: [],
-            selectedItems: []
+            selectedItems: [],
         };
     }
-    
+
     componentDidMount() {
-        this.readParameters(defaultTstatParameters);
+      if (this.props.function == 'turbidostat') {
+        this.readTStatParameters(defaultTstatParameters);
+      }
+      else if (this.props.function == 'growthcurve') {
+        this.readGrowthRateParameters(defaultGrowthRateParameters);
+      }
     }
 
-    readParameters = (tstatParameters) => {      
+    readTStatParameters = (tstatParameters) => {
         var parameters = tstatParameters;
         var newRawData = parameters;
         parameters = this.formatVialSelectStrings(parameters, 'upper');
@@ -69,11 +75,19 @@ class TstatEditor extends React.Component {
         parameters = this.formatVialSelectStrings(parameters, 'stir');
         this.setState({vialData: parameters, rawData: newRawData});
     };
-    
+
+    readGrowthRateParameters = (tstatParameters) => {
+        var parameters = tstatParameters;
+        var newRawData = parameters;
+        parameters = this.formatVialSelectStrings(parameters, 'temp');
+        parameters = this.formatVialSelectStrings(parameters, 'stir');
+        this.setState({vialData: parameters, rawData: newRawData});
+    };
+
     onSelectVials = (selectedVials) =>    {
         this.setState({selectedItems: selectedVials});
     };
-    
+
     formatVialSelectStrings = (vialData, parameter) => {
       var newData = JSON.parse(JSON.stringify(vialData));
       for(var i = 0; i < newData.length; i++) {
@@ -92,7 +106,7 @@ class TstatEditor extends React.Component {
       }
       return newData;
     };
-    
+
     formatVialString = (value, component) => {
         if (component === 'upper'){
           value = '\u2191OD: ' + value;
@@ -108,7 +122,7 @@ class TstatEditor extends React.Component {
         }
         return value;
     }
-    
+
     onSubmitButton = (evolverComponent, value) => {
       var vials = this.state.selectedItems.map(item => item.props.vial);
       var newVialData = this.state.vialData;
@@ -119,13 +133,13 @@ class TstatEditor extends React.Component {
       }
       this.setState({vialData: newVialData, rawData: newRawData});
     };
-    
+
     handleSave = () => {
         console.log('trying to save...');
-        var expt_config = {'function': 'turbidostat', 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};   
+        var expt_config = {'function': this.state.function, 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};
         this.props.onSave(expt_config);
     }
-    
+
     render() {
         const {classes} = this.props;
         return (
@@ -133,8 +147,9 @@ class TstatEditor extends React.Component {
             <div className="col-8.5 centered">
                 <div className="row centered">
                 <Card classes={{root:classes.cardRoot}} className={classes.tstatButtons}>
-                    <TstatButtonCards                  
+                    <TstatButtonCards
                       onSubmitButton={this.onSubmitButton}
+                      function={this.props.function}
                       classes={classes.tstatButtons}
                        />
                 </Card>
@@ -143,14 +158,15 @@ class TstatEditor extends React.Component {
                         items={this.state.vialData}
                         vialSelectionFinish={this.onSelectVials}
                         onSave={this.handleSave}
-                        className={classes.temp}/>
-                </Card> 
+                        className={classes.temp}
+                        function={this.props.function}/>
+                </Card>
                 </div>
             </div>
         </div>
         );
                 }
-    
+
 }
 
 export default withStyles(styles)(TstatEditor);
