@@ -122,7 +122,7 @@ label {
   background: white;
   width: 90px;
   height: 90px;
-  margin: 25.5px 30px 25.5px 21px;
+  margin: 27px 30px 35px 21px;
   color: black;
   text-align: center;
 }
@@ -171,23 +171,38 @@ ul {
 }
 
 .vialOutline {
-  width: 105px;
-  height: 105px;
-  margin: 18px;
-  border-radius: 60px;
-  border: 2px solid white;
+  width: 265px;
+  height: 265px;
+  margin: 40px 5px 0px 5px;
+  border: 5px solid blue;
+  background: transparent;
+}
+
+.smartQuadOutlineSelected {
+  width: 265px;
+  height: 265px;
+  margin: 40px 5px 0px 5px;
+  border: 5px solid green;
+  background: transparent;
+}
+
+.smartQuadOutlineDeSelected {
+  width: 265px;
+  height: 265px;
+  margin: 40px 5px 0px 5px;
+  border: 5px solid white;
   background: transparent;
 }
 
 .outlineWrapper {
   position: absolute;
-  margin: -579px 0px 0px -10px;
+  margin: -650px 0px 0px -7px;
 }
 
 .vialOutlineText {
   position: absolute;
   padding: 0px 0px 0px 0px;
-  margin: -17px 0px 0px 0px;
+  margin: -3px 0px 0px 70px;
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -226,7 +241,7 @@ ul {
 
 .stepOneBtn {
   position: absolute;
-  margin: 540px 0px 0px 63px;
+  margin: 560px 0px 0px 63px;
   height: 80px;
   width: 410px;
   background-color: white;
@@ -237,7 +252,7 @@ ul {
 
 .measureBtn {
   position: absolute;
-  margin: 540px 0px 0px 196px;
+  margin: 560px 0px 0px 196px;
   height: 80px;
   width: 140px;
   background-color: white;
@@ -255,7 +270,7 @@ ul {
 
 .tempAdvanceBtn {
   position: absolute;
-  margin: 540px 0px 0px 348px;
+  margin: 560px 0px 0px 348px;
   height: 70px;
   width: 120px;
   background-color: white;
@@ -270,7 +285,7 @@ ul {
 
 .tempBackBtn {
   position: absolute;
-  margin: 540px 0px 0px 63px;
+  margin: 560px 0px 0px 63px;
   height: 70px;
   width: 120px;
   background-color: white;
@@ -284,7 +299,7 @@ ul {
 
 .tempMeasureBtn {
   position: absolute;
-  margin: 540px 0px 0px 196px;
+  margin: 560px 0px 0px 196px;
   height: 70px;
   width: 140px;
   background-color: white;
@@ -367,5 +382,3 @@ ul {
   text-align: center;
   margin: -6px 0px 0px 0px;
  }
-
-

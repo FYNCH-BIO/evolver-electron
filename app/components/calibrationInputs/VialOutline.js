@@ -30,7 +30,7 @@ class VialOutline extends React.Component {
     super(props);
     this.state = {
       readProgress: this.props.readProgress,
-      items: [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3]
+      items: [2,3,0,1]
     };
   }
 
@@ -72,7 +72,7 @@ class VialOutline extends React.Component {
               />
 
             </button>
-            <p className="vialOutlineText">Vial {items}</p>
+            <p className="vialOutlineText">Smart Quad {items}</p>
           </div>
         ))}
       </ul>

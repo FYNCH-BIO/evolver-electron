@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom';
 import VialItem from './VialItem';
-import VialOutline from './VialOutline';
+import TempVialOutline from './TempVialOutline';
 
 function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabels) {
   let vialOpacitiesNew = []
@@ -64,6 +64,7 @@ export default class ODcalGUI extends Component<Props> {
       vialLabels: this.props.vialLabels,
       zipped: [],
       readProgress: this.props.readProgress,
+      selectedSmartQuad: NaN
     };
   }
 
@@ -156,6 +157,14 @@ export default class ODcalGUI extends Component<Props> {
       valueInputs: valueInputs,
       vialLabels: vialLabels,
     });
+  };
+
+  handleSmartQuadSelection = (selectedSmartQuad) => {
+    this.setState({
+      selectedSmartQuad: selectedSmartQuad
+    }, () => {
+      this.props.onSmartQuadSelection(this.state.selectedSmartQuad);
+    });
   }
 
   render() {
@@ -166,8 +175,9 @@ export default class ODcalGUI extends Component<Props> {
         <VialItem
           currentValue = {this.state.zipped}
         />
-        <VialOutline
-          readProgress = {this.state.readProgress}/>
+        <TempVialOutline
+          readProgress = {this.state.readProgress}
+          onSmartQuadSelection = {this.handleSmartQuadSelection}/>
       </div>
 
     );

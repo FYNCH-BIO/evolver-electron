@@ -5,7 +5,10 @@ import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
-import TempcalInput from './calibrationInputs/CalInputs';
+import TempcalInput0 from './calibrationInputs/CalInputs';
+import TempcalInput1 from './calibrationInputs/CalInputs';
+import TempcalInput2 from './calibrationInputs/CalInputs';
+import TempcalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
 import TempCalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -27,7 +30,7 @@ const styles = {
   },
   progressBar: {
     flexGrow: 1,
-    margin: '27px 0px 0px 0px',
+    margin: '10px 0px 0px 0px',
     height: 8,
   },
   colorPrimary: {
@@ -41,6 +44,13 @@ const styles = {
   },
   circle: {
     strokeWidth: '3px',
+  },
+  smartQuad0: {
+    width: 285,
+    height: 400,
+    borderWidth: '10px',
+    borderColor: 'blue',
+    margin: '0px 0px 0px 5000px'
   }
 };
 
@@ -82,15 +92,17 @@ class TempCal extends React.Component {
       disableBackward: true,
       progressCompleted: 0,
       vialOpacities: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      enteredValues: Array(16).fill(''),
+      enteredValues: Array(72).fill(''),
       generalOpacity: Array(16).fill(1),
       tempInputsFloat: [],
       readProgress: 0,
-      vialProgress: Array(16).fill(0),
+      vialProgress: Array(4).fill(0),
       initialZipped: [],
       inputsEntered: true,
-      vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
-      vialData: [],
+      selectedSmartQuad: 0,
+      vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17'],
+      smartQuadLabels: ['TS0','TS1','TS2','TS3','TS4','TS5','TS6','TS7','TS8','TS9','TS10','TS11','TS12','TS13','TS14','TS15'],
+      quadsData: [],
       currentPowerLevel: [4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095],
       tempRawDelta: 500,
       timesRead: 3,
@@ -116,10 +128,10 @@ class TempCal extends React.Component {
       resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate."
 
-    };
+    }
     this.props.socket.on('broadcast', function(response) {
       console.log(response);
-      var newVialData = this.state.vialData;
+      var newQuadsData = this.state.quadsData;
       let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
@@ -142,19 +154,19 @@ class TempCal extends React.Component {
       this.progress();
 
       for (var i = 0; i < response.data.temp.length; i++) {
-          if (newVialData[newVialData.length - 1].temp.length <= i) {
-              newVialData[newVialData.length - 1].temp.push([]);
+          if (newQuadsData[newQuadsData.length - 1].temp.length <= i) {
+              newQuadsData[newQuadsData.length - 1].temp.push([]);
           }
-          newVialData[newVialData.length - 1].temp[i].push(parseInt(response.data.temp[i]));
+          newQuadsData[newQuadsData.length - 1].temp[i].push(parseInt(response.data.temp[i]));
       }
       this.setState({
         tempStream: tempStream,
         valueInputs: valueInputs,
-        vialData: newVialData,
+        quadsData: newQuadsData,
         equilibrateState: true},
         //Runs when collected enough measurements
         function() {
-          var tempArray = this.state.vialData[newVialData.length - 1].temp;
+          var tempArray = this.state.quadsData[newQuadsData.length - 1].temp;
           if (tempArray[0].length === this.state.timesRead) {
               var roomTempAvg = this.state.roomTempAvg;
               if (this.state.currentStep == 1) {
@@ -164,10 +176,10 @@ class TempCal extends React.Component {
                 }
               }
               this.handleUnlockBtns();
-              console.log(this.state.vialData);
-              var readsFinished = this.state.vialData.length;
+              console.log(this.state.quadsData);
+              var readsFinished = this.state.quadsData.length;
               this.setState({
-                progressCompleted: (100 * (this.state.vialData.length / this.state.deltaTempSteps)),
+                progressCompleted: (100 * (this.state.quadsData.length / this.state.deltaTempSteps)),
                 readsFinished: readsFinished,
                 readProgress: 0,
                 roomTempAvg: roomTempAvg,
@@ -237,22 +249,22 @@ class TempCal extends React.Component {
     }
     else {
       this.setState({readProgress: this.state.readProgress + .01, inputsEntered: true});
-      var newVialData = this.state.vialData;
+      var newQuadsData = this.state.quadsData;
 
       // remove existing data for particular layout
-      for (var i = 0; i < newVialData.length; i++) {
-          if (this.state.currentStep === this.state.vialData[i].step) {
-              newVialData.splice(i, 1);
+      for (var i = 0; i < newQuadsData.length; i++) {
+          if (this.state.currentStep === this.state.quadsData[i].step) {
+              newQuadsData.splice(i, 1);
               break;
           }
       }
-      newVialData.push({
+      newQuadsData.push({
         temp:[],
         step: this.state.currentStep,
         powerLevel:this.state.currentPowerLevel,
         enteredValues:this.state.enteredValues,
         });
-      this.setState({vialData:newVialData});
+      this.setState({quadsData:newQuadsData});
     this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
     }
   }
@@ -357,11 +369,11 @@ class TempCal extends React.Component {
   };
 
   handleRecordedData = (currentStep) => {
-    var displayedData = Array(16).fill('');
-    var vialData = this.state.vialData
-    for (var i = 0; i < vialData.length; i++) {
-        if (currentStep === this.state.vialData[i].step) {
-            displayedData = this.state.vialData[i].enteredValues;
+    var displayedData = Array(72).fill('');
+    var quadsData = this.state.quadsData
+    for (var i = 0; i < quadsData.length; i++) {
+        if (currentStep === this.state.quadsData[i].step) {
+            displayedData = this.state.quadsData[i].enteredValues;
             break;
         }
     }
@@ -369,7 +381,29 @@ class TempCal extends React.Component {
   }
 
   handleTempInput = (tempValues) => {
-    this.setState({enteredValues: tempValues});
+    let oldEnteredValues = this.state.enteredValues;
+    console.log(oldEnteredValues)
+    if (this.state.selectedSmartQuad == 0) {
+      oldEnteredValues.splice(0,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
+    };
+    if (this.state.selectedSmartQuad == 1) {
+      oldEnteredValues.splice(18,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
+    };
+    if (this.state.selectedSmartQuad == 2) {
+      oldEnteredValues.splice(36,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
+    };
+    if (this.state.selectedSmartQuad == 3) {
+      oldEnteredValues.splice(54,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
+    };
+    this.setState({enteredValues:oldEnteredValues})
+   }
+
+   handleSmartQuadSelection = (selectedSmartQuad) => {
+     this.setState({
+       selectedSmartQuad: selectedSmartQuad
+     }, () => {
+       console.log(this.state.selectedSmartQuad)
+     });
    }
 
    handleKeyboardInput = (input) => {
@@ -392,14 +426,14 @@ class TempCal extends React.Component {
 
       // TODO: Change data structure so that we don't have to do this transformation. Would require other code restructure
       // Data should be saved vial -> step -> data format, not step -> vial -> data as it is here.
-      for(var i = 0; i < this.state.vialData.length; i++) {
-        for(var j = 0; j < this.state.vialData[i].enteredValues.length; j++) {
+      for(var i = 0; i < this.state.quadsData.length; i++) {
+        for(var j = 0; j < this.state.quadsData[i].enteredValues.length; j++) {
           if(!enteredValuesStructured[j]) {
             enteredValuesStructured.push([]);
             vialDataStructured.push(new Array(3).fill([]));
           }
-          enteredValuesStructured[j].push(parseFloat(this.state.vialData[i].enteredValues[j]));
-          vialDataStructured[j][i] = this.state.vialData[i].temp[j];
+          enteredValuesStructured[j].push(parseFloat(this.state.quadsData[i].enteredValues[j]));
+          vialDataStructured[j][i] = this.state.quadsData[i].temp[j];
         }
       }
       var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', vialData: vialDataStructured}]}
@@ -440,16 +474,16 @@ class TempCal extends React.Component {
     let measureButton;
     let statusText;
 
-    if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
-      statusText = <p className="statusText">Load vessels w/ 15 mL of room temp water. </p>
+    if ((this.state.quadsData.length == 0) && (this.state.equilibrateState)) {
+      statusText = <p className="statusText"> Load vials w/ 5 mL of room temp water. </p>
     }
-    else if ((this.state.vialData.length == 0) && (!this.state.equilibrateState)) {
-      statusText = <p className="statusText"> Heaters turned off. Let equilibrate, then enter values. </p>
+    else if ((this.state.quadsData.length == 0) && (!this.state.equilibrateState)) {
+      statusText = <p className="statusText"> Peltiers OFF - Let equilibrate, select SQ, and enter values. </p>
     }
-    else if ((this.state.vialData.length !== 0) && (this.state.equilibrateState)) {
+    else if ((this.state.quadsData.length !== 0) && (this.state.equilibrateState)) {
       statusText = <p className="statusText"> {this.state.readsFinished}/{this.state.deltaTempSteps} Measurements Made </p>
     }
-    else if ((this.state.vialData.length !== 0) && (!this.state.equilibrateState)) {
+    else if ((this.state.quadsData.length !== 0) && (!this.state.equilibrateState)) {
       statusText = <p className="statusText"> Temperature set! Let equilibrate, then enter values. </p>
     }
 
@@ -462,9 +496,9 @@ class TempCal extends React.Component {
           onClick = {this.startRead}>
           {this.state.buttonMeasureText} <FaPlay size={13}/>
         </button>;
-      for (var i = 0; i < this.state.vialData.length; i++) {
-        if ((this.state.currentStep === this.state.vialData[i].step) && (typeof(this.state.vialData[i].temp[0]) !== "undefined")) {
-          if (this.state.vialData[i].temp[0].length === this.state.timesRead){
+      for (var i = 0; i < this.state.quadsData.length; i++) {
+        if ((this.state.currentStep === this.state.quadsData[i].step) && (typeof(this.state.quadsData[i].temp[0]) !== "undefined")) {
+          if (this.state.quadsData[i].temp[0].length === this.state.timesRead){
 
               measureButton =
               <button
@@ -517,7 +551,7 @@ class TempCal extends React.Component {
 
 
     let progressButtons;
-    if ((this.state.vialData.length == 0) && (this.state.equilibrateState)) {
+    if ((this.state.quadsData.length == 0) && (this.state.equilibrateState)) {
       progressButtons =
       <div className="row">
         <button
@@ -544,14 +578,41 @@ class TempCal extends React.Component {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
     }
 
+    let tempCalInput;
+    if (this.state.selectedSmartQuad == 0) {
+      console.log(this.state.enteredValues)
+      tempCalInput = <TempcalInput0
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(0,18)}/>
+    } else if (this.state.selectedSmartQuad == 1) {
+      console.log(this.state.enteredValues)
+      tempCalInput = <TempcalInput1
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(18,36)}/>
+    } else if (this.state.selectedSmartQuad == 2) {
+      console.log(this.state.enteredValues)
+      tempCalInput = <TempcalInput2
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(36,54)}/>
+    } else if (this.state.selectedSmartQuad == 3) {
+      console.log(this.state.enteredValues)
+      tempCalInput = <TempcalInput3
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(54,72)}/>
+    };
 
     return (
       <div>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
-        <TempcalInput
-          onChangeValue={this.handleTempInput}
-          onInputsEntered = {this.state.inputsEntered}
-          enteredValues = {this.state.enteredValues}/>
+        {tempCalInput}
         {progressButtons}
 
         <Card className={classes.cardTempCalGUI}>
@@ -561,7 +622,8 @@ class TempCal extends React.Component {
             valueInputs = {this.state.valueInputs}
             initialZipped = {this.state.initialZipped}
             readProgress = {this.state.vialProgress}
-            vialLabels = {this.state.vialLabels}/>
+            onSmartQuadSelection = {this.handleSmartQuadSelection}
+            vialLabels = {this.state.smartQuadLabels}/>
 
           <LinearProgress
             classes= {{
