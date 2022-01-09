@@ -176,7 +176,6 @@ class TempCal extends React.Component {
                 }
               }
               this.handleUnlockBtns();
-              console.log(this.state.quadsData);
               var readsFinished = this.state.quadsData.length;
               this.setState({
                 progressCompleted: (100 * (this.state.quadsData.length / this.state.deltaTempSteps)),
@@ -382,7 +381,6 @@ class TempCal extends React.Component {
 
   handleTempInput = (tempValues) => {
     let oldEnteredValues = this.state.enteredValues;
-    console.log(oldEnteredValues)
     if (this.state.selectedSmartQuad == 0) {
       oldEnteredValues.splice(0,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
     };
@@ -419,6 +417,7 @@ class TempCal extends React.Component {
    handleFinishExpt = (finishFlag) => {
       this.setState({alertOpen: true})
       console.log("Experiment Finished!");
+
       var d = new Date();
       var currentTime = d.getTime();
       var enteredValuesStructured = [];
@@ -430,9 +429,13 @@ class TempCal extends React.Component {
         for(var j = 0; j < this.state.quadsData[i].enteredValues.length; j++) {
           if(!enteredValuesStructured[j]) {
             enteredValuesStructured.push([]);
-            vialDataStructured.push(new Array(3).fill([]));
           }
           enteredValuesStructured[j].push(parseFloat(this.state.quadsData[i].enteredValues[j]));
+        }
+        for (var j = 0; j < this.state.quadsData[0].temp.length; j++) {
+          if (!vialDataStructured[j]) {
+            vialDataStructured.push(new Array(3).fill([]));
+          }
           vialDataStructured[j][i] = this.state.quadsData[i].temp[j];
         }
       }
@@ -580,28 +583,24 @@ class TempCal extends React.Component {
 
     let tempCalInput;
     if (this.state.selectedSmartQuad == 0) {
-      console.log(this.state.enteredValues)
       tempCalInput = <TempcalInput0
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(0,18)}/>
     } else if (this.state.selectedSmartQuad == 1) {
-      console.log(this.state.enteredValues)
       tempCalInput = <TempcalInput1
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(18,36)}/>
     } else if (this.state.selectedSmartQuad == 2) {
-      console.log(this.state.enteredValues)
       tempCalInput = <TempcalInput2
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(36,54)}/>
     } else if (this.state.selectedSmartQuad == 3) {
-      console.log(this.state.enteredValues)
       tempCalInput = <TempcalInput3
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
