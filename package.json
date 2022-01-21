@@ -224,7 +224,7 @@
     "is-port-reachable": "^2.0.0",
     "json-query": "^2.2.2",
     "lodash.clonedeep": "^4.5.0",
-    "log4js": "^4.0.2",
+    "log4js": "^6.4.0",
     "moment": "^2.24.0",
     "parse-filepath": "^1.0.2",
     "python-shell": "^1.0.7",
