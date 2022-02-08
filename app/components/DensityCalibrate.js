@@ -6,6 +6,10 @@ import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import ODcalInput from './calibrationInputs/CalInputs';
 import { withStyles } from '@material-ui/core/styles';
+import ODcalInput0 from './calibrationInputs/CalInputs';
+import ODcalInput1 from './calibrationInputs/CalInputs';
+import ODcalInput2 from './calibrationInputs/CalInputs';
+import ODcalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
 import ODcalGUI from './calibrationInputs/CalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -65,6 +69,7 @@ class ODcal extends React.Component {
       readProgress: 0,
       skipFirst: true,
       vialProgress: Array(16).fill(0),
+      selectedSmartQuad: 0,
       vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
       vialData: {'od135':[],'od90':[],'temp':[]},
       timesRead: 3,
@@ -384,6 +389,14 @@ class ODcal extends React.Component {
     return shift;
   }
 
+  handleSmartQuadSelection = (selectedSmartQuad) => {
+    this.setState({
+      selectedSmartQuad: selectedSmartQuad
+    }, () => {
+      console.log(this.state.selectedSmartQuad)
+    });
+  }
+
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
@@ -504,6 +517,7 @@ class ODcal extends React.Component {
             valueInputs = {this.state.enteredValuesFloat}
             initialZipped = {this.state.initialZipped}
             readProgress = {this.state.vialProgress}
+            onSmartQuadSelection = {this.handleSmartQuadSelection}
             vialLabels = {this.state.vialLabels}/>
 
           <LinearProgress

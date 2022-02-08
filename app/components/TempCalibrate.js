@@ -10,7 +10,7 @@ import TempcalInput1 from './calibrationInputs/CalInputs';
 import TempcalInput2 from './calibrationInputs/CalInputs';
 import TempcalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import TempCalGUI from './calibrationInputs/CalGUI';
+import TempCalGUI from './calibrationInputs/ODCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
