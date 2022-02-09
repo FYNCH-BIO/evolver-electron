@@ -11,7 +11,7 @@ import ODcalInput1 from './calibrationInputs/CalInputs';
 import ODcalInput2 from './calibrationInputs/CalInputs';
 import ODcalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import ODcalGUI from './calibrationInputs/CalGUI';
+import ODcalGUI from './calibrationInputs/ODCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import normalize from 'array-normalize'
