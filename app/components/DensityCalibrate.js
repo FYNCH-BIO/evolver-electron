@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
-import ODcalInput from './calibrationInputs/CalInputs';
 import { withStyles } from '@material-ui/core/styles';
 import ODcalInput0 from './calibrationInputs/CalInputs';
 import ODcalInput1 from './calibrationInputs/CalInputs';
@@ -62,8 +61,8 @@ class ODcal extends React.Component {
       disableBackward: true,
       progressCompleted: 0,
       vialOpacities: [],
-      enteredValues: Array(16).fill(''),
-      generalOpacity: Array(16).fill(0),
+      enteredValues: Array(4).fill().map(() => Array(18).fill('')), //Array(4).fill('')
+      generalOpacity: Array(4).fill().map(() => Array(18).fill(0)), //Array(4).fill(0)
       inputsEntered: false,
       enteredValuesFloat: [],
       readProgress: 0,
@@ -500,13 +499,37 @@ class ODcal extends React.Component {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
     }
 
+    let odCalInput;
+    if (this.state.selectedSmartQuad == 0) {
+      odCalInput = <ODcalInput0
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(0,18)}/>
+    } else if (this.state.selectedSmartQuad == 1) {
+      odCalInput = <ODcalInput1
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(18,36)}/>
+    } else if (this.state.selectedSmartQuad == 2) {
+      odCalInput = <ODcalInput2
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(36,54)}/>
+    } else if (this.state.selectedSmartQuad == 3) {
+      odCalInput = <ODcalInput3
+        onChangeValue={this.handleTempInput}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues.slice(54,72)}/>
+    };
+
     return (
       <div>
         <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>
-        <ODcalInput
-          onChangeValue={this.handleODChange}
-          onInputsEntered = {this.state.inputsEntered}
-          enteredValues = {this.state.enteredValues}/>
+        {odCalInput}
         {progressButtons}
 
         <Card className={classes.cardODcalGUI}>

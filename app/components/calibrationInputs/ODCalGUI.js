@@ -57,7 +57,7 @@ export default class ODcalGUI extends Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
-      odState: [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3],
+      odState: [[12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5]],
       vialOpacities: this.props.vialOpacities,
       generalOpacity: this.props.generalOpacity,
       valueInputs: this.props.valueInputs,
