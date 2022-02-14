@@ -7,7 +7,7 @@ import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
 import PumpcalInput from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import PumpCalGUI from './calibrationInputs/CalGUI';
+import PumpCalGUI from './calibrationInputs/ODCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -164,7 +164,7 @@ class PumpCal extends React.Component {
     }
     else {
       statusText = `Press PUMP to run ${pumpCalModes[currentStep-1].arrayName} for ${pumpTime} seconds`;
-    }    
+    }
     var buttonBackText;
     var buttonAdvanceText;
     if (currentStep === 1) {

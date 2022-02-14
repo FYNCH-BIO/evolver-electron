@@ -10,7 +10,7 @@ import TempcalInput1 from './calibrationInputs/CalInputs';
 import TempcalInput2 from './calibrationInputs/CalInputs';
 import TempcalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import TempCalGUI from './calibrationInputs/CalGUI';
+import TempCalGUI from './calibrationInputs/TempCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -381,6 +381,7 @@ class TempCal extends React.Component {
 
   handleTempInput = (tempValues) => {
     let oldEnteredValues = this.state.enteredValues;
+
     if (this.state.selectedSmartQuad == 0) {
       oldEnteredValues.splice(0,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
     };

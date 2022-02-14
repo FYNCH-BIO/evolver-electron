@@ -93,7 +93,7 @@ class TempVialOutline extends React.Component {
                     size= {104}
                   />
                 </button>}
-            <p className="vialOutlineText">Smart Quad {items}</p>
+            <p className="vialOutlineTextTemp">Smart Quad {items}</p>
           </div>
         ))}
       </ul>

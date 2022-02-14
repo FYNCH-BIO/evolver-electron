@@ -7,7 +7,7 @@ import routes from '../constants/routes.json';
 import ODcalInput from './calibrationInputs/CalInputs';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import ODcalGUI from './calibrationInputs/CalGUI';
+import ODCalGUI from './calibrationInputs/ODCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
 import normalize from 'array-normalize'
@@ -20,7 +20,7 @@ const store = new Store(); //runningODCal
 const densityButtons = Array.from(Array(16).keys())
 
 const cardStyles = theme => ({
-  cardODcalGUI: {
+  cardODCalGUI: {
     width: 570,
     height: 800,
     backgroundColor: 'transparent',
@@ -496,8 +496,8 @@ class ODcal extends React.Component {
           enteredValues = {this.state.enteredValues}/>
         {progressButtons}
 
-        <Card className={classes.cardODcalGUI}>
-          <ODcalGUI
+        <Card className={classes.cardODCalGUI}>
+          <ODCalGUI
             ref={this.child}
             vialOpacities = {this.state.vialOpacities}
             generalOpacity = {this.state.generalOpacity}
