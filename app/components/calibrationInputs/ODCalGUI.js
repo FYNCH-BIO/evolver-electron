@@ -1,7 +1,12 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom';
+<<<<<<< HEAD
 import VialItem from './VialItem';
 import ODVialOutline from './VialOutline';
+=======
+import VialItem from './ODVialItem';
+import QuadOutline from './QuadOutline';
+>>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
 
 function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabels) {
   let vialOpacitiesNew = []
@@ -53,11 +58,19 @@ function unzipValues(zippedArray) {
 }
 
 
+<<<<<<< HEAD
 export default class ODCalGUI extends Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
       odState: [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3],
+=======
+export default class ODcalGUI extends Component<Props> {
+  constructor(props) {
+    super(props);
+    this.state = {
+      odState: [[12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5]],
+>>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
       vialOpacities: this.props.vialOpacities,
       generalOpacity: this.props.generalOpacity,
       valueInputs: this.props.valueInputs,
@@ -175,7 +188,11 @@ export default class ODCalGUI extends Component<Props> {
         <VialItem
           currentValue = {this.state.zipped}
         />
+<<<<<<< HEAD
         <ODVialOutline
+=======
+        <QuadOutline
+>>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
           readProgress = {this.state.readProgress}
           onSmartQuadSelection = {this.handleSmartQuadSelection}/>
       </div>
