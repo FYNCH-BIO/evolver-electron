@@ -44,13 +44,6 @@ const styles = {
   },
   circle: {
     strokeWidth: '3px',
-  },
-  smartQuad0: {
-    width: 285,
-    height: 400,
-    borderWidth: '10px',
-    borderColor: 'blue',
-    margin: '0px 0px 0px 5000px'
   }
 };
 

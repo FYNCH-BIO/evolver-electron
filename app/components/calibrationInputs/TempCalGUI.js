@@ -173,11 +173,11 @@ export default class ODcalGUI extends Component<Props> {
     return(
       <div>
         <VialItem
-          currentValue = {this.state.zipped}
-        />
+          currentValue = {this.state.zipped}/>
         <QuadOutline
           readProgress = {this.state.readProgress}
-          onSmartQuadSelection = {this.handleSmartQuadSelection}/>
+          onSmartQuadSelection = {this.handleSmartQuadSelection}
+          type = "temp"/>
       </div>
 
     );

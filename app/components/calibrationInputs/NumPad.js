@@ -91,7 +91,7 @@ class NumPad extends React.Component {
   }
 
   handleNumButtons = (id) => {
-    let newString = this.state.inputString
+    let newString = this.state.inputString;
     if (newString.length < 7){
       if (id == '.'){
         if (!(newString.indexOf('.') > -1)){

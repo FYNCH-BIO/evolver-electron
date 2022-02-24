@@ -25,7 +25,7 @@ const styles = theme => ({
 
 
 
-class TempVialOutline extends React.Component {
+class QuadOutline extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -53,15 +53,21 @@ class TempVialOutline extends React.Component {
     const { classes, theme } = this.props;
     const { readProgress } = this.state;
     const selectedSmartQuad = this.state.selectedSmartQuad;
+    let className;
+    if (this.props.type == "temp") {
+      className = "outlineWrapper";
+    } else if (this.props.type == "od") {
+      className = "odOutlineWrapper";
+    }
 
     return(
-      <ul className="outlineWrapper">
+      <ul className={className}>
         {this.state.items.map((items,index) => (
           <div>
             {selectedSmartQuad == items
               ? <button
                   className="smartQuadOutlineSelected"
-                  key={items}
+                  key={items[index]}
                   onClick={() => this.handleButton(items)}>
 
                   <CircularProgress
@@ -78,7 +84,7 @@ class TempVialOutline extends React.Component {
 
               : <button
                   className="smartQuadOutlineDeSelected"
-                  key={items}
+                  key={items[index]}
                   onClick={() => this.handleButton(items)}>
 
                   <CircularProgress
@@ -93,7 +99,7 @@ class TempVialOutline extends React.Component {
                     size= {104}
                   />
                 </button>}
-            <p className="vialOutlineTextTemp">Smart Quad {items}</p>
+            <p className="quadOutlineText">Smart Quad {items}</p>
           </div>
         ))}
       </ul>
@@ -102,4 +108,4 @@ class TempVialOutline extends React.Component {
 }
 
 
-export default withStyles(styles, { withTheme: true })(TempVialOutline);
+export default withStyles(styles, { withTheme: true })(QuadOutline);

@@ -1,81 +1,94 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom';
-<<<<<<< HEAD
-import VialItem from './VialItem';
-import ODVialOutline from './VialOutline';
-=======
-import VialItem from './ODVialItem';
+import ODVialItem from './ODVialItem';
 import QuadOutline from './QuadOutline';
->>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
 
 function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabels) {
-  let vialOpacitiesNew = []
-  let generalOpacityNew = []
-  let valueInputsNew = []
-  let vialLabelsNew = []
+  let vialOpacitiesNew = [[],[],[],[]];
+  let generalOpacityNew = [[],[],[],[]];
+  let valueInputsNew = [[],[],[],[]];
+  let vialLabelsNew = [[],[],[],[]];
+  let zippedSamples = new Array(4);
+  for (var i = 0; i < zippedSamples.length; i++) {
+    zippedSamples[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
+  }
 
-  var i;
-  for (i = 0; i < odState.length; i++) {
-    valueInputsNew[i] = valueInputs[odState[i]]
-    vialOpacitiesNew[i] = vialOpacities[odState[i]]
-    vialLabelsNew[i] = vialLabels[odState[i]]
+  for (var i = 0; i < odState.length; i++) {
+    for (var j = 0; j < odState[i].length; j++) {
+      valueInputsNew[i][j] = valueInputs[i][odState[i][j]];
+      vialOpacitiesNew[i][j] = vialOpacities[i][odState[i][j]];
+      vialLabelsNew[i][j] = vialLabels[i][odState[i][j]];
 
-    if ( isNaN(valueInputsNew[i]) && (typeof valueInputsNew[i] !== 'string')) {
-      generalOpacityNew[i] = 0;
-    }
-    else{
-      generalOpacityNew[i] = generalOpacity[odState[i]]
+      if ( isNaN(valueInputsNew[i][j]) && (typeof valueInputsNew[i][j] !== 'string')) {
+        generalOpacityNew[i][j] = 0;
+      }
+      else{
+        generalOpacityNew[i][j] = generalOpacity[i][odState[i][j]];
+      }
     }
   }
 
-  let zippedSamples = odState.map((x, i) => [x, vialOpacitiesNew[i], generalOpacityNew[i], valueInputsNew[i], vialLabelsNew[i]]);
-
+  for (var i = 0; i < zippedSamples.length; i++) {
+    for (var j = 0; j < odState[i].length; j++) {
+      let temp = new Array(5);
+      temp[0] = odState[i][j];
+      temp[1] = vialOpacitiesNew[i][j];
+      temp[2] = generalOpacityNew[i][j];
+      temp[3] = valueInputsNew[i][j];
+      temp[4] = vialLabelsNew[i][j];
+      zippedSamples[i][j] = temp;
+    }
+  }
+  console.log(zippedSamples)
   return zippedSamples
 }
 //generalOpacity = newState.map((x, i) => x[2])
 
 function unzipValues(zippedArray) {
-  let odState = zippedArray.map((x, i) => x[0])
-  let vialOpacities = zippedArray.map((x, i) => x[1])
-  let generalOpacity = zippedArray.map((x, i) => x[2])
-  let valueInputs = zippedArray.map((x, i) => x[3])
-  let vialLabels = zippedArray.map((x, i) => x[4])
+  let odState = [[],[],[],[]];
+  let vialOpacities = [[],[],[],[]];
+  let generalOpacity = [[],[],[],[]];
+  let valueInputs = [[],[],[],[]];
+  let vialLabels = [[],[],[],[]];
 
-  let vialOpacitiesNew = []
-  let generalOpacityNew = []
-  let valueInputsNew = []
-  let vialLabelsNew = []
+  console.log(zippedArray)
+  for (var i = 0; i < zippedArray.length; i++) {
+    odState[i] = zippedArray[i].map((x,j) => x[0]);
+    vialOpacities[i] = zippedArray[i].map((x,j) => x[1]);
+    generalOpacity[i] = zippedArray[i].map((x,j) => x[2]);
+    valueInputs[i] = zippedArray[i].map((x,j) => x[3]);
+    vialLabels[i] = zippedArray[i].map((x,j) => x[4])
+  }
 
-  var i;
-  for (i = 0; i < odState.length; i++) {
-    vialOpacitiesNew[odState[i]] = vialOpacities[i]
-    generalOpacityNew[odState[i]] = generalOpacity[i]
-    valueInputsNew[odState[i]] = valueInputs[i]
-    vialLabelsNew[odState[i]] = vialLabels[i]
+  let vialOpacitiesNew = [[],[],[],[]];
+  let generalOpacityNew = [[],[],[],[]];
+  let valueInputsNew = [[],[],[],[]];
+  let vialLabelsNew = [[],[],[],[]];
+
+  for (var i = 0; i < odState.length; i++) {
+    for (var j = 0; j < odState[i].length; j++) {
+      vialOpacitiesNew[i][odState[i][j]] = vialOpacities[i][j];
+      generalOpacityNew[i][odState[i][j]] = generalOpacity[i][j];
+      valueInputsNew[i][odState[i][j]] = valueInputs[i][j];
+      vialLabelsNew[i][odState[i][j]] = vialLabels[i][j];
+    }
   }
 
   return [ odState, vialOpacitiesNew, generalOpacityNew, valueInputsNew, vialLabelsNew]
 }
 
 
-<<<<<<< HEAD
+
 export default class ODCalGUI extends Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
-      odState: [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3],
-=======
-export default class ODcalGUI extends Component<Props> {
-  constructor(props) {
-    super(props);
-    this.state = {
-      odState: [[12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5], [12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5]],
->>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
+      odState: Array(4).fill([12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5]),
       vialOpacities: this.props.vialOpacities,
       generalOpacity: this.props.generalOpacity,
       valueInputs: this.props.valueInputs,
       vialLabels: this.props.vialLabels,
-      zipped: [],
+      zipped: [[],[],[],[]],
       readProgress: this.props.readProgress,
       selectedSmartQuad: NaN
     };
@@ -84,7 +97,6 @@ export default class ODcalGUI extends Component<Props> {
   componentDidUpdate(prevProps) {
     if ((this.props.generalOpacity !== prevProps.generalOpacity) || this.props.vialOpacities !== prevProps.vialOpacities || this.props.valueInputs !== prevProps.valueInputs || this.props.vialLabels !== prevProps.vialLabels) {
       let zippedSamples = zipValues(this.state.odState, this.props.vialOpacities, this.props.generalOpacity, this.props.valueInputs, this.props.vialLabels)
-      console.log(zippedSamples)
       this.setState({
         generalOpacity: this.props.generalOpacity,
         vialOpacities: this.props.vialOpacities,
@@ -100,23 +112,30 @@ export default class ODcalGUI extends Component<Props> {
 
   handleBack = (event) => {
     let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalOpacity, this.state.valueInputs, this.state.vialLabels)
-    let newState = []
-    newState[7] = zippedSamples[0]
-    newState[0] = zippedSamples[1]
-    newState[1] = zippedSamples[2]
-    newState[2] = zippedSamples[3]
-    newState[11] = zippedSamples[4]
-    newState[4] = zippedSamples[5]
-    newState[5] = zippedSamples[6]
-    newState[6] = zippedSamples[7]
-    newState[15] = zippedSamples[8]
-    newState[8] = zippedSamples[9]
-    newState[9] = zippedSamples[10]
-    newState[10] = zippedSamples[11]
-    newState[3] = zippedSamples[12]
-    newState[12] = zippedSamples[13]
-    newState[13] = zippedSamples[14]
-    newState[14] = zippedSamples[15]
+    let newState = new Array(zippedSamples.length);
+    for (var i = 0; i < newState.length; i++) {
+      newState[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
+    }
+    for (var i = 0; i < zippedSamples.length; i++) {
+      newState[i][11] = zippedSamples[i][0]
+      newState[i][0] = zippedSamples[i][1]
+      newState[i][1] = zippedSamples[i][2]
+      newState[i][2] = zippedSamples[i][3]
+      newState[i][3] = zippedSamples[i][4]
+      newState[i][4] = zippedSamples[i][5]
+      newState[i][17] = zippedSamples[i][6]
+      newState[i][6] = zippedSamples[i][7]
+      newState[i][7] = zippedSamples[i][8]
+      newState[i][8] = zippedSamples[i][9]
+      newState[i][9] = zippedSamples[i][10]
+      newState[i][10] = zippedSamples[i][11]
+      newState[i][5] = zippedSamples[i][12]
+      newState[i][12] = zippedSamples[i][13]
+      newState[i][13] = zippedSamples[i][14]
+      newState[i][14] = zippedSamples[i][15]
+      newState[i][15] = zippedSamples[i][16]
+      newState[i][16] = zippedSamples[i][17]
+    }
 
     let unzipped = unzipValues(newState)
     let odState = unzipped[0]
@@ -137,25 +156,34 @@ export default class ODcalGUI extends Component<Props> {
 
   handleAdvance = (event) => {
     let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalOpacity, this.state.valueInputs, this.state.vialLabels)
-    let newState = []
-    newState[0] = zippedSamples[7]
-    newState[1] = zippedSamples[0]
-    newState[2] = zippedSamples[1]
-    newState[3] = zippedSamples[2]
-    newState[4] = zippedSamples[11]
-    newState[5] = zippedSamples[4]
-    newState[6] = zippedSamples[5]
-    newState[7] = zippedSamples[6]
-    newState[8] = zippedSamples[15]
-    newState[9] = zippedSamples[8]
-    newState[10] = zippedSamples[9]
-    newState[11] = zippedSamples[10]
-    newState[12] = zippedSamples[3]
-    newState[13] = zippedSamples[12]
-    newState[14] = zippedSamples[13]
-    newState[15] = zippedSamples[14]
+    console.log(zippedSamples)
+    let newState = new Array(zippedSamples.length);
+    for (var i = 0; i < newState.length; i++) {
+      newState[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
+    }
+    for (var i = 0; i < zippedSamples.length; i++) {
+      newState[i][0] = zippedSamples[i][11]
+      newState[i][1] = zippedSamples[i][0]
+      newState[i][2] = zippedSamples[i][1]
+      newState[i][3] = zippedSamples[i][2]
+      newState[i][4] = zippedSamples[i][3]
+      newState[i][5] = zippedSamples[i][4]
+      newState[i][6] = zippedSamples[i][17]
+      newState[i][7] = zippedSamples[i][6]
+      newState[i][8] = zippedSamples[i][7]
+      newState[i][9] = zippedSamples[i][8]
+      newState[i][10] = zippedSamples[i][9]
+      newState[i][11] = zippedSamples[i][10]
+      newState[i][12] = zippedSamples[i][5]
+      newState[i][13] = zippedSamples[i][12]
+      newState[i][14] = zippedSamples[i][13]
+      newState[i][15] = zippedSamples[i][14]
+      newState[i][16] = zippedSamples[i][15]
+      newState[i][17] = zippedSamples[i][16]
+    }
 
     let unzipped = unzipValues(newState)
+    console.log(unzipped)
     let odState = unzipped[0]
     let vialOpacities = unzipped[1]
     let generalOpacity = unzipped[2]
@@ -185,16 +213,12 @@ export default class ODcalGUI extends Component<Props> {
 
     return(
       <div>
-        <VialItem
-          currentValue = {this.state.zipped}
-        />
-<<<<<<< HEAD
-        <ODVialOutline
-=======
+        <ODVialItem
+          currentValue = {this.state.zipped}/>
         <QuadOutline
->>>>>>> 62ebbf9d99573332b81d27c52ffc183374eb353c
           readProgress = {this.state.readProgress}
-          onSmartQuadSelection = {this.handleSmartQuadSelection}/>
+          onSmartQuadSelection = {this.handleSmartQuadSelection}
+          type = "od"/>
       </div>
 
     );
