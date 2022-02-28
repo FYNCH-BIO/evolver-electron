@@ -42,15 +42,15 @@ export default class VialItem extends Component<Props> {
         <PoseGroup>
           {this.state.items.map((items,index) => (
             <Item
-              className="vialItem"
+              className="tempVialItem"
               key={items[0]}
               style= {{opacity: items[2]}}>
               <div
                 className="vialDensity"
                 style={{opacity: items[1]}}>
               </div>
-              <p className="vialLabels"> {items[4]} </p>
-              <p className="vialInput"> {items[3]} </p>
+              <p className="tempVialLabels"> {items[4]} </p>
+              <p className="tempVialInput"> {items[3]} </p>
             </Item>
           ))}
         </PoseGroup>

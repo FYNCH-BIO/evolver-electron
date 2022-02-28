@@ -116,13 +116,13 @@ label {
   background-color: black;
 }
 
-.vialItem {
+.tempVialItem {
   display: block;
-  border-radius: 60px;
+  border-radius: 0px;
   background: white;
-  width: 90px;
-  height: 90px;
-  margin: 27px 30px 35px 21px;
+  width: 200px;
+  height: 200px;
+  margin: 40px 45px 70px 35px;
   color: black;
   text-align: center;
 }
@@ -160,13 +160,13 @@ label {
   background-color: #f58245;
 }
 
-.vialLabels {
+.tempVialLabels {
   position: absolute;
   text-align: center;
-  width: 90px;
+  width: 200px;
   font-size: 24px;
   font-weight: bold;
-  margin-top: 8px;
+  margin: 8px 0px 0px 0px;
 }
 
 .odVialLabels {
@@ -178,12 +178,12 @@ label {
   margin-top: -35px;
 }
 
-.vialInput {
+.tempVialInput {
   position: absolute;
   text-align: center;
-  width: 90px;
-  font-size: 15px;
-  margin-top: 40px;
+  width: 200px;
+  font-size: 24px;
+  margin-top: 100px;
   line-height: 20px;
   font-style: italic;
 }
@@ -236,9 +236,9 @@ ul {
   background: transparent;
 }
 
-.outlineWrapper {
+.tempOutlineWrapper {
   position: absolute;
-  margin: -650px 0px 0px -7px;
+  margin: -660px 0px 0px -7px;
 }
 
 .odOutlineWrapper {

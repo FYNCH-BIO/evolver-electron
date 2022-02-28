@@ -55,7 +55,7 @@ class QuadOutline extends React.Component {
     const selectedSmartQuad = this.state.selectedSmartQuad;
     let className;
     if (this.props.type == "temp") {
-      className = "outlineWrapper";
+      className = "tempOutlineWrapper";
     } else if (this.props.type == "od") {
       className = "odOutlineWrapper";
     }
