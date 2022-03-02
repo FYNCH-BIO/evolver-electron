@@ -55,7 +55,8 @@ const styles = {
 
 const exptEditorOptions = [
   {value: 'turbidostat', label: 'Turbidostat'},
-  {value: 'fileEditor', label: 'File Editor'},
+  {value: 'growthcurve', label: 'Growth Curve'},
+  {value: 'fileEditor', label: 'File Editor'}
 ]
 
 class ScriptEditor extends React.Component {
@@ -445,7 +446,11 @@ class ScriptEditor extends React.Component {
           </div>;
     }
     else if (this.state.selectedEditor.value == 'turbidostat') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp}/></div>
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'turbidostat'}/></div>
+    }
+
+    else if (this.state.selectedEditor.value == 'growthcurve') {
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'growthcurve'}/></div>
     }
 
     return (

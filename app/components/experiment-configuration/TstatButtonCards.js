@@ -17,7 +17,7 @@ import UpperODSlider from '../setupButtons/UpperODSlider'
 import LowerODSlider from '../setupButtons/LowerODSlider'
 
 
-const tutorialSteps = [
+const tutorialStepsTStat = [
   {
     label: 'Upper OD Threshold',
     outputTag: 'upper'
@@ -26,6 +26,17 @@ const tutorialSteps = [
     label: 'Lower OD Threshold',
     outputTag: 'lower'
   },
+  {
+    label: 'Temperature',
+    outputTag: 'temp'
+  },
+  {
+    label: 'Stir',
+    outputTag: 'stir'
+  }
+];
+
+const tutorialStepsGrowthRate = [
   {
     label: 'Temperature',
     outputTag: 'temp'
@@ -137,6 +148,8 @@ class SwipeableTextMobileStepper extends React.Component {
   render() {
     const { classes, theme } = this.props;
     const { activeStep } = this.state;
+    var tutorialSteps;
+    var tutorialSteps = this.props.function == 'turbidostat' ? tutorialStepsTStat : tutorialStepsGrowthRate
     const maxSteps = tutorialSteps.length;
 
     return (
