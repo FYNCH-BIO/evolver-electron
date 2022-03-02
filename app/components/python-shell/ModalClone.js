@@ -21,7 +21,8 @@ class ModalClone extends React.Component {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
       answers: this.props.alertAnswers,
-      value: ''
+      value: '',
+      stayOnPage: this.props.stayOnPage
     };
   }
 
@@ -56,6 +57,22 @@ class ModalClone extends React.Component {
   render() {
     const { open } = this.state;
 
+    var submitButton;
+    if (this.state.stayOnPage) {
+      submitButton = <button
+        onClick={() => this.handleAnswer()}
+        className={styles.alertBtns}>
+        Submit
+      </button>
+    }
+    else {
+      submitButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
+        onClick={() => this.handleAnswer()}
+        className={styles.alertBtns}>
+        Submit
+      </button></Link>
+    }
+
     return (
       <div>
         <Modal
@@ -81,15 +98,10 @@ class ModalClone extends React.Component {
                     id="cloneAlertExperimentInput">
                   </input>
               </div>
-              <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
-              onClick={() => this.handleAnswer()}
-              className={styles.alertBtns}>
-              Submit
-              </button></Link>
+              {submitButton}
             </div>
           </Modal>
       </div>
-
     );
   }
 }
