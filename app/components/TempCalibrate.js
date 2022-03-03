@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
-import TempcalInput0 from './calibrationInputs/CalInputs';
-import TempcalInput1 from './calibrationInputs/CalInputs';
-import TempcalInput2 from './calibrationInputs/CalInputs';
-import TempcalInput3 from './calibrationInputs/CalInputs';
+import TempCalInput0 from './calibrationInputs/CalInputs';
+import TempCalInput1 from './calibrationInputs/CalInputs';
+import TempCalInput2 from './calibrationInputs/CalInputs';
+import TempCalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
 import TempCalGUI from './calibrationInputs/TempCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -47,7 +47,7 @@ const styles = {
   }
 };
 
-function generateQuadLabel (response, oldTempStream, roomTempAvg) {
+function generateQuadLabel (response, oldTempStream) {
   var tempStream = new Array(4).fill('...');
   var deltaTempStream = new Array(4).fill('...');
   var valueInputs = new Array(4).fill('...');
@@ -59,7 +59,7 @@ function generateQuadLabel (response, oldTempStream, roomTempAvg) {
       if (isNaN(deltaTempStream[i][0])){
         deltaTempStream[i] = "0";
       }
-      valueInputs[i] = tempStream[i][0] + " (" + (deltaTempStream[i][0]<0?"":"+") + deltaTempStream[i][0] + ")"
+      valueInputs[i] = tempStream[i][0];
     // }
   }
 
@@ -96,18 +96,15 @@ class TempCal extends React.Component {
       quadLabels: ['SQ0', 'SQ1', 'SQ2', 'SQ3'],
       smartQuadLabels: ['SQ0 Sensor Average','SQ1 Sensor Average','SQ2 Sensor Average','SQ3 Sensor Average'],
       quadsData: [],
-      currentPowerLevel: new Array(4).fill(4095),
-      tempRawDelta: 500,
+      powerLevels: [[1000,1000,1000,1000], [2000,2000,2000,2000], [3000,3000,3000,3000]],
       timesRead: 3,
       valueInputs: [],
       tempStream: [],
-      deltaTempRange: [0, 1000], //slope around 0.02 C per a.u.
       deltaTempSteps: 3,
       equilibrateState: true,
-      roomTempAvg: [],
       buttonAdvanceText: '',
       buttonBackText: '',
-      buttonMeasureText: 'RT',
+      buttonMeasureText: '',
       slopeEstimate: .02,
       previousLockedTemp: [],
       experimentName:'',
@@ -129,14 +126,13 @@ class TempCal extends React.Component {
         return
       }
       var newQuadsData = this.state.quadsData;
-      let returnedTemps = generateQuadLabel (response, this.state.tempStream, this.state.roomTempAvg)
+      let returnedTemps = generateQuadLabel (response, this.state.tempStream)
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
       let percentQuadProgress = [];
-      if (this.state.currentStep > 1) {
-        percentQuadProgress = calculateQuadProgress (tempStream, this.state.previousLockedTemp, this.state.currentPowerLevel);
-      }
+      let powerLevelIndex = this.state.currentStep - 1;
+      percentQuadProgress = calculateQuadProgress (tempStream, this.state.previousLockedTemp, this.state.powerLevels[powerLevelIndex]);
 
       this.setState({
         tempStream: tempStream,
@@ -165,26 +161,19 @@ class TempCal extends React.Component {
         function() {
           var tempArray = this.state.quadsData[newQuadsData.length - 1].temp;
           if (tempArray[0].length === this.state.timesRead) {
-              var roomTempAvg = this.state.roomTempAvg;
-              if (this.state.currentStep == 1) {
-                for (var i = 0; i < tempArray.length; i++) {
-                  let average = (array) => array.reduce((a, b) => a + b) / array.length;
-                  roomTempAvg[i] = Math.round(average(tempArray[i]));
-                }
-              }
               this.handleUnlockBtns();
               var readsFinished = this.state.quadsData.length;
               this.setState({
                 progressCompleted: (100 * (this.state.quadsData.length / this.state.deltaTempSteps)),
                 readsFinished: readsFinished,
                 readProgress: 0,
-                roomTempAvg: roomTempAvg,
                 quadProgress: Array(4).fill(0)},
                 function() {
                   store.set('runningTempCal', this.state)
                 });
           }
 	    });
+      console.log(this.state.readProgress)
     }.bind(this));
 
     this.props.socket.on('calibrationrawcallback', function(response) {
@@ -209,32 +198,29 @@ class TempCal extends React.Component {
       this.keyboard.current.onOpenModal();
     }
 
-    var deltaTempSetting = (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
-    var buttonAdvanceText = "+" + Math.round(deltaTempSetting * this.state.slopeEstimate) + "\u00b0C";
-    var buttonBackText = "-" + Math.round(deltaTempSetting * this.state.slopeEstimate) + "\u00b0C";
+    let buttonAdvanceText = this.state.powerLevels[this.state.currentStep][0].toString().concat(' ADC');
+    let buttonMeasureText = this.state.powerLevels[this.state.currentStep - 1][0].toString().concat(' ADC');
     this.setState({
       quadOpacities: Array(4).fill(0),
       generalOpacity: Array(4).fill(1),
       valueInputs: Array(4).fill('...'),
-      buttonAdvanceText: buttonAdvanceText,
-      buttonBackText: buttonBackText,
+      buttonMeasureText: buttonMeasureText,
+      buttonAdvanceText: buttonAdvanceText
       })
   };
 
   startRead = () => {
     let evolverValue = new Array(4).fill("NaN");
+    let powerLevelIndex = this.state.currentStep - 1;
     for (var i = 0; i < evolverValue.length; i++) {
-      evolverValue[i] = this.state.currentPowerLevel[i];
+      evolverValue[i] = this.state.powerLevels[powerLevelIndex][i];
     }
     this.props.socket.emit("command", {param: "temp", value: evolverValue, immediate: true});
-
     if (this.state.equilibrateState){
       this.handleLockBtns();
 
       let percentQuadProgress = [];
-      if (this.state.currentStep > 1) {
-        percentQuadProgress = calculateQuadProgress (this.state.tempStream, this.state.tempStream, this.state.currentPowerLevel);
-      }
+      percentQuadProgress = calculateQuadProgress (this.state.tempStream, this.state.tempStream, this.state.powerLevels[powerLevelIndex]);
 
       this.setState({
         equilibrateState: false,
@@ -257,11 +243,11 @@ class TempCal extends React.Component {
       newQuadsData.push({
         temp:[],
         step: this.state.currentStep,
-        powerLevel:this.state.currentPowerLevel,
+        powerLevel:this.state.powerLevels[powerLevelIndex],
         enteredValues:this.state.enteredValues,
         });
       this.setState({quadsData:newQuadsData});
-    this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
+    //this.props.socket.emit('data', {config:{od:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], temp:['NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN','NaN']}});
     }
   }
 
@@ -274,21 +260,25 @@ class TempCal extends React.Component {
      let readProgress = this.state.readProgress;
      readProgress = readProgress + (100/this.state.timesRead);
      this.setState({readProgress: readProgress});
+     console.log(this.state.readProgress);
    };
 
   handleBack = () => {
-   var disableForward;
-   var disableBackward;
-   var currentStep = this.state.currentStep - 1;
-   var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
-   var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
-   var buttonMeasureText = '';
-   if (currentStep - 1 == 0){
-     var buttonMeasureText = "RT"
+   let disableForward;
+   let disableBackward;
+   let currentStep = this.state.currentStep - 1;
+   let buttonMeasureText = this.state.powerLevels[currentStep - 1][0].toString().concat(' ADC');
+   let buttonBackText = '';
+   let buttonAdvanceText = ''
+   if (currentStep < 3) {
+     buttonAdvanceText = this.state.powerLevels[currentStep][0].toString().concat(' ADC');
    }
-   else{
-    var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEstimate) + "\u00b0C";
-    }
+   if (currentStep > 1) {
+     buttonBackText = this.state.powerLevels[currentStep - 2][0].toString().concat(' ADC');
+   }
+   //let buttonBackText = this.state.powerLevels[currentStep - 2][0].toString();
+   //let buttonAdvanceText = this.state.powerLevels[currentStep - 1][0].toString();
+
 
    if (this.state.currentStep === this.state.deltaTempSteps){
      disableForward = false;
@@ -301,24 +291,27 @@ class TempCal extends React.Component {
      disableForward: disableForward,
      disableBackward: disableBackward,
      currentStep: currentStep,
-     currentPowerLevel: newTempSet,
-     buttonMeasureText: buttonMeasureText
+     buttonMeasureText: buttonMeasureText,
+     buttonAdvanceText: buttonAdvanceText,
+     buttonBackText: buttonBackText
      });
   };
 
   handleAdvance = () => {
-    var disableForward;
-    var disableBackward;
-    var currentStep = this.state.currentStep + 1;
-    var deltaTempSetting = (currentStep - 1) * (this.state.deltaTempRange[1] - this.state.deltaTempRange[0])/(this.state.deltaTempSteps-1);
-    var newTempSet = this.state.roomTempAvg.map((a, i) => a - deltaTempSetting);
-    var buttonMeasureText = '';
-    if (currentStep - 1 == 0){
-      var buttonMeasureText = "RT"
+    let disableForward;
+    let disableBackward;
+    let currentStep = this.state.currentStep + 1;
+    let buttonMeasureText = this.state.powerLevels[currentStep - 1][0].toString().concat(' ADC');
+    let buttonBackText = '';
+    let buttonAdvanceText = ''
+    if (currentStep < 3) {
+      buttonAdvanceText = this.state.powerLevels[currentStep][0].toString().concat(' ADC');
     }
-    else{
-     var buttonMeasureText = "RT + " + Math.round(deltaTempSetting* this.state.slopeEstimate) + "\u00b0C";
-     }
+    if (currentStep > 1) {
+      buttonBackText = this.state.powerLevels[currentStep - 2][0].toString().concat(' ADC');
+    }
+    //let buttonBackText = this.state.powerLevels[currentStep - 2][0].toString();
+    //let buttonAdvanceText = this.state.powerLevels[currentStep - 1][0].toString();
 
     if (this.state.currentStep === 1){
      disableBackward = false;
@@ -331,8 +324,9 @@ class TempCal extends React.Component {
      disableForward: disableForward,
      disableBackward: disableBackward,
      currentStep: currentStep,
-     currentPowerLevel: newTempSet,
-     buttonMeasureText: buttonMeasureText
+     buttonMeasureText: buttonMeasureText,
+     buttonAdvanceText: buttonAdvanceText,
+     buttonBackText: buttonBackText
      });
   };
 
@@ -397,8 +391,6 @@ class TempCal extends React.Component {
    handleSmartQuadSelection = (selectedSmartQuad) => {
      this.setState({
        selectedSmartQuad: selectedSmartQuad
-     }, () => {
-       console.log(this.state.selectedSmartQuad)
      });
    }
 
@@ -415,6 +407,7 @@ class TempCal extends React.Component {
    handleFinishExpt = (finishFlag) => {
       this.setState({alertOpen: true})
       console.log("Experiment Finished!");
+      this.props.socket.emit("command", {param: "temp", value: this.state.powerLevels[1], immediate: true});
 
       var d = new Date();
       var currentTime = d.getTime();
@@ -439,7 +432,7 @@ class TempCal extends React.Component {
       }
       var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', quadsData: quadDataStructured}]}
       console.log(saveData);
-      //this.props.socket.emit('setrawcalibration', saveData);
+      this.props.socket.emit('setrawcalibration', saveData);
    }
 
    handleKeyboardModal = () => {
@@ -581,25 +574,33 @@ class TempCal extends React.Component {
 
     let tempCalInput;
     if (this.state.selectedSmartQuad == 0) {
-      tempCalInput = <TempcalInput0
+      tempCalInput = <TempCalInput0
+        key='TempcalInput0'
+        id='TempcalInput0'
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(0,18)}/>
     } else if (this.state.selectedSmartQuad == 1) {
-      tempCalInput = <TempcalInput1
+      tempCalInput = <TempCalInput1
+        key='TempcalInput1'
+        id='TempcalInput1'
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(18,36)}/>
     } else if (this.state.selectedSmartQuad == 2) {
-      tempCalInput = <TempcalInput2
+      tempCalInput = <TempCalInput2
+        key='TempcalInput2'
+        id='TempcalInput2'
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
         enteredValues = {this.state.enteredValues.slice(36,54)}/>
     } else if (this.state.selectedSmartQuad == 3) {
-      tempCalInput = <TempcalInput3
+      tempCalInput = <TempCalInput3
+        key='TempcalInput3'
+        id='TempcalInput3'
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}

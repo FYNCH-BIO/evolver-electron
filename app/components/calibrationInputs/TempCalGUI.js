@@ -82,6 +82,7 @@ export default class TempCalGUI extends Component<Props> {
     if (this.props.readProgress !== prevProps.readProgress) {
       this.setState({ readProgress: this.props.readProgress})
     }
+    console.log(this.state.readProgress)
   }
 
   handleBack = (event) => {

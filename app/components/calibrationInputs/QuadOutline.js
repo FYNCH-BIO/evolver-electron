@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -20,6 +20,11 @@ const styles = theme => ({
   },
   circle: {
     strokeWidth: '3px',
+  },
+  progressBar: {
+    flexGrow: 1,
+    margin: '240px 0px 0px 0px',
+    height: 8,
   }
 });
 
@@ -54,54 +59,66 @@ class QuadOutline extends React.Component {
     const { readProgress } = this.state;
     const selectedSmartQuad = this.state.selectedSmartQuad;
     let className;
+    let smartQuads;
     if (this.props.type == "temp") {
       className = "tempOutlineWrapper";
+      smartQuads = this.state.items.map((items,index) => (
+        <div>
+          {selectedSmartQuad == items
+            ? <button
+                className="smartQuadOutlineSelected"
+                key={items[index]}
+                onClick={() => this.handleButton(items)}>
+
+                <LinearProgress
+                  classes= {{
+                    root: classes.progressBar,
+                    colorPrimary: classes.colorPrimary,
+                    bar: classes.bar,
+                  }}
+                  variant="determinate"
+                  value={this.state.readProgress[items]}
+                /> </button>
+
+            : <button
+                className="smartQuadOutlineDeSelected"
+                key={items[index]}
+                onClick={() => this.handleButton(items)}>
+
+                <LinearProgress
+                  classes= {{
+                    root: classes.progressBar,
+                    colorPrimary: classes.colorPrimary,
+                    bar: classes.bar,
+                  }}
+                  variant="determinate"
+                  value={this.state.readProgress[items]}
+                /> </button>}
+          <p className="quadOutlineText">Smart Quad {items}</p>
+        </div>));
     } else if (this.props.type == "od") {
       className = "odOutlineWrapper";
+      smartQuads = this.state.items.map((items,index) => (
+        <div>
+          {selectedSmartQuad == items
+            ? <button
+                className="smartQuadOutlineSelected"
+                key={items[index]}
+                onClick={() => this.handleButton(items)}>
+              </button>
+
+            : <button
+                className="smartQuadOutlineDeSelected"
+                key={items[index]}
+                onClick={() => this.handleButton(items)}>
+              </button>}
+          <p className="quadOutlineText">Smart Quad {items}</p>
+        </div>));
     }
 
     return(
       <ul className={className}>
-        {this.state.items.map((items,index) => (
-          <div>
-            {selectedSmartQuad == items
-              ? <button
-                  className="smartQuadOutlineSelected"
-                  key={items[index]}
-                  onClick={() => this.handleButton(items)}>
-
-                  <CircularProgress
-                    classes={{
-                      root: classes.progressRoot,
-                      colorPrimary: classes.circleProgressColor,
-                      circle: classes.circle,
-                      }}
-                    variant="static"
-                    value={this.state.readProgress[index]}
-                    color="primary"
-                    size= {104}
-                  /> </button>
-
-              : <button
-                  className="smartQuadOutlineDeSelected"
-                  key={items[index]}
-                  onClick={() => this.handleButton(items)}>
-
-                  <CircularProgress
-                    classes={{
-                      root: classes.progressRoot,
-                      colorPrimary: classes.circleProgressColor,
-                      circle: classes.circle,
-                      }}
-                    variant="static"
-                    value={this.state.readProgress[index]}
-                    color="primary"
-                    size= {104}
-                  />
-                </button>}
-            <p className="quadOutlineText">Smart Quad {items}</p>
-          </div>
-        ))}
+      {smartQuads}
       </ul>
     );
   }

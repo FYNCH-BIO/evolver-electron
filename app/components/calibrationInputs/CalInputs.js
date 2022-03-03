@@ -98,8 +98,8 @@ class CalInput extends React.Component {
                 <button
                   className ="calInputBtns"
                   onClick={() => this.onOpenModal(index)}
-                  key= {index}
-                  id={index}
+                  key= {this.props.key + toString(index)}
+                  id={this.props.id + toString(index)}
                   disabled = {this.state.inputsLocked}>
                   {this.state.enteredValues[index]}
                 </button>

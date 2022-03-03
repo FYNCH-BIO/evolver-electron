@@ -568,24 +568,32 @@ class ODcal extends React.Component {
     let odCalInput;
     if (this.state.selectedSmartQuad == 0) {
       odCalInput = < ODCalInput0
+      key={'ODCalInput0'}
+      id={'ODCalInput0'}
       onChangeValue = {this.handleODChange}
       onInputsEntered = {this.state.inputsEntered}
       currentSmartQuad = {this.state.selectedSmartQuad}
       enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
     } else if (this.state.selectedSmartQuad == 1) {
       odCalInput = < ODCalInput1
+      key={'ODCalInput1'}
+      id={'ODCalInput1'}
       onChangeValue = {this.handleODChange}
       onInputsEntered = {this.state.inputsEntered}
       currentSmartQuad = {this.state.selectedSmartQuad}
       enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
     } else if (this.state.selectedSmartQuad == 2) {
       odCalInput = < ODCalInput2
+      key={'ODCalInput2'}
+      id={'ODCalInput2'}
       onChangeValue = {this.handleODChange}
       onInputsEntered = {this.state.inputsEntered}
       currentSmartQuad = {this.state.selectedSmartQuad}
       enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
     } else if (this.state.selectedSmartQuad == 3) {
       odCalInput = < ODCalInput3
+      key={'ODCalInput3'}
+      id={'ODCalInput3'}
       onChangeValue = {this.handleODChange}
       onInputsEntered = {this.state.inputsEntered}
       currentSmartQuad = {this.state.selectedSmartQuad}
