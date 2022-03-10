@@ -23,7 +23,7 @@ class DeleteExptModal extends React.Component {
       answers: this.props.alertAnswers,
       useLink: this.props.useLink,
       buttonText: this.props.buttonText,
-      value: ''
+      value: this.props.value
     };
   }
 
@@ -46,8 +46,8 @@ class DeleteExptModal extends React.Component {
     this.setState({open: false, value:''});
   };
 
-  handleAnswer = () => {
-    this.props.onAlertAnswer(1);
+  handleAnswer = (value) => {
+    this.props.onAlertAnswer(1, value);
     this.setState({open: false, value: ''});
   }
 
@@ -62,7 +62,7 @@ class DeleteExptModal extends React.Component {
               </button></Link>
     }
     else {
-      confirmButton = <button onClick={() => this.handleAnswer()} className={styles.alertBtns}>{this.state.buttonText}</button>;
+      confirmButton = <button onClick={() => this.handleAnswer(this.state.value)} className={styles.alertBtns}>{this.state.buttonText}</button>;
     }
 
     return (

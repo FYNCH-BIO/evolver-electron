@@ -27,15 +27,15 @@ class VialMenu extends React.Component {
 
       <div style={{
         width:'300px',
-        height: '500px'}}>
+        height: '600px'}}>
 
-        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '350px 0px 0px 40px' }}>INDIVIDUAL PLOTS</p>
+        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '290px 0px 0px 40px' }}>INDIVIDUAL PLOTS</p>
         <div style={{
           width:'220px',
-          height: '200px',
+          height: '150px',
           padding: '0px 40px 0px 40px',
           position: 'absolute',
-          margin: '390px 0px 0px 75px'}}>
+          margin: '330px 0px 0px 75px'}}>
           {vialButtons.map((vialButton, index) => (
             <button
               className = 'vialPlotsMenuBtns'
