@@ -55,6 +55,8 @@ class ModalAlert extends React.Component {
       <div>
         <Modal
           open={open}
+          closeOnEsc={false}
+          closeOnOverlayClick={false}             
           onClose={this.onCloseModal}
           center
           classNames={{
