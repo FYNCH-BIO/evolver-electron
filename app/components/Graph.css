@@ -62,6 +62,7 @@
 .dataActionButton {
   width: 130px;
   margin: 0px 10px 0px 0px;
+  font-size: 16px;
 }
 
 .dataActionButton:active {

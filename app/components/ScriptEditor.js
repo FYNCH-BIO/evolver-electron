@@ -88,7 +88,8 @@ class ScriptEditor extends React.Component {
       disablePlay: false,
       showAllFiles: false,
       option: 0,
-      changeNameDisabled: false
+      changeNameDisabled: false,
+      vialConfiguration: []
     };
 
     var customScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'custom_script.py'));
@@ -129,6 +130,7 @@ class ScriptEditor extends React.Component {
 
   componentDidMount(){
     this.loadTable();
+    this.loadSaveParameters();
     this.readfile('custom_script.py');
     ipcRenderer.send('running-expts');
     var editedExpts = store.get('editedExpts', {});
@@ -197,12 +199,14 @@ class ScriptEditor extends React.Component {
   };
 
   savefile = () => {
-    var editedExpts = store.get('editedExpts', {});
-    if (!editedExpts[this.state.exptName]) {
-      this.setState({saveFileAlertOpen: true});
-    }
-    else {
-      this.saveFileAlertAnswer(true);
+    if (this.state.selectedEditor.value == 'fileEditor') {
+        var editedExpts = store.get('editedExpts', {});
+        if (!editedExpts[this.state.exptName]) {
+          this.setState({saveFileAlertOpen: true});
+        }
+        else {
+          this.saveFileAlertAnswer(true);
+        }
     }
   };
 
@@ -284,6 +288,17 @@ class ScriptEditor extends React.Component {
   }
   this.loadTable();
 };
+
+  loadSaveParameters = () => {
+      var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
+      var vialConfiguration;
+      if (fs.existsSync(filename)) {
+          var vialConfigurationRaw = fs.readFileSync(filename);          
+          vialConfiguration = JSON.parse(vialConfigurationRaw)['vial_configuration'];
+      }
+      console.log(vialConfiguration);
+      this.setState({vialConfiguration: vialConfiguration});
+  }
 
   handleSaveParameters = (vialData) => {
       var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
@@ -446,11 +461,11 @@ class ScriptEditor extends React.Component {
           </div>;
     }
     else if (this.state.selectedEditor.value == 'turbidostat') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'turbidostat'}/></div>
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'turbidostat'} vialConfiguration={this.state.vialConfiguration}/></div>
     }
 
     else if (this.state.selectedEditor.value == 'growthcurve') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'growthcurve'}/></div>
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'growthcurve'} vialConfiguration={this.state.vialConfiguration}/></div>
     }
 
     return (

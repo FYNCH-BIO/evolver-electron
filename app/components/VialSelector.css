@@ -154,7 +154,11 @@ button {
 .stop-button-position {
   text-align: right;
   position: absolute;
-  top: 544px;
+  top: 584px;
   left: 888px;
   width: 120px;
+}
+
+.selectable-button {
+    left: 20px;
 }
