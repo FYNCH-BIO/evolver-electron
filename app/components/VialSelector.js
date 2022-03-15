@@ -14,10 +14,10 @@ function isDisabled(currentVial) {
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
   if (numberSelected == 0) {
-    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
+    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons selectall">Select All</button></SelectAll>
   }
   else {
-    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons">Clear Selection</button></DeselectAll>
+    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons selectall">Clear Selection</button></DeselectAll>
   }
   return null;
 }
@@ -156,7 +156,7 @@ class VialSelector extends Component<Props>  {
             </SelectableGroup>
           </div>
           <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+            <button className = "btn btn-md vialSelectorButtons selector" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
           <div className="stop-button-position">
           <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>

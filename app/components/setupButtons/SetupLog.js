@@ -170,7 +170,7 @@ class SetupLog extends React.Component {
             ref="ace"
             className='commandbroadcast_log'
             value= {this.state.loggedText}
-            width='420px'
+            width='440px'
             height='172px'
             mode="elixir"
             theme="terminal"

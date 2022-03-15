@@ -438,7 +438,7 @@ class VialArrayGraph extends React.Component {
 
 
     return (
-      <div className='row' style={{position: 'absolute', margin: '25px 0px 0px 345px'}} >
+      <div className='row' style={{position: 'absolute', margin: '25px 20px 0px 345px'}} >
         <Paper square elevation={10} className={classes.xaxisTitle}>
           <Typography variant="h5" className={classes.title}> EXPERIMENT TIME (h) </Typography>
         </Paper>
