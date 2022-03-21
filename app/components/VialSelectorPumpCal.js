@@ -14,10 +14,10 @@ function isDisabled(currentVial) {
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
   if (numberSelected == 0) {
-    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
+    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtonsPumpCal">Select All</button></SelectAll>
   }
   else {
-    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons">Clear Selection</button></DeselectAll>
+    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtonsPumpCal">Clear Selection</button></DeselectAll>
   }
   return null;
 }
@@ -26,7 +26,7 @@ function ActiveButtons(state) {
 const styles = {
   card: {
     width: 580,
-    height: 600,
+    height: 630,
     margin: '3px 5px 15px 20px',
   },
 };
@@ -50,7 +50,7 @@ class List extends Component {
 
   render() {
     return (
-      <div style={{width: 560}}>
+      <div style={{width: 595}}>
         <div className="centered">
           {this.props.items.map((item) => (
             <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} IN1={item.IN1} IN2={item.IN2} E={item.E}/>
@@ -152,14 +152,13 @@ class VialSelector extends Component<Props>  {
               <div className="button-position">
                 <ActiveButtons selectedItems={this.state.selectedItems} />
               </div>
-
             </SelectableGroup>
           </div>
-          <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+          <div className= "toggle-button-position-cal">
+            <button className = "btn btn-md vialSelectorButtonsPumpCal" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
-          <div className="stop-button-position">
-          <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
+          <div className="stop-cal-button-position">
+          <button className = "btn btn-md pump-cal-stop-button" > FORCE STOP ALL </button>
           </div>
         </Card>
     )

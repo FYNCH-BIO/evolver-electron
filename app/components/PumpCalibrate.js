@@ -342,7 +342,7 @@ class PumpCal extends React.Component {
     const { currentStep } = this.state;
 
     var pumpConfig;
-    var statusText = <p className="statusText" style={{position: 'absolute', top: '600px', left: '100px'}}>{this.state.statusText}</p>
+    var statusText = <p className="statusText" style={{position: 'absolute', top: '608px', left: '100px'}}>{this.state.statusText}</p>
     var progressButtons;
     var leftButton = null;
     var pumpButton = null;

@@ -70,7 +70,7 @@ class TstatEditor extends React.Component {
 
     checkDefaults = () => {
       if (this.props.function == 'turbidostat') {
-        if (this.props.vialConfiguration.length > 0) {
+        if (this.props.vialConfiguration) {
           this.readTStatParameters(this.state.vialConfiguration);  
         }
         else {
@@ -78,7 +78,7 @@ class TstatEditor extends React.Component {
         }
       }
       else if (this.props.function == 'growthcurve') {
-          if(this.props.vialConfiguration.length > 0) {
+          if(this.props.vialConfiguration) {
             this.readGrowthRateParameters(this.state.vialConfiguration);   
           }
           else {
