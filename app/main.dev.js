@@ -69,10 +69,11 @@ function storeRunningExpts() {
 /* Handle startup of a python shell instance to run the DPU */
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
+  var pythonPath = path.join(process.env.DPUENV, 'bin', 'python3')
   // We need to make the path a variable - needs to be either set by user or we require it to be installed at a specific location.
   var options = {
       mode: 'text',
-      pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
+      pythonPath: pythonPath,
       args: flag
     };
   var pyShell = new PythonShell(scriptName, options);
