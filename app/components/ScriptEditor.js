@@ -55,6 +55,7 @@ const styles = {
 
 const exptEditorOptions = [
   {value: 'turbidostat', label: 'Turbidostat'},
+  {value: 'chemostat', label:'Chemostat'},
   {value: 'growthcurve', label: 'Growth Curve'},
   {value: 'fileEditor', label: 'File Editor'}
 ]
@@ -292,12 +293,24 @@ class ScriptEditor extends React.Component {
   loadSaveParameters = () => {
       var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
       var vialConfiguration;
+      var vialConfigurationRaw;
       if (fs.existsSync(filename)) {
-          var vialConfigurationRaw = fs.readFileSync(filename);          
+          vialConfigurationRaw = fs.readFileSync(filename);          
           vialConfiguration = JSON.parse(vialConfigurationRaw)['vial_configuration'];
-      }
-      console.log(vialConfiguration);
+          vialConfigurationRaw = JSON.parse(vialConfigurationRaw);
+      }      
       this.setState({vialConfiguration: vialConfiguration});
+      if (vialConfigurationRaw) {
+        if (vialConfigurationRaw.function == 'turbidostat') {
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'turbidostat')})
+        }
+        else if (vialConfigurationRaw.function == 'chemostat') {
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'chemostat')})
+        }
+        else if (vialConfigurationRaw.fucntion == 'growthrate') {
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'growthrate')})
+        }
+    }
   }
 
   handleSaveParameters = (vialData) => {
@@ -460,12 +473,8 @@ class ScriptEditor extends React.Component {
           {filesComponent}
           </div>;
     }
-    else if (this.state.selectedEditor.value == 'turbidostat') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'turbidostat'} vialConfiguration={this.state.vialConfiguration}/></div>
-    }
-
-    else if (this.state.selectedEditor.value == 'growthcurve') {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={'growthcurve'} vialConfiguration={this.state.vialConfiguration}/></div>
+    else {
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={this.state.selectedEditor.value} vialConfiguration={this.state.vialConfiguration}/></div>
     }
 
     return (

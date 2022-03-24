@@ -8,6 +8,7 @@ import data from '../sample-data-tstat'
 import TstatButtonCards from './TstatButtonCards';
 import TempSlider from '../setupButtons/TempSlider';
 import StirSlider from '../setupButtons/StirSlider';
+import RateSlider from '../setupButtons/RateSlider';
 import UpperODSlider from '../setupButtons/UpperODSlider';
 import LowerODSlider from '../setupButtons/LowerODSlider';
 
@@ -42,6 +43,7 @@ const styles = {
 };
 
 const defaultTstatParameters = [{"vial":0,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":1,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":2,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":3,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":4,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":5,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":6,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":7,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":8,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":9,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":10,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":11,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":12,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":13,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":14,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":15,"temp":30,"stir":8,"upper":0.85,"lower":0.3}];
+const defaultCstatParameters = [{"vial":0,"temp":30,"stir":8,"rate":0.5},{"vial":1,"temp":30,"stir":8,"rate":0.5},{"vial":2,"temp":30,"stir":8,"rate":0.5},{"vial":3,"temp":30,"stir":8,"rate":0.5},{"vial":4,"temp":30,"stir":8,"rate":0.5},{"vial":5,"temp":30,"stir":8,"rate":0.5},{"vial":6,"temp":30,"stir":8,"rate":0.5},{"vial":7,"temp":30,"stir":8,"rate":0.5},{"vial":8,"temp":30,"stir":8,"rate":0.5},{"vial":9,"temp":30,"stir":8,"rate":0.5},{"vial":10,"temp":30,"stir":8,"rate":0.5},{"vial":11,"temp":30,"stir":8,"rate":0.5},{"vial":12,"temp":30,"stir":8,"rate":0.5},{"vial":13,"temp":30,"stir":8,"rate":0.5},{"vial":14,"temp":30,"stir":8,"rate":0.5},{"vial":15,"temp":30,"stir":8,"rate":0.5}];
 const defaultGrowthRateParameters = [{"vial":0,"temp":30,"stir":8},{"vial":1,"temp":30,"stir":8},{"vial":2,"temp":30,"stir":8},{"vial":3,"temp":30,"stir":8},{"vial":4,"temp":30,"stir":8},{"vial":5,"temp":30,"stir":8},{"vial":6,"temp":30,"stir":8},{"vial":7,"temp":30,"stir":8},{"vial":8,"temp":30,"stir":8},{"vial":9,"temp":30,"stir":8},{"vial":10,"temp":30,"stir":8},{"vial":11,"temp":30,"stir":8},{"vial":12,"temp":30,"stir":8},{"vial":13,"temp":30,"stir":8},{"vial":14,"temp":30,"stir":8},{"vial":15,"temp":30,"stir":8}];
 
 var fs = require('fs');
@@ -50,11 +52,13 @@ var path = require('path');
 class TstatEditor extends React.Component {
     constructor(props) {
         super(props);
+        var vc = this.checkVialConfiguration();
         this.state = {
             vialData: data,
             rawData: [],
             selectedItems: [],
-            vialConfiguration: this.props.vialConfiguration
+            funct: this.props.function,
+            vialConfiguration: vc
         };
     }
 
@@ -64,30 +68,65 @@ class TstatEditor extends React.Component {
     
     componentDidUpdate(prevProps) {        
         if (this.props.vialConfiguration !== prevProps.vialConfiguration) {
-            this.setState({vialConfiguration: this.props.vialConfiguration}, () => {this.checkDefaults()});
+            var vc = this.checkVialConfiguration();
+            this.setState({vialConfiguration: vc}, () => {this.checkDefaults()});
         }
+        if (this.props.function !== prevProps.function) {
+            this.setState({funct: this.props.function}, () => {this.checkDefaults()});
+        }
+    }
+    
+    checkVialConfiguration = () => {
+        var vc;
+        if (this.props.vialConfiguration) {
+            vc = this.props.vialConfiguration;
+        }
+        else {
+            vc = [];
+        }      
+        return vc;
     }
 
     checkDefaults = () => {
-      if (this.props.function == 'turbidostat') {
-        if (this.props.vialConfiguration) {
-          this.readTStatParameters(this.state.vialConfiguration);  
+        console.log('checking defaults');
+      if (this.state.funct == 'turbidostat') {
+        if (this.state.vialConfiguration.length > 0) {
+            if ('upper' in this.state.vialConfiguration[0]) {
+                console.log(this.state.vialConfiguration[0])
+                this.readTstatParameters(this.state.vialConfiguration);
+            }
+            else {
+                this.readTstatParameters(defaultTstatParameters);
+            }
         }
         else {
-          this.readTStatParameters(defaultTstatParameters);
+          this.readTstatParameters(defaultTstatParameters);
         }
       }
-      else if (this.props.function == 'growthcurve') {
-          if(this.props.vialConfiguration) {
+      else if (this.state.funct == 'growthcurve') {
+          if(this.state.vialConfiguration.length > 0) {
             this.readGrowthRateParameters(this.state.vialConfiguration);   
           }
           else {
               this.readGrowthRateParameters(defaultGrowthRateParameters);
           }
-      }                
+      }
+      else if (this.state.funct == 'chemostat') {
+          if (this.state.vialConfiguration.length > 0) {
+              if ('rate' in this.state.vialConfiguration[0]) {
+                  this.readCstatParameters(this.state.vialConfiguration);
+              }
+              else {
+                  this.readCstatParameters(defaultCstatParameters);
+              }
+          }
+          else {
+              this.readCstatParameters(defaultCstatParameters);
+          }
+      }
     }
     
-    readTStatParameters = (tstatParameters) => {
+    readTstatParameters = (tstatParameters) => {
         var parameters = tstatParameters;
         var newRawData = parameters;
         parameters = this.formatVialSelectStrings(parameters, 'upper');
@@ -96,6 +135,15 @@ class TstatEditor extends React.Component {
         parameters = this.formatVialSelectStrings(parameters, 'stir');
         this.setState({vialData: parameters, rawData: newRawData});
     };
+    
+    readCstatParameters = (cstatParameters) => {
+        var parameters = cstatParameters;
+        var newRawData = parameters;
+        parameters = this.formatVialSelectStrings(parameters, 'rate');
+        parameters = this.formatVialSelectStrings(parameters, 'temp');
+        parameters = this.formatVialSelectStrings(parameters, 'stir');
+        this.setState({vialData:parameters, rawData: newRawData});
+    }
 
     readGrowthRateParameters = (tstatParameters) => {
         var parameters = tstatParameters;
@@ -111,12 +159,18 @@ class TstatEditor extends React.Component {
 
     formatVialSelectStrings = (vialData, parameter) => {
       var newData = JSON.parse(JSON.stringify(vialData));
+      if (parameter === 'rate') {
+          console.log(newData);
+      }
       for(var i = 0; i < newData.length; i++) {
         if (parameter === 'upper'){
           newData[i].upper = 'OD: ' + newData[i].upper;
         }
         if (parameter === 'lower') {
             newData[i].lower = newData[i].lower;
+        }
+        if (parameter === 'rate') {
+            newData[i].rate = 'Rate: ' + newData[i].rate + ' V/h';
         }
         if (parameter === 'temp'){
           newData[i].temp = newData[i].temp +'\u00b0C';
@@ -134,6 +188,9 @@ class TstatEditor extends React.Component {
         }
         if (component === 'lower') {
             value = value;
+        }
+        if (component === 'rate') {
+            value = 'Rate: ' + value + ' V/h';
         }
         if (component === 'temp'){
           value = value +'\u00b0C';
@@ -157,15 +214,23 @@ class TstatEditor extends React.Component {
 
     handleSave = () => {
         console.log('trying to save...');
-        var expt_config = {'function': this.state.function, 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};
+        var expt_config = {'function': this.state.funct, 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};
         console.log(expt_config);
         this.props.onSave(expt_config);
     }
     
     resetToDefault = () => {
         console.log('trying to reset...');
-        var expt_config = {'function': this.state.function, 'ip': this.props.evolverIp, 'vial_configuration': defaultTstatParameters};
-        this.setState({vialConfiguration: defaultTstatParameters}, () => {this.checkDefaults()});
+        var expt_config = {'function': this.state.funct, 'ip': this.props.evolverIp, 'vial_configuration': defaultTstatParameters};
+        if (this.state.funct == 'turbidostat') {
+            this.setState({vialConfiguration: defaultTstatParameters}, () => {this.checkDefaults()});
+        }
+        else if (this.state.funct == 'chemostat') {
+            this.setState({vialConfiguration: defaultCstatParameters}, () => {this.checkDefaults()});
+        }
+        else if (this.state.funct == 'growthcurve') {
+            this.setState({vialConfiguration: defaultGrowthCurveParameters}, () => {this.checkDefaults()});
+        }
         this.props.onSave(expt_config);       
     }
 
@@ -178,7 +243,7 @@ class TstatEditor extends React.Component {
                 <Card classes={{root:classes.cardRoot}} className={classes.tstatButtons}>
                     <TstatButtonCards
                       onSubmitButton={this.onSubmitButton}
-                      function={this.props.function}
+                      function={this.state.funct}
                       classes={classes.tstatButtons}
                        />
                 </Card>
@@ -189,7 +254,7 @@ class TstatEditor extends React.Component {
                         onSave={this.handleSave}
                         onResetToDefault={this.resetToDefault}
                         className={classes.temp}
-                        function={this.props.function}/>
+                        function={this.state.funct}/>
                 </Card>
                 </div>
             </div>

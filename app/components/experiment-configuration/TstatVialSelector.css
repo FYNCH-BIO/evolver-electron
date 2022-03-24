@@ -140,6 +140,13 @@ button .tstat{
   color: white;
 }
 
+.rate-label {
+  font-size: 12px;
+  font-style: italic;
+  color: white;
+}
+
+
 .tstatSelectorButtons {
 display: inline-block;
   position: relative;
