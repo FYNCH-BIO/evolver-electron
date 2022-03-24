@@ -13,6 +13,7 @@ import Card from '@material-ui/core/Card';
 
 import TempSlider from '../setupButtons/TempSlider'
 import StirSlider from '../setupButtons/StirSlider'
+import RateSlider from '../setupButtons/RateSlider'
 import UpperODSlider from '../setupButtons/UpperODSlider'
 import LowerODSlider from '../setupButtons/LowerODSlider'
 
@@ -46,6 +47,21 @@ const tutorialStepsGrowthRate = [
     outputTag: 'stir'
   }
 ];
+
+const tutorialStepsCStat = [
+    {
+        label: 'Rate',
+        outputTag: 'rate'
+    },
+    {
+        label: 'Temperature',
+        outputTag: 'temp',        
+    },
+    {
+        label: 'Stir',
+        outputTag: 'stir'
+    }
+]
 
 const styles = theme => ({
   root: {
@@ -107,6 +123,9 @@ function ActiveButtons(props) {
   if (currentTag === 'lower') {
     return <LowerODSlider onSubmitButton={props.onSubmitButton}/>;
   }
+  if (currentTag === 'rate') {
+      return <RateSlider onSubmitButton={props.onSubmitButton}/>;
+  }
   if (currentTag === 'temp') {
     return <TempSlider onSubmitButton={props.onSubmitButton}/>;
   }
@@ -149,7 +168,16 @@ class SwipeableTextMobileStepper extends React.Component {
     const { classes, theme } = this.props;
     const { activeStep } = this.state;
     var tutorialSteps;
-    var tutorialSteps = this.props.function == 'turbidostat' ? tutorialStepsTStat : tutorialStepsGrowthRate
+    var tutorialSteps;
+    if (this.props.function == 'turbidostat') {
+        tutorialSteps = tutorialStepsTStat;
+    }
+    else if (this.props.function == 'chemostat') {
+        tutorialSteps = tutorialStepsCStat;
+    }
+    else {
+        tutorialSteps = tutorialStepsGrowthRate;
+    }
     const maxSteps = tutorialSteps.length;
 
     return (

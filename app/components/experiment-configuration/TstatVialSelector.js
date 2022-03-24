@@ -46,6 +46,19 @@ const LabelTStat = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
   </div>
 )
 
+const LabelCStat = ({ selecting, selected, vial, rate, temp, stir}) => (
+  <div
+  className="album-label">
+    <h2>
+    Vial <span>{`${vial}`}</span>
+    </h2>
+    <span className="rate-label"> {`${rate}`} </span><br/>
+    <span className="temp-label"> {`${temp}`} </span><br/>
+    <span className="stir-label"> {`${stir}`} </span>
+    <br />
+  </div>
+)
+
 const LabelGrowthCurve = ({ selecting, selected, vial, temp, stir}) => (
   <div
   className="album-label">
@@ -70,6 +83,24 @@ class TStatList extends Component {
         <div className="centered">
           {this.props.items.map((item) => (
             <SelectableAlbumTStat key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
+          ))}
+        </div>
+      </div>
+    )
+  }
+}
+
+class CStatList extends Component {
+  componentDidUpdate(nextProps) {
+    return nextProps.items !== this.props.items
+  }
+
+  render() {
+    return (
+      <div style={{width: 560}}>
+        <div className="centered">
+          {this.props.items.map((item) => (
+            <SelectableAlbumCStat key={item.vial} vial={item.vial} selected={item.selected} rate={item.rate} temp={item.temp} stir={item.stir}/>
           ))}
         </div>
       </div>
@@ -113,6 +144,24 @@ const AlbumTStat = ({
   </div>
 )
 
+const AlbumCStat = ({
+  selectableRef, selected, selecting, strain, vial, rate, temp, stir
+}) => (
+  <div
+    id = {"vialID-" + vial}
+    ref={selectableRef}
+    className={`
+      ${(isDisabled(vial)) && 'not-selectable'}
+      item
+      ${selecting && 'selecting'}
+      ${selected && 'selected'}
+    `}
+  >
+    <div className="tick">+</div>
+    <LabelCStat selected={selected} selecting={selecting} vial={vial} strain={strain} rate={rate} temp={temp} stir={stir}/>
+  </div>
+)
+
 const AlbumGrowthCurve = ({
   selectableRef, selected, selecting, strain, vial, temp, stir
 }) => (
@@ -131,8 +180,9 @@ const AlbumGrowthCurve = ({
   </div>
 )
 
-const SelectableAlbumTStat = createSelectable(AlbumTStat)
-const SelectableAlbumGrowthCurve = createSelectable(AlbumGrowthCurve)
+const SelectableAlbumTStat = createSelectable(AlbumTStat);
+const SelectableAlbumCStat = createSelectable(AlbumCStat);
+const SelectableAlbumGrowthCurve = createSelectable(AlbumGrowthCurve);
 
 
 
@@ -192,6 +242,9 @@ class TstatVialSelector extends Component<Props>  {
     }
     else if (this.props.function == 'growthcurve') {
       list = <GrowthCurveList items={orderedItems}/>;
+    }
+    else if (this.props.function == 'chemostat') {
+      list = <CStatList items={orderedItems}/>;
     }
 
     return (
