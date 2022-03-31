@@ -100,14 +100,14 @@ class ODcal extends React.Component {
 
       let odData = [[],[],[],[]]
       for (var i = 0; i < odData.length; i++) {
-        odData[i].push(odLeft[i][6], odLeft[i][7], odLeft[i][8], odRight[i][6], odRight[i][7], odRight[i][8])
-        odData[i].push(odLeft[i][3], odLeft[i][4], odLeft[i][5], odRight[i][3], odRight[i][4], odRight[i][5])
-        odData[i].push(odLeft[i][0], odLeft[i][1], odLeft[i][2], odRight[i][0], odRight[i][1], odRight[i][2])
+        odData[i].push(odLeft[i][0], odLeft[i][1], odLeft[i][2], odRight[i][0], odRight[i][1], odRight[i][2]);
+        odData[i].push(odLeft[i][3], odLeft[i][4], odLeft[i][5], odRight[i][3], odRight[i][4], odRight[i][5]);
+        odData[i].push(odLeft[i][6], odLeft[i][7], odLeft[i][8], odRight[i][6], odRight[i][7], odRight[i][8]);
       }
 
       console.log(response.data)
       console.log(odData);
-      //console.log(this.state.vialData);
+      console.log(this.state.vialData);
       let newVialData = this.state.vialData;
       // if stop was pressed or user still moving vials around, don't want to continue
       if (this.state.readProgress === 0) {

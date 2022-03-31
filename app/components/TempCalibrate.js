@@ -85,7 +85,7 @@ class TempCal extends React.Component {
       disableBackward: true,
       progressCompleted: 0,
       quadOpacities: new Array(4).fill(1),
-      enteredValues: new Array(72).fill(''),
+      enteredValues: new Array(4).fill().map(() => Array(18).fill('')),
       generalOpacity: new Array(4).fill(1),
       tempInputsFloat: [],
       readProgress: 0,
@@ -96,7 +96,7 @@ class TempCal extends React.Component {
       quadLabels: ['SQ0', 'SQ1', 'SQ2', 'SQ3'],
       smartQuadLabels: ['SQ0 Sensor Average','SQ1 Sensor Average','SQ2 Sensor Average','SQ3 Sensor Average'],
       quadsData: [],
-      powerLevels: [[1000,1000,1000,1000], [2000,2000,2000,2000], [3000,3000,3000,3000]],
+      powerLevels: [[1250,1250,1250,1250], [1875,1875,1875,1875], [2500,2500,2500,2500]],
       timesRead: 3,
       valueInputs: [],
       tempStream: [],
@@ -173,7 +173,7 @@ class TempCal extends React.Component {
                 });
           }
 	    });
-      console.log(this.state.readProgress)
+      console.log(this.state.quadsData);
     }.bind(this));
 
     this.props.socket.on('calibrationrawcallback', function(response) {
@@ -260,7 +260,6 @@ class TempCal extends React.Component {
      let readProgress = this.state.readProgress;
      readProgress = readProgress + (100/this.state.timesRead);
      this.setState({readProgress: readProgress});
-     console.log(this.state.readProgress);
    };
 
   handleBack = () => {
@@ -359,32 +358,19 @@ class TempCal extends React.Component {
   };
 
   handleRecordedData = (currentStep) => {
-    var displayedData = Array(72).fill('');
-    var quadsData = this.state.quadsData
-    for (var i = 0; i < quadsData.length; i++) {
+    let displayedData = new Array(4).fill().map(() => Array(18).fill(''));
+    for (var i = 0; i < this.state.quadsData.length; i++) {
         if (currentStep === this.state.quadsData[i].step) {
-            displayedData = this.state.quadsData[i].enteredValues;
-            break;
-        }
-    }
+          displayedData = JSON.parse(JSON.stringify(this.state.quadsData[i].enteredValues));
+          break;
+        };
+    };
     this.setState({enteredValues: displayedData})
   }
 
   handleTempInput = (tempValues) => {
     let oldEnteredValues = this.state.enteredValues;
-
-    if (this.state.selectedSmartQuad == 0) {
-      oldEnteredValues.splice(0,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
-    };
-    if (this.state.selectedSmartQuad == 1) {
-      oldEnteredValues.splice(18,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
-    };
-    if (this.state.selectedSmartQuad == 2) {
-      oldEnteredValues.splice(36,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
-    };
-    if (this.state.selectedSmartQuad == 3) {
-      oldEnteredValues.splice(54,18,tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]);
-    };
+    oldEnteredValues[this.state.selectedSmartQuad] = [tempValues[0],tempValues[1],tempValues[2],tempValues[3],tempValues[4],tempValues[5],tempValues[6],tempValues[7],tempValues[8],tempValues[9],tempValues[10],tempValues[11],tempValues[12],tempValues[13],tempValues[14],tempValues[15],tempValues[16],tempValues[17]];
     this.setState({enteredValues:oldEnteredValues})
    }
 
@@ -407,27 +393,24 @@ class TempCal extends React.Component {
    handleFinishExpt = (finishFlag) => {
       this.setState({alertOpen: true})
       console.log("Experiment Finished!");
+      console.log(this.state.quadsData);
       this.props.socket.emit("command", {param: "temp", value: this.state.powerLevels[1], immediate: true});
 
       var d = new Date();
       var currentTime = d.getTime();
-      var enteredValuesStructured = [];
-      var quadDataStructured = [];
+      var enteredValuesStructured = [new Array(3), new Array(3), new Array(3), new Array(3)];
+      var quadDataStructured = [new Array(3), new Array(3), new Array(3), new Array(3)];
 
       // TODO: Change data structure so that we don't have to do this transformation. Would require other code restructure
       // Data should be saved vial -> step -> data format, not step -> vial -> data as it is here.
-      for(var i = 0; i < this.state.quadsData.length; i++) {
-        for(var j = 0; j < this.state.quadsData[i].enteredValues.length; j++) {
-          if(!enteredValuesStructured[j]) {
-            enteredValuesStructured.push([]);
+      for (var i = 0; i < this.state.quadLabels.length; i++) {
+        for(var j = 0; j < this.state.quadsData.length; j++) {
+          let enteredValuesTemp = new Array(18).fill(0);
+          for (var k = 0; k < this.state.quadsData[j].enteredValues[i].length; k++) {
+            enteredValuesTemp[k] = parseFloat(this.state.quadsData[j].enteredValues[i][k]);
           }
-          enteredValuesStructured[j].push(parseFloat(this.state.quadsData[i].enteredValues[j]));
-        }
-        for (var j = 0; j < this.state.quadsData[0].temp.length; j++) {
-          if (!quadDataStructured[j]) {
-            quadDataStructured.push(new Array(3).fill([]));
-          }
-          quadDataStructured[j][i] = this.state.quadsData[i].temp[j];
+          enteredValuesStructured[i][j] = JSON.parse(JSON.stringify(enteredValuesTemp));
+          quadDataStructured[i][j] = JSON.parse(JSON.stringify(this.state.quadsData[j].temp[i]))
         }
       }
       var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', quadsData: quadDataStructured}]}
@@ -571,7 +554,6 @@ class TempCal extends React.Component {
     if (this.state.exiting) {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
     }
-
     let tempCalInput;
     if (this.state.selectedSmartQuad == 0) {
       tempCalInput = <TempCalInput0
@@ -580,7 +562,7 @@ class TempCal extends React.Component {
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues.slice(0,18)}/>
+        enteredValues = {this.state.enteredValues[0]}/>
     } else if (this.state.selectedSmartQuad == 1) {
       tempCalInput = <TempCalInput1
         key='TempcalInput1'
@@ -588,7 +570,7 @@ class TempCal extends React.Component {
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues.slice(18,36)}/>
+        enteredValues = {this.state.enteredValues[1]}/>
     } else if (this.state.selectedSmartQuad == 2) {
       tempCalInput = <TempCalInput2
         key='TempcalInput2'
@@ -596,7 +578,7 @@ class TempCal extends React.Component {
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues.slice(36,54)}/>
+        enteredValues = {this.state.enteredValues[2]}/>
     } else if (this.state.selectedSmartQuad == 3) {
       tempCalInput = <TempCalInput3
         key='TempcalInput3'
@@ -604,7 +586,7 @@ class TempCal extends React.Component {
         onChangeValue={this.handleTempInput}
         onInputsEntered = {this.state.inputsEntered}
         currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues.slice(54,72)}/>
+        enteredValues = {this.state.enteredValues[3]}/>
     };
 
     return (
