@@ -1,6 +1,6 @@
 .vialPlotsMenuBtns{
-  width:30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   margin: 2px;
   border-radius: 20px;
   background-color: black;
@@ -14,32 +14,40 @@
 
 .vialPlotMenuBtnsText {
   color: orange;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: bold;
-  margin: -1px 0px 0px 0px;
+  margin: -3px 0px 0px 0px;
 }
 
 .vialPlotMenuBtnsText:hover{
   color: black;
 }
 
-.vialPlotAllMenuBtns{
-  width:70px;
-  height: 130px;
+.quadMenuBtnsText {
+  color: orange;
+  font-size: 20px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.quadMenuBtnsText:hover{
+  color: black;
+}
+
+.quadMenuBtns{
+  width: 50px;
+  height: 75px;
   margin: 2px;
   border-radius: 5px;
   background-color: black;
   border: 1px solid white;
-  position: absolute;
-  top: 392px;
-  left: 27px;
   color: orange;
   font-size: 17px;
   font-weight: bold;
 }
 
 
-.vialPlotAllMenuBtns:hover{
+.quadMenuBtns:hover{
   background-color: orange;
   color: black;
 }

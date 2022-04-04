@@ -39,7 +39,7 @@ function zipValues(odState, vialOpacities, generalOpacity, valueInputs, vialLabe
       zippedSamples[i][j] = temp;
     }
   }
-  console.log(zippedSamples)
+  //console.log(zippedSamples)
   return zippedSamples
 }
 //generalOpacity = newState.map((x, i) => x[2])
@@ -51,7 +51,7 @@ function unzipValues(zippedArray) {
   let valueInputs = [[],[],[],[]];
   let vialLabels = [[],[],[],[]];
 
-  console.log(zippedArray)
+  //console.log(zippedArray)
   for (var i = 0; i < zippedArray.length; i++) {
     odState[i] = zippedArray[i].map((x,j) => x[0]);
     vialOpacities[i] = zippedArray[i].map((x,j) => x[1]);
@@ -156,7 +156,7 @@ export default class ODCalGUI extends Component<Props> {
 
   handleAdvance = (event) => {
     let zippedSamples = zipValues(this.state.odState, this.state.vialOpacities, this.state.generalOpacity, this.state.valueInputs, this.state.vialLabels)
-    console.log(zippedSamples)
+    //console.log(zippedSamples)
     let newState = new Array(zippedSamples.length);
     for (var i = 0; i < newState.length; i++) {
       newState[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
@@ -183,7 +183,7 @@ export default class ODCalGUI extends Component<Props> {
     }
 
     let unzipped = unzipValues(newState)
-    console.log(unzipped)
+    //console.log(unzipped)
     let odState = unzipped[0]
     let vialOpacities = unzipped[1]
     let generalOpacity = unzipped[2]

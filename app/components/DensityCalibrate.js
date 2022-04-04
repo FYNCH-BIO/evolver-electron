@@ -105,8 +105,8 @@ class ODcal extends React.Component {
         odData[i].push(odLeft[i][6], odLeft[i][7], odLeft[i][8], odRight[i][6], odRight[i][7], odRight[i][8]);
       }
 
-      console.log(response.data)
-      console.log(odData);
+      //console.log(response.data)
+      //console.log(odData);
       console.log(this.state.vialData);
       let newVialData = this.state.vialData;
       // if stop was pressed or user still moving vials around, don't want to continue

@@ -31,7 +31,7 @@ const styles = theme => ({
     backgroundColor: 'black',
     position: 'absolute',
     top: '390px',
-    left: '-60px',
+    left: '-35px',
     transform: 'rotate(-90deg)',
     textAlign: 'center'
   }

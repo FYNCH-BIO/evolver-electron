@@ -8,7 +8,8 @@ const styles = {
 
 };
 
-const vialButtons = [12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3];
+const vialButtons = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17];
+const quadButtons = [0,1,2,3];
 
 
 class VialMenu extends React.Component {
@@ -31,11 +32,10 @@ class VialMenu extends React.Component {
 
         <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '350px 0px 0px 40px' }}>INDIVIDUAL PLOTS</p>
         <div style={{
-          width:'220px',
+          width:'200px',
           height: '200px',
-          padding: '0px 40px 0px 40px',
           position: 'absolute',
-          margin: '390px 0px 0px 75px'}}>
+          margin: '410px 0px 0px 130px'}}>
           {vialButtons.map((vialButton, index) => (
             <button
               className = 'vialPlotsMenuBtns'
@@ -46,11 +46,22 @@ class VialMenu extends React.Component {
             </button>
           ))}
         </div>
-        <button
-          className = 'vialPlotAllMenuBtns'
-          onClick={() => this.handleVialBtns('ALL')}>
-          ALL
-        </button>
+        <div style={{
+          width:'150px',
+          position: 'absolute',
+          margin: '380px 0px 0px 15px'
+          }}>
+        {quadButtons.map((quadButton, index) => (
+          <button
+            className = 'quadMenuBtns'
+            onClick={() => this.handleVialBtns(quadButton)}
+            key= {quadButton}
+            id={quadButton}>
+            <p className='quadMenuBtnsText'>SQ{quadButton}</p>
+          </button>
+          ))}
+        </div>
+
       </div>
 
     );
