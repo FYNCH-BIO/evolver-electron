@@ -157,7 +157,7 @@ export default class Home extends Component<Props> {
         <Link to={{pathname:routes.SETUP, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">SETUP</button></Link>
         <Link to={{pathname:routes.CALMENU, socket:this.state.socket, logger:this.logger}}><button className = "btn btn-lg homeButtons">CALIBRATIONS</button></Link>
         <Link to={{pathname:routes.EXPTMANAGER, socket:this.state.socket, logger:this.logger, evolverIp: this.state.evolverIp}}><button className = "btn btn-lg homeButtons">EXPT MANAGER</button></Link>
-      </div>);
+      </div>)
 
     var foundExpts = [];
     for (var i = 0; i < store.get('running_expts').length; i++) {
@@ -173,7 +173,7 @@ export default class Home extends Component<Props> {
         alertQuestion = {question}
         alertExperiments = {foundExpts.join("\n")}
         onClickYes = {this.handleYes}
-        onClickNo = {this.handleNo}/>;
+        onClickNo = {this.handleNo}/>
         <div className="centered">
             <div className="p-5"/>
             <div className="p-5"/>

@@ -69,6 +69,7 @@ class ExptManager extends React.Component {
     ipcRenderer.send('running-expts');
 
     ipcRenderer.on('get-ip', (event, arg) => {
+        console.log('We just got ip from main for some reason ' + arg);
       this.setState({evolverIp: arg});
       });
     if (!fs.existsSync(path.join(app.getPath('userData'), this.state.scriptDir))) {
@@ -77,7 +78,7 @@ class ExptManager extends React.Component {
       var customScriptFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'custom_script.py'));
       var evolverFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'eVOLVER.py'));
       var nbstreamreaderFile = fs.createWriteStream(path.join(app.getPath('userData'), 'template', 'nbstreamreader.py'));
-      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile)});
+      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile); console.log('done saving stuff');});
       var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
       var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
     }

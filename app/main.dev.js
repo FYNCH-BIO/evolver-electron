@@ -69,8 +69,8 @@ function storeRunningExpts() {
 /* Handle startup of a python shell instance to run the DPU */
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
-  var pythonPath = path.join(process.env.DPUENV, 'bin', 'python3')
-  // We need to make the path a variable - needs to be either set by user or we require it to be installed at a specific location.
+  var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');   
+  console.log(pythonPath);
   var options = {
       mode: 'text',
       pythonPath: pythonPath,
@@ -107,15 +107,15 @@ function killExpts(relaunch) {
       if (resultList.length === 0) {
         return;
       }
-      var process = resultList[0];
-      for (var i = 0; i < process.arguments.length; i++) {
-        if (process.arguments[i].includes('eVOLVER.py')) {
-          ps.kill(process.pid, function(err) {
+      var expt_process = resultList[0];
+      for (var i = 0; i < expt_process.arguments.length; i++) {
+        if (expt_process.arguments[i].includes('eVOLVER.py')) {
+          ps.kill(expt_process.pid, function(err) {
             if (err) {
               throw new Error(err);
             }
             else {
-              console.log('Process %s has been killed!', process.pid);
+              console.log('Process %s has been killed!', expt_process.pid);
             }
           });
           break;
@@ -130,14 +130,19 @@ function killExpts(relaunch) {
 }
 
 ipcMain.on('start-script', (event, arg) => {
+    console.log(arg);
   startPythonExpt(arg, '--always-yes');
 });
 
 ipcMain.on('stop-script', (event, arg) => {
-   exptMap[arg].childProcess.kill();
-   delete exptMap[arg]
-   storeRunningExpts();
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+   exptMap[arg].send('stop-script');
+   // Wait 3 seconds for the commands to be sent to stop the pumps before killing the process
+   setTimeout(() => {
+       exptMap[arg].childProcess.kill();
+       delete exptMap[arg];
+       storeRunningExpts();
+       mainWindow.webContents.send('running-expts',Object.keys(exptMap));}, 3000);
+   
 });
 
 ipcMain.on('running-expts', (event, arg) => {
@@ -207,7 +212,7 @@ function createWindow () {
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // Uncomment to view dev tools on startup.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event

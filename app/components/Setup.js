@@ -226,7 +226,7 @@ export default class Setup extends Component<Props> {
     evolverMessage = Array(16).fill("NaN")
     if (evolverComponent == "pump") {
       evolverMessage = Array(48).fill("--");
-      for (var i = 0; i < 48; i++) {
+      for (var i = 0; i < 48; i++) {    
         if (value.in1) {
           evolverMessage[vials[i]] = value.time;
         }
@@ -241,7 +241,7 @@ export default class Setup extends Component<Props> {
     else {
       for (var i = 0; i < vials.length; i++) {
           if (evolverComponent == "temp") {
-            evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCal.coefficients[i]).toFixed(0);
+            evolverMessage[vials[i]] = this.linearCalToRaw(value, this.state.tempCal.coefficients[vials[i]]).toFixed(0);
           }
           else {
             evolverMessage[vials[i]] = value;

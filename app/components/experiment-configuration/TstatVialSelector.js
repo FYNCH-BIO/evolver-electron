@@ -46,16 +46,17 @@ const LabelTStat = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
   </div>
 )
 
-const LabelCStat = ({ selecting, selected, vial, rate, temp, stir}) => (
+const LabelCStat = ({ selecting, selected, vial, rate, temp, stir, startTime, startOD}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
     <span className="rate-label"> {`${rate}`} </span><br/>
-    <span className="temp-label"> {`${temp}`} </span><br/>
-    <span className="stir-label"> {`${stir}`} </span>
-    <br />
+    <span className="temp-label"> {`${temp}`} </span>
+    <span className="stir-label"> {`${stir}`} </span><br/>
+    <span className="startTime-label"> {`${startTime}`} </span><br/>
+    <span className="startOD-label"> {`${startOD}`} </span><br/>            
   </div>
 )
 
@@ -100,7 +101,7 @@ class CStatList extends Component {
       <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbumCStat key={item.vial} vial={item.vial} selected={item.selected} rate={item.rate} temp={item.temp} stir={item.stir}/>
+            <SelectableAlbumCStat key={item.vial} vial={item.vial} selected={item.selected} rate={item.rate} temp={item.temp} stir={item.stir} startTime={item.startTime} startOD={item.startOD}/>
           ))}
         </div>
       </div>
@@ -145,7 +146,7 @@ const AlbumTStat = ({
 )
 
 const AlbumCStat = ({
-  selectableRef, selected, selecting, strain, vial, rate, temp, stir
+  selectableRef, selected, selecting, strain, vial, rate, temp, stir, startTime, startOD
 }) => (
   <div
     id = {"vialID-" + vial}
@@ -158,7 +159,7 @@ const AlbumCStat = ({
     `}
   >
     <div className="tick">+</div>
-    <LabelCStat selected={selected} selecting={selecting} vial={vial} strain={strain} rate={rate} temp={temp} stir={stir}/>
+    <LabelCStat selected={selected} selecting={selecting} vial={vial} strain={strain} rate={rate} temp={temp} stir={stir} startTime={startTime} startOD={startOD}/>
   </div>
 )
 

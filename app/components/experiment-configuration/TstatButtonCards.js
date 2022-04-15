@@ -16,6 +16,8 @@ import StirSlider from '../setupButtons/StirSlider'
 import RateSlider from '../setupButtons/RateSlider'
 import UpperODSlider from '../setupButtons/UpperODSlider'
 import LowerODSlider from '../setupButtons/LowerODSlider'
+import StartTimeSlider from '../setupButtons/StartTimeSlider'
+import StartODSlider from '../setupButtons/StartODSlider'
 
 
 const tutorialStepsTStat = [
@@ -60,6 +62,14 @@ const tutorialStepsCStat = [
     {
         label: 'Stir',
         outputTag: 'stir'
+    },
+    {
+        label: 'Start Time',
+        outputTag: 'startTime'
+    },
+    {
+        label: 'Start OD',
+        outputTag: 'startOD'
     }
 ]
 
@@ -131,6 +141,12 @@ function ActiveButtons(props) {
   }
   if (currentTag === 'stir') {
     return <StirSlider onSubmitButton={props.onSubmitButton}/>;
+  }
+  if (currentTag === 'startTime') {
+      return <StartTimeSlider onSubmitButton={props.onSubmitButton}/>;
+  }
+  if (currentTag === 'startOD') {
+      return <StartODSlider onSubmitButton={props.onSubmitButton}/>;
   }
   return null;
 }
