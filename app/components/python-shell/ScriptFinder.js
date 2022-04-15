@@ -11,7 +11,6 @@ import ReactTable from "react-table";
 import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
-import Circle from '../Circle'
 
 const remote = require('electron').remote;
 const Store = require('electron-store');
@@ -82,7 +81,8 @@ class ScriptFinder extends React.Component {
       selection: 'undefined',
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,
-      hoveredRow: null
+      hoveredRow: null,
+      evolverIp: this.props.evolverIp
     };
   }
 
@@ -124,8 +124,7 @@ loadFileDir = (subFolder, isScript) => {
           if (fs.existsSync(logLocation)) {
             var logData = fs.readFileSync(logLocation, 'utf8');
             var dataLines = logData.split('\n');
-            var lastTime = dataLines[dataLines.length - 2].split(' ')[0]
-            lastTime = lastTime.substring(1, lastTime.length-1);
+            var lastTime = dataLines[dataLines.length - 2].split(' ').slice(0,2).join(' ')
             var d = new Date(lastTime);
             modifiedString = moment(d).fromNow();
             modified = moment(d).valueOf();
@@ -137,7 +136,7 @@ loadFileDir = (subFolder, isScript) => {
           resultJSON['data'][i]['modifiedString'] = modifiedString;
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
           resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
-          resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+          resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? <div className="circleGreen"></div> : <div className="circleRed"></div>;
           resultJSON['data'][i]['evolver'] = this.getEvolver(resultJSON['data'][i]['key']);
 
         }
@@ -187,7 +186,7 @@ loadFileDir = (subFolder, isScript) => {
     const { fileJSON, dirLength } = this.state;
     for (var i = 0; i < fileJSON.length; i++) {
       fileJSON[i].status = this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, fileJSON[i].key)) ? "Running" : "Stopped";
-      fileJSON[i].statusDot = fileJSON[i].status === "Running" ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+      fileJSON[i].statusDot = fileJSON[i].status === "Running" ? <div className="circleGreen"></div> : <div className="circleRed"></div>;
     }
   var columns = [
       {
@@ -217,8 +216,8 @@ loadFileDir = (subFolder, isScript) => {
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.state.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, evolverIp: this.state.evolverIp, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
             {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
            </div>),
           width: 400
@@ -243,7 +242,6 @@ loadFileDir = (subFolder, isScript) => {
               onClick: (e, handleOriginal) => {
                 this.setState({selection: rowInfo.index})
                 if (handleOriginal) {
-                  console.log('handling original')
                   handleOriginal()
                 }
               },

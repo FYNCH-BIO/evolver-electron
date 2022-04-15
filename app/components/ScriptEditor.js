@@ -90,7 +90,8 @@ class ScriptEditor extends React.Component {
       showAllFiles: false,
       option: 0,
       changeNameDisabled: false,
-      vialConfiguration: []
+      vialConfiguration: [],
+      evolverIp: this.props.evolverIp
     };
 
     var customScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'custom_script.py'));
@@ -126,9 +127,7 @@ class ScriptEditor extends React.Component {
 
     ipcRenderer.send('running-expts');
   }
-
-
-
+  
   componentDidMount(){
     this.loadTable();
     this.loadSaveParameters();
@@ -302,20 +301,19 @@ class ScriptEditor extends React.Component {
       this.setState({vialConfiguration: vialConfiguration});
       if (vialConfigurationRaw) {
         if (vialConfigurationRaw.function == 'turbidostat') {
-            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'turbidostat')})
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'turbidostat'), evolverIp: vialConfigurationRaw.ip})
         }
         else if (vialConfigurationRaw.function == 'chemostat') {
-            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'chemostat')})
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'chemostat'), evolverIp: vialConfigurationRaw.ip})
         }
         else if (vialConfigurationRaw.fucntion == 'growthrate') {
-            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'growthrate')})
+            this.setState({selectedEditor: exptEditorOptions.find(a => a.value == 'growthrate'), evolverIp: vialConfigurationRaw.ip})
         }
     }
   }
 
   handleSaveParameters = (vialData) => {
       var filename = path.join(this.state.exptDir, 'eVOLVER_parameters.json');
-      console.log(vialData);
       var filehandle = fs.openSync(filename, 'w');
       fs.writeSync(filehandle, JSON.stringify(vialData));
   };
@@ -340,7 +338,8 @@ class ScriptEditor extends React.Component {
   handleSelectEvolver = (evolver) => {
     var evolverExptMap = store.get('evolverExptMap', {});
     evolverExptMap[this.state.exptDir] = evolver.label;
-    store.set('evolverExptMap', evolverExptMap)
+    this.setState({evolverIp: evolver.value});
+    store.set('evolverExptMap', evolverExptMap);
   }
 
   changeExptName = () => {
@@ -391,7 +390,7 @@ class ScriptEditor extends React.Component {
     var buttons = <div class="editor-buttons">
       <ReactTooltip />
       {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}> <FaStop size={25}/> </button> : (<button data-tip="Start experiment (begin collecting data and executing culture routine)"class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.changeNameDisabled}><FaPlay size={25}/></button>)}
-      <Link class="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.state.exptDir)}}><button data-tip="View data for this experiment" class="ebfe" onClick={() => this.onGraph()}> <FaChartBar size={25}/> </button></Link>
+      <Link class="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: this.state.exptDir, evolverIp: this.state.evolverIp}}><button data-tip="View data for this experiment" class="ebfe" onClick={() => this.onGraph()}> <FaChartBar size={25}/> </button></Link>
       <button class="ebfe" data-tip="Save file" onClick={this.savefile}><FaSave size={25}/></button>
       <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneexpt()}><FaCopy size={25}/></button>
       <button class="ebfe" data-tip="View experiments in the file browser" onClick={this.showFileBrowser}><FaFolderOpen size={25}/></button>
@@ -474,13 +473,13 @@ class ScriptEditor extends React.Component {
           </div>;
     }
     else {
-      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.props.evolverIp} function={this.state.selectedEditor.value} vialConfiguration={this.state.vialConfiguration}/></div>
+      editorComponent = <div><TstatEditor onSave={this.handleSaveParameters} evolverIp={this.state.evolverIp} function={this.state.selectedEditor.value} vialConfiguration={this.state.vialConfiguration}/></div>
     }
 
     return (
       <div>
           <div className="editorEvolverSelect">
-            <EvolverSelect title="SELECT eVOLVER" onRef={function (ref) {}} selectEvolver = {this.handleSelectEvolver} selectedExperiment = {this.state.exptDir}/>
+            <EvolverSelect title="SELECT eVOLVER" onRef={function (ref) {}} selectEvolver = {this.handleSelectEvolver} selectedExperiment = {this.state.exptDir} evolverIp={this.state.evolverIp}/>
           </div>
           <div className="editorTitle"><ReactTooltip /><span style={{fontWeight: "bold"}}>Expt Editor: </span><span style={{color:"#f58245"}} data-tip={this.state.exptName}>{exptNameFormatted}</span><button class="edit-expt-name-btn" data-tip="Change Experiment Name" onClick={this.changeExptName} disabled={this.state.changeNameDisabled}><FaPen size={15}/></button></div>
           {buttons}
@@ -510,7 +509,7 @@ class ScriptEditor extends React.Component {
             useLink = {true}
             onAlertAnswer = {this.deleteExptAlertAnswer} />
 
-        <Link className="expEditorHomeBtn" id="experiments" to={routes.EXPTMANAGER}><FaArrowLeft/></Link>
+        <Link className="expEditorHomeBtn" id="experiments" to={{pathname:routes.EXPTMANAGER, evolverIp:this.state.evolverIp}}><FaArrowLeft/></Link>
       </div>
     );
   }

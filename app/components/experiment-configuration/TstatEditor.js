@@ -11,6 +11,8 @@ import StirSlider from '../setupButtons/StirSlider';
 import RateSlider from '../setupButtons/RateSlider';
 import UpperODSlider from '../setupButtons/UpperODSlider';
 import LowerODSlider from '../setupButtons/LowerODSlider';
+import StartTimeSlider from '../setupButtons/StartTimeSlider';
+import StartODSlider from '../setupButtons/StartODSlider';
 
 const remote = require('electron').remote;
 const app = remote.app;
@@ -43,7 +45,7 @@ const styles = {
 };
 
 const defaultTstatParameters = [{"vial":0,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":1,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":2,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":3,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":4,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":5,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":6,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":7,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":8,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":9,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":10,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":11,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":12,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":13,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":14,"temp":30,"stir":8,"upper":0.85,"lower":0.3},{"vial":15,"temp":30,"stir":8,"upper":0.85,"lower":0.3}];
-const defaultCstatParameters = [{"vial":0,"temp":30,"stir":8,"rate":0.5},{"vial":1,"temp":30,"stir":8,"rate":0.5},{"vial":2,"temp":30,"stir":8,"rate":0.5},{"vial":3,"temp":30,"stir":8,"rate":0.5},{"vial":4,"temp":30,"stir":8,"rate":0.5},{"vial":5,"temp":30,"stir":8,"rate":0.5},{"vial":6,"temp":30,"stir":8,"rate":0.5},{"vial":7,"temp":30,"stir":8,"rate":0.5},{"vial":8,"temp":30,"stir":8,"rate":0.5},{"vial":9,"temp":30,"stir":8,"rate":0.5},{"vial":10,"temp":30,"stir":8,"rate":0.5},{"vial":11,"temp":30,"stir":8,"rate":0.5},{"vial":12,"temp":30,"stir":8,"rate":0.5},{"vial":13,"temp":30,"stir":8,"rate":0.5},{"vial":14,"temp":30,"stir":8,"rate":0.5},{"vial":15,"temp":30,"stir":8,"rate":0.5}];
+const defaultCstatParameters = [{"vial":0,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":1,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":2,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":3,"temp":30,"stir":8,"rate":0.5 , "startTime": 2, "startOD": .3},{"vial":4,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":5,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":6,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":7,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":8,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":9,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":10,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":11,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":12,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":13,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":14,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3},{"vial":15,"temp":30,"stir":8,"rate":0.5, "startTime": 2, "startOD": .3}];
 const defaultGrowthRateParameters = [{"vial":0,"temp":30,"stir":8},{"vial":1,"temp":30,"stir":8},{"vial":2,"temp":30,"stir":8},{"vial":3,"temp":30,"stir":8},{"vial":4,"temp":30,"stir":8},{"vial":5,"temp":30,"stir":8},{"vial":6,"temp":30,"stir":8},{"vial":7,"temp":30,"stir":8},{"vial":8,"temp":30,"stir":8},{"vial":9,"temp":30,"stir":8},{"vial":10,"temp":30,"stir":8},{"vial":11,"temp":30,"stir":8},{"vial":12,"temp":30,"stir":8},{"vial":13,"temp":30,"stir":8},{"vial":14,"temp":30,"stir":8},{"vial":15,"temp":30,"stir":8}];
 
 var fs = require('fs');
@@ -58,12 +60,14 @@ class TstatEditor extends React.Component {
             rawData: [],
             selectedItems: [],
             funct: this.props.function,
-            vialConfiguration: vc
+            vialConfiguration: vc,
+            evolverIp: this.props.evolverIp
         };
     }
 
     componentDidMount() {
         this.checkDefaults();
+        this.setState({evolverIp: this.props.evolverIp});
     }
     
     componentDidUpdate(prevProps) {        
@@ -73,6 +77,9 @@ class TstatEditor extends React.Component {
         }
         if (this.props.function !== prevProps.function) {
             this.setState({funct: this.props.function}, () => {this.checkDefaults()});
+        }
+        if (this.props.evolverIp !== prevProps.evolverIp) {
+            this.setState({evolverIp: this.props.evolverIp})
         }
     }
     
@@ -142,6 +149,8 @@ class TstatEditor extends React.Component {
         parameters = this.formatVialSelectStrings(parameters, 'rate');
         parameters = this.formatVialSelectStrings(parameters, 'temp');
         parameters = this.formatVialSelectStrings(parameters, 'stir');
+        parameters = this.formatVialSelectStrings(parameters, 'startTime');
+        parameters = this.formatVialSelectStrings(parameters, 'startOD');
         this.setState({vialData:parameters, rawData: newRawData});
     }
 
@@ -159,9 +168,6 @@ class TstatEditor extends React.Component {
 
     formatVialSelectStrings = (vialData, parameter) => {
       var newData = JSON.parse(JSON.stringify(vialData));
-      if (parameter === 'rate') {
-          console.log(newData);
-      }
       for(var i = 0; i < newData.length; i++) {
         if (parameter === 'upper'){
           newData[i].upper = 'OD: ' + newData[i].upper;
@@ -177,6 +183,12 @@ class TstatEditor extends React.Component {
         }
         if (parameter === 'stir') {
             newData[i].stir = 'Stir: ' + newData[i].stir;
+        }
+        if (parameter === 'startTime') {
+            newData[i].startTime = 'Start Time: ' + newData[i].startTime + ' h';
+        }
+        if (parameter === 'startOD') {
+            newData[i].startOD = 'Start OD: ' + newData[i].startOD;
         }
       }
       return newData;
@@ -198,6 +210,12 @@ class TstatEditor extends React.Component {
         if (component === 'stir') {
             value = 'Stir: ' + value;
         }
+        if (component === 'startTime') {
+            value = 'Start Time: ' + value + ' h';
+        }
+        if (component === 'startOD') {
+            value = 'Start OD: ' + value;
+        }
         return value;
     }
 
@@ -214,14 +232,14 @@ class TstatEditor extends React.Component {
 
     handleSave = () => {
         console.log('trying to save...');
-        var expt_config = {'function': this.state.funct, 'ip': this.props.evolverIp, 'vial_configuration': this.state.rawData};
+        var expt_config = {'function': this.state.funct, 'ip': this.state.evolverIp, 'vial_configuration': this.state.rawData};
         console.log(expt_config);
         this.props.onSave(expt_config);
     }
     
     resetToDefault = () => {
         console.log('trying to reset...');
-        var expt_config = {'function': this.state.funct, 'ip': this.props.evolverIp, 'vial_configuration': defaultTstatParameters};
+        var expt_config = {'function': this.state.funct, 'ip': this.state.evolverIp, 'vial_configuration': defaultTstatParameters};
         if (this.state.funct == 'turbidostat') {
             this.setState({vialConfiguration: defaultTstatParameters}, () => {this.checkDefaults()});
         }

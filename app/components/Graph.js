@@ -243,7 +243,7 @@ class Graph extends React.Component {
   render() {
     const { classes } = this.props;
       var backButton = this.state.activePlot == 'ALL' ? 
-        <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link> :
+        <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger, evolverIp: this.props.evolverIp}}><FaArrowLeft/></Link> :
         <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '3px', left: '-55px'}}onClick={this.setAllGraphs}><FaArrowLeft/></button>;
       var exptName = path.basename(this.props.exptDir);
       var dataDisplay = this.state.logToggleState ?

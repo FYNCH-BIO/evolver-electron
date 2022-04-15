@@ -146,6 +146,18 @@ button .tstat{
   color: white;
 }
 
+.startTime-label {
+  font-size: 10px;
+  font-style: italic;
+  color: white;
+}
+
+.startOD-label {
+  font-size: 10px;
+  font-style: italic;
+  color: white;
+}
+
 
 .tstatSelectorButtons {
 display: inline-block;

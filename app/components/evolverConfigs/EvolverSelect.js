@@ -90,6 +90,9 @@ class EvolverSelect extends React.Component {
     }
     if (store.has('evolverExptMap') && this.props.selectedExperiment) {
       selectedOption = registeredEvolvers.filter(evo => evo.label === store.get('evolverExptMap')[this.props.selectedExperiment]);
+    }    
+    if (this.props.evolverIp) {
+        selectedOption = registeredEvolvers.filter(evo => evo.value === this.props.evolverIp);
     }
     if (this.props.title !== undefined) {
       title = this.props.title;
@@ -98,7 +101,14 @@ class EvolverSelect extends React.Component {
       scanTimer: scanTimer,
       selectedOption: selectedOption,
       registeredEvolvers: registeredEvolvers,
-      title: title})
+      title: title}, () => {console.log(this.state)})
+  }
+  
+  componentDidUpdate(prevProps) {
+      if (this.props.evolverIp !== prevProps.evolverIp) {
+         var selectedOption = this.state.registeredEvolvers.filter(evo => evo.value === this.props.evolverIp);
+         this.setState({selectedOption: selectedOption});
+      }      
   }
 
   componentWillUnmount() {
@@ -150,6 +160,7 @@ class EvolverSelect extends React.Component {
     } else {
       activeEvolver = null
     }
+    console.log(activeEvolver);
     this.setState({registeredEvolvers: registeredEvolvers, selectedOption: activeEvolver})
   }
 
