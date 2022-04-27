@@ -47,7 +47,7 @@ class Graph extends React.Component {
       ymaxChoices: ymaxChoicesOD,
       ymaxTitle: 'YAXIS - MAX VALUE',
       timePlotted: '5h',
-      timePlottedChoices: ['1h', '5h', '12h', '24h'],
+      timePlottedChoices: ['ALL', '5h', '12h', '24h'],
       timePlottedTitle: 'XAXIS - RECENT DATA:',
       downsample: 5,
       parameterChoices: ['OD', 'Temp'],
@@ -120,8 +120,8 @@ class Graph extends React.Component {
 
   handleTimePlotted = event => {
     var downsample;
-    if (event == '1h'){
-      downsample = 1;
+    if (event == 'ALL'){
+      downsample = -1;
     }
     if (event == '5h'){
       downsample = 5;
@@ -226,6 +226,10 @@ class Graph extends React.Component {
         }
   }
   
+  handleDataZoom = () => {
+      this.setState({timePlotted:'None'});      
+  }
+  
     createNewExperiment = (exptName) => {
         var newDir = path.join(app.getPath('userData'), 'experiments', exptName);
         var oldDir = path.join(this.state.exptDir);
@@ -254,7 +258,8 @@ class Graph extends React.Component {
             ymax={this.state.ymax}
             timePlotted={this.state.timePlotted}
             downsample = {this.state.downsample}
-            xaxisName = {this.state.xaxisName}/> :
+            xaxisName = {this.state.xaxisName}
+            onDataZoom = {this.handleDataZoom}/> :
         <div className="logViewer"><AceEditor
             value={this.state.logData}
             width='750px'
