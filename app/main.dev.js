@@ -212,7 +212,7 @@ function createWindow () {
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // Uncomment to view dev tools on startup.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event

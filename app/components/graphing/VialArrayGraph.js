@@ -51,7 +51,10 @@ class VialArrayGraph extends React.Component {
       activePlot: this.props.activePlot,
       data: [],
       loaded: false,
-      missingData: false
+      missingData: false,
+      useDatazoomForAll: false,
+      datazoomStart: 0,
+      datazoomEnd: 100
     };
   }
 
@@ -81,6 +84,9 @@ class VialArrayGraph extends React.Component {
         timePlotted: this.props.timePlotted,
         loaded: false,
         missingData: false,
+        useDatazoomForAll: false,
+        datazoomStart: 0,
+        datazoomEnd: 100,
         downsample: this.props.downsample
         },
         () => this.getData())
@@ -108,6 +114,31 @@ class VialArrayGraph extends React.Component {
     }
     return option
   }
+  
+  getDownsample = (dataArray, start, end) => {
+      // Variable downsampling based on data length. This is for the ALL x timescale, which uses -1 as a flag.
+      var downsample = this.state.downsample;
+      var trimmedData = [];
+      for (var i = 0; i < dataArray.length - 1; i++) {
+          var t = dataArray[i].split(',')[0];
+          if (t >= start && t <= end) {
+              trimmedData.push(dataArray[i]);
+          }
+      }
+      if ((downsample === -1 && trimmedData.length > 5000) || this.state.useDatazoomForAll) {
+        downsample = Math.ceil(trimmedData.length / 100);
+      }      
+      return downsample;
+  }
+  
+  handleDatazoom = (dzObject) => {
+      console.log(dzObject);
+      this.setState({datazoomStart: dzObject.start, datazoomEnd: dzObject.end, useDatazoomForAll:true, timePlotted: 'None'}, () => {
+          this.getData();
+          this.props.onDataZoom();
+      })
+      
+  }
 
   getData = () => {
     var option = []; var compiled_data = [];
@@ -121,7 +152,10 @@ class VialArrayGraph extends React.Component {
         var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
         var data = []; var ymin;
-        var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
+        var timePlotted = Number.MAX_SAFE_INTEGER;
+        if (this.state.timePlotted !== 'ALL') {
+            timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));   
+        }        
 
         if (this.state.parameter == 'OD'){
           ymin = -0.1;
@@ -133,20 +167,31 @@ class VialArrayGraph extends React.Component {
             this.setState({missingData: true});
             return;
           }
+          
           var lastTime = odArray[odArray.length -2].split(',')[0]
-          for (var j = odArray.length -1 ; j > 1; j=j-this.state.downsample) {
-            var parsed_value = odArray[j].split(',')
-            parsed_value[0] = parseFloat(parsed_value[0])
-            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(4))
-            if (( lastTime - parsed_value[0] )> timePlotted){
-              break
-            } else {
-              data.push(parsed_value)
+          var lowerTime = this.state.useDatazoomForAll ? this.state.datazoomStart/100 * lastTime : odArray[1].split(',')[0];
+          var upperTime = this.state.useDatazoomForAll ? this.state.datazoomEnd/100 * lastTime: lastTime;
+          var downsample = this.getDownsample(odArray, lowerTime, upperTime);
+          for (var j = odArray.length -1 ; j > 1; j=j-downsample) {
+            var parsed_value = odArray[j].split(',') 
+           parsed_value[0] = parseFloat(parsed_value[0])
+            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(4))         
+            if (this.state.useDatazoomForAll) {                
+                if (parsed_value[0] >= lowerTime && parsed_value[0] <= upperTime) {
+                    data.push(parsed_value);
+                }
+            }
+            else {
+                if (( lastTime - parsed_value[0] ) > timePlotted){
+                  break;
+                } else {
+                  data.push(parsed_value)
+                }
             }
           }
         }
-
-        if (this.state.parameter == 'Temp'){
+ 
+       if (this.state.parameter == 'Temp'){
           ymin = 20;
           var tempArray;
           try {
@@ -155,16 +200,27 @@ class VialArrayGraph extends React.Component {
           catch (error) {
             this.setState({missingData: true});
             return;
-          }
+          }          
           var lastTime = tempArray[tempArray.length -2].split(',')[0]
-          for (var j = tempArray.length -1 ; j > 1; j=j-this.state.downsample) {
-            var parsed_value = tempArray[j].split(',')
+          var lowerTime = this.state.useDatazoomForAll ? this.state.datazoomStart/100 * lastTime : tempArray[1].split(',')[0];
+          var upperTime = this.state.useDatazoomForAll ? this.state.datazoomEnd/100 * lastTime: lastTime;
+          var downsample = this.getDownsample(tempArray, lowerTime, upperTime);
+          // Last element is blank. TODO: Fix in dpu code.
+          for (var j = tempArray.length - 2 ; j > 1; j=j-downsample) {
+            var parsed_value = tempArray[j].split(',')            
             parsed_value[0] = parseFloat(parsed_value[0])
             parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(2))
-            if (( lastTime - parsed_value[0] )> timePlotted){
-              break
-            } else {
-              data.push(parsed_value)
+            if (this.state.useDatazoomForAll) {
+                if (parsed_value[0] >= lowerTime && parsed_value[0] <= upperTime) {
+                    data.push(parsed_value)
+                }
+            }
+            else {
+                if (( lastTime - parsed_value[0] )> timePlotted){
+                  break;
+                } else {
+                  data.push(parsed_value)
+                }                
             }
           }
         }
@@ -173,10 +229,6 @@ class VialArrayGraph extends React.Component {
         option[i] = this.allVials(i, data, ymin, this.state.ymax)
         }
       } else {
-
-        console.log('Plotting Vial: ' + this.state.activePlot)
-
-
         var odPath =  path.join(this.props.exptDir, 'data', 'OD', 'vial' + this.state.activePlot + '_OD.txt');
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + this.state.activePlot + '_temp.txt');
         var data = []; var ymin;
@@ -222,7 +274,6 @@ class VialArrayGraph extends React.Component {
         compiled_data[i] = data;
         option.push(this.singleVial(this.state.activePlot, data, ymin, this.state.ymax))
       }
-      console.log(option)
       this.setState({data: compiled_data, option: option, loaded: true, missingData: false})
     }
 
@@ -298,7 +349,7 @@ class VialArrayGraph extends React.Component {
     series: [
       {
         type:'scatter',
-        symbolSize: [2, 2],
+        symbolSize: [3, 3],
         yAxisIndex: 0,
         itemStyle: {
             normal: {
@@ -322,8 +373,8 @@ class VialArrayGraph extends React.Component {
     },
     dataZoom: {
       show: true,
-      start: 0,
-      end: 100,
+      start: this.state.datazoomStart,
+      end: this.state.datazoomEnd,
       textStyle: {
         color: 'white'
       },
@@ -382,7 +433,7 @@ class VialArrayGraph extends React.Component {
     series: [
       {
         type:'scatter',
-        symbolSize: [2, 2],
+        symbolSize: [3, 3],
         yAxisIndex: 0,
         itemStyle: {
             normal: {
@@ -431,6 +482,9 @@ class VialArrayGraph extends React.Component {
         <div style={{position: 'absolute', margin: '25px 0px 0px 0px'}}>
           <ReactEcharts
             option={this.state.option[0]}
+            onEvents={{
+                'datazoom': this.handleDatazoom
+            }}
             style={{height: 530, width: 730}} />
             {loadingText}
         </div>
