@@ -9,6 +9,7 @@ import VialArrayGraph from './graphing/VialArrayGraph';
 import VialArrayBtns from './graphing/VialArrayBtns';
 import VialMenu from './graphing/VialMenu';
 import AceEditor from 'react-ace';
+import {FaFileAlt, FaFileExport, FaChartBar} from 'react-icons/fa';
 
 const { dialog } = require('electron').remote
 
@@ -33,7 +34,7 @@ class Graph extends React.Component {
     this.state = {
       ymax: '0.5',
       ymaxChoices: ymaxChoicesOD,
-      ymaxTitle: 'YAXIS - MAX VALUE',
+      ymaxTitle: 'YAXIS - MAX VALUE:',
       timePlotted: '5h',
       timePlottedChoices: ['1h', '5h', '12h', '24h'],
       timePlottedTitle: 'XAXIS - RECENT DATA:',
@@ -46,7 +47,8 @@ class Graph extends React.Component {
       logToggleText: 'VIEW LOGS',
       logToggleOptions: ['VIEW GRAPH', 'VIEW LOGS'],
       logToggleState: true,
-      logData: ''
+      logData: '',
+      selectedSmartQuad: 0,
     };
   }
 
@@ -148,18 +150,23 @@ class Graph extends React.Component {
     this.setState({logToggleState: logToggleState, logToggleText: logToggleText});
   }
 
-  handleActivePlot = (event) => {
-    this.setState({activePlot: event})
+  handleActivePlot = (vial) => {
+    this.setState({activePlot:vial})
+  }
+
+  handleSmartQuadSelection = (smartQuad) => {
+    this.setState({selectedSmartQuad: smartQuad})
   }
 
   render() {
     const { classes } = this.props;
-      var exptName = path.basename(this.props.exptDir);
-      var dataDisplay = this.state.logToggleState ?
+    var exptName = path.basename(this.props.exptDir);
+    var dataDisplay = this.state.logToggleState ?
         <VialArrayGraph
             parameter={this.state.parameter}
             exptDir={this.props.exptDir}
             activePlot = {this.state.activePlot}
+            selectedSmartQuad={this.state.selectedSmartQuad}
             ymax={this.state.ymax}
             timePlotted={this.state.timePlotted}
             downsample = {this.state.downsample}
@@ -175,20 +182,23 @@ class Graph extends React.Component {
             showGutter={false}
             setOptions={{autoScrollEditorIntoView:true}}
             editorProps={{$blockScrolling: true}}/></div>
+    let logGraph = this.state.logToggleState ?
+      <button className={"dataActionButton"} onClick={this.toggleLog}><FaFileAlt size={40}/></button> :
+      <button className={"dataActionButton"} onClick={this.toggleLog}><FaChartBar size={40}/></button>
 
     return (
       <div>
         <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
                 <h4 className="graphTitle">{exptName}</h4>
                 {dataDisplay}
-        <div style={{position: 'absolute', top: '100px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '100px', left: '8px'}}>
           <VialArrayBtns
             labels={this.state.parameterChoices}
             radioTitle = {this.state.parameterTitle}
             value={this.state.parameter}
             onSelectRadio={this.handleParameterSelect}/>
         </div>
-        <div style={{position: 'absolute', top: '185px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '185px', left: '8px'}}>
           <VialArrayBtns
             labels={this.state.timePlottedChoices}
             radioTitle = {this.state.timePlottedTitle}
@@ -200,10 +210,13 @@ class Graph extends React.Component {
             value={this.state.ymax}
             onSelectRadio={this.handleYmax}/>
         </div>
-        <VialMenu onSelectGraph={this.handleActivePlot}/>
+        <VialMenu
+          onSelectGraph={this.handleActivePlot}
+          onSmartQuadSelect={this.handleSmartQuadSelection}
+          activePlot={this.activePlot}/>
         <div className="dataActionButtons">
-          <button className={"dataActionButton"} onClick={this.downloadData}>DOWNLOAD</button>
-          <button className={"dataActionButton"} onClick={this.toggleLog}>{this.state.logToggleText}</button>
+          <button className={"dataActionButton"} onClick={this.downloadData}> <FaFileExport size={40}/> </button>
+          {logGraph}
         </div>
       </div>
 

@@ -9,56 +9,104 @@ const styles = {
 };
 
 const vialButtons = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17];
-const quadButtons = [0,1,2,3];
+const quadButtons = [2,3,0,1];
 
 
 class VialMenu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      selectedSmartQuad: 0,
+      activePlot: 'ALL'
     };
   }
 
-  handleVialBtns = (id) => {
-    this.props.onSelectGraph(id);
+  handlePlotToggle = (activePlot) => {
+    this.props.onSelectGraph(activePlot);
+    this.setState({activePlot:activePlot})
   }
 
+  handleSmartQuadSelection = (smartQuad) => {
+    this.setState({selectedSmartQuad: smartQuad});
+    this.props.onSmartQuadSelect(smartQuad);
+  }
+
+
   render() {
+    let plotToggle;
+    if (this.state.activePlot == 'ALL') {
+      plotToggle =
+      <div style={{
+        width:'200px',
+        height: '200px',
+        position: 'absolute',
+        margin: '455px 0px 0px 25px'}}>
+          <button
+            className = 'allMenuBtnSelected'
+            onClick={() => this.handlePlotToggle('ALL')}
+            key= 'allVials'
+            id='allVials'>
+            <p className='allMenuBtnTextSelected'>SQ{this.state.selectedSmartQuad}ALL</p>
+          </button>
+      </div>
+    } else {
+      plotToggle =
+      <div style={{
+        width:'200px',
+        height: '200px',
+        position: 'absolute',
+        margin: '455px 0px 0px 25px'}}>
+          <button
+            className = 'allMenuBtn'
+            onClick={() => this.handlePlotToggle('ALL')}
+            key= 'allVials'
+            id='allVials'>
+            <p className='allMenuBtnText'>SQ{this.state.selectedSmartQuad}ALL</p>
+          </button>
+      </div>
+    }
+
     return (
 
-      <div style={{
-        width:'300px',
-        height: '500px'}}>
-
-        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '350px 0px 0px 40px' }}>INDIVIDUAL PLOTS</p>
+      <div>
+        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '350px 0px 0px 8px' }}>PLOT SELECTION</p>
         <div style={{
-          width:'200px',
-          height: '200px',
+          width:'300px',
           position: 'absolute',
-          margin: '410px 0px 0px 130px'}}>
-          {vialButtons.map((vialButton, index) => (
-            <button
-              className = 'vialPlotsMenuBtns'
-              onClick={() => this.handleVialBtns(vialButton)}
-              key= {vialButton}
-              id={vialButton}>
-              <p className='vialPlotMenuBtnsText'>{vialButton}</p>
-            </button>
-          ))}
-        </div>
-        <div style={{
-          width:'150px',
-          position: 'absolute',
-          margin: '380px 0px 0px 15px'
+          margin: '380px 0px 0px 10px'
           }}>
         {quadButtons.map((quadButton, index) => (
+          quadButton == this.state.selectedSmartQuad ?
+          <button
+            className = 'quadMenuBtnsSelected'
+            onClick={() => this.handleSmartQuadSelection(quadButton)}
+            key= {quadButton}
+            id={quadButton}>
+            <p className='quadMenuBtnsTextSelected'>SQ{quadButton}</p>
+          </button> :
           <button
             className = 'quadMenuBtns'
-            onClick={() => this.handleVialBtns(quadButton)}
+            onClick={() => this.handleSmartQuadSelection(quadButton)}
             key= {quadButton}
             id={quadButton}>
             <p className='quadMenuBtnsText'>SQ{quadButton}</p>
           </button>
+          ))}
+        </div>
+        {plotToggle}
+        <div style={{
+          width:'200px',
+          height: '200px',
+          position: 'absolute',
+          margin: '455px 0px 0px 10px'}}>
+          {vialButtons.map((vialButton, index) => (
+            <button
+              className = 'vialPlotsMenuBtns'
+              onClick={() => this.handlePlotToggle(vialButton)}
+              key= {vialButton}
+              id={vialButton}>
+              <p className='vialPlotMenuBtnsText'>{vialButton}</p>
+            </button>
           ))}
         </div>
 

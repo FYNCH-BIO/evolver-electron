@@ -72,7 +72,7 @@ function startPythonExpt(exptDir, flag) {
   // We need to make the path a variable - needs to be either set by user or we require it to be installed at a specific location.
   var options = {
       mode: 'text',
-      pythonPath: '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3',
+      pythonPath: '/Users/ht_evolver/.pyenv/versions/evolver-electron/bin/python',
       args: flag
     };
   var pyShell = new PythonShell(scriptName, options);

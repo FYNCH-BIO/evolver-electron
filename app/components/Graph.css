@@ -25,7 +25,14 @@
 
 .quadMenuBtnsText {
   color: orange;
-  font-size: 20px;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.quadMenuBtnsTextSelected {
+  color: black;
+  font-size: 15px;
   font-weight: bold;
   margin: -3px 0px 0px 0px;
 }
@@ -34,9 +41,27 @@
   color: black;
 }
 
+.allMenuBtnText {
+  color: orange;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.allMenuBtnTextSelected {
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.allMenuBtnText:hover{
+  color: black;
+}
+
 .quadMenuBtns{
-  width: 50px;
-  height: 75px;
+  width: 100px;
+  height: 30px;
   margin: 2px;
   border-radius: 5px;
   background-color: black;
@@ -46,8 +71,51 @@
   font-weight: bold;
 }
 
+.quadMenuBtnsSelected{
+  width: 100px;
+  height: 30px;
+  margin: 2px;
+  border-radius: 5px;
+  background-color: orange;
+  border: 1px solid white;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+}
+
 
 .quadMenuBtns:hover{
+  background-color: orange;
+  color: black;
+}
+
+.allMenuBtn{
+  width: 42px;
+  height: 85px;
+  margin: 0px 0px 0px 170px;
+  overflow-wrap: break-word;
+  border-radius: 5px;
+  background-color: black;
+  border: 1px solid white;
+  color: orange;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.allMenuBtnSelected{
+  width: 42px;
+  height: 85px;
+  margin: 0px 0px 0px 170px;
+  overflow-wrap: break-word;
+  border-radius: 5px;
+  background-color: orange;
+  border: 1px solid white;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.allMenuBtn:hover{
   background-color: orange;
   color: black;
 }
@@ -62,13 +130,13 @@
 .dataActionButtons {
   position: absolute;
   top: 550px;
-  left: 20px;
-  width: 400px;
+  left: 45px;
+  width: 300px;
   overflow-y: auto;
 }
 
 .dataActionButton {
-  width: 150px;
+  width: 60px;
   margin: 0px 10px 0px 0px;
 }
 

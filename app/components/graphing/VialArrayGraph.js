@@ -51,13 +51,18 @@ class VialArrayGraph extends React.Component {
       activePlot: this.props.activePlot,
       data: [],
       loaded: false,
-      missingData: false
+      missingData: false,
+      selectedSmartQuad: this.props.selectedSmartQuad
     };
   }
 
   timeTicket = null;
 
   componentDidUpdate(prevProps) {
+    if (this.props.selectedSmartQuad !== prevProps.selectedSmartQuad) {
+      this.setState({ selectedSmartQuad: this.props.selectedSmartQuad},
+        () => this.getData())
+    }
     if (this.props.activePlot !== prevProps.activePlot) {
       this.setState({ activePlot: this.props.activePlot},
         () => this.getData())
@@ -88,6 +93,7 @@ class VialArrayGraph extends React.Component {
   }
 
   componentDidMount () {
+    console.log(this.props)
     setTimeout(this.getData, 100);
     if (this.timeTicket) {
       clearInterval(this.timeTicket);
@@ -103,8 +109,8 @@ class VialArrayGraph extends React.Component {
 
   initializeGraphs = () => {
     var option = [];
-    for (var i = 0; i < 16; i++) {
-      option[i] = this.allVials(i, [], null, null)
+    for (var i = 0; i < 18; i++) {
+      option[i] = this.allVials(i, 0, [], null, null)
     }
     return option
   }
@@ -114,12 +120,13 @@ class VialArrayGraph extends React.Component {
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
       if (!fs.existsSync(path.join(this.props.exptDir,'data'))) {
+        console.log(path.join(this.props.exptDir,'data'))
         this.setState({missingData: true});
         return;
       }
-      for (var i = 0; i < 16; i++) {
-        var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
-        var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
+      for (var i = 0; i < 18; i++) {
+        var odPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'OD', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + i.toString() + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'temp', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + i.toString() + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
@@ -170,15 +177,15 @@ class VialArrayGraph extends React.Component {
         }
 
         compiled_data[i] = data;
-        option[i] = this.allVials(i, data, ymin, this.state.ymax)
+        option[i] = this.allVials(i, this.state.selectedSmartQuad, data, ymin, this.state.ymax)
         }
       } else {
 
         console.log('Plotting Vial: ' + this.state.activePlot)
 
 
-        var odPath =  path.join(this.props.exptDir, 'data', 'OD', 'vial' + this.state.activePlot + '_OD.txt');
-        var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + this.state.activePlot + '_temp.txt');
+        var odPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'OD', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + this.state.activePlot.toString() + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'temp', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + this.state.activePlot.toString() + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
@@ -226,14 +233,14 @@ class VialArrayGraph extends React.Component {
       this.setState({data: compiled_data, option: option, loaded: true, missingData: false})
     }
 
-  allVials = (vial, data, ymin, ymax) => ({
+  allVials = (vial, quad, data, ymin, ymax) => ({
     title: {
-      text:'Vial ' + vial,
-      top: -5,
-      left: '41%',
+      text: 'SQ:' + quad + ' Vial ' + vial,
+      top: 0,
+      left: '22%',
       textStyle: {
         color: 'white',
-        fontSize: 20,
+        fontSize: 15,
       }
     },
     dataZoom: {
@@ -312,9 +319,9 @@ class VialArrayGraph extends React.Component {
 
   singleVial = (vial, data, ymin, ymax) => ({
     title: {
-      text:'Vial ' + vial,
+      text:'SQ:' + this.state.selectedSmartQuad.toString() + ' Vial:' + vial,
       top: 0,
-      left: '50%',
+      left: '40%',
       textStyle: {
         color: 'white',
         fontSize: 30,
@@ -417,7 +424,7 @@ class VialArrayGraph extends React.Component {
             <div key={index}>
               <ReactEcharts ref={index} key={index}
                 option={this.state.option[index]}
-                style={{height: 140, width: 190}} />
+                style={{height: 190, width: 135}} />
               {loadingText}
             </div>
             ))}
@@ -438,13 +445,7 @@ class VialArrayGraph extends React.Component {
 
 
     return (
-      <div className='row' style={{position: 'absolute', margin: '25px 0px 0px 345px'}} >
-        <Paper square elevation={10} className={classes.xaxisTitle}>
-          <Typography variant="h5" className={classes.title}> EXPERIMENT TIME (h) </Typography>
-        </Paper>
-        <Paper square elevation={10} className={classes.yaxisTitle}>
-          <Typography variant="h5" className={classes.title}> {this.state.xaxisName} </Typography>
-        </Paper>
+      <div className='row' style={{position: 'absolute', margin: '25px 0px 0px 275px'}} >
         {graph}
       </div>
 

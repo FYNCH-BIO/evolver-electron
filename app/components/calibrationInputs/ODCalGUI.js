@@ -83,7 +83,7 @@ export default class ODCalGUI extends Component<Props> {
   constructor(props) {
     super(props);
     this.state = {
-      odState: Array(4).fill([12,13,14,15,16,17,6,7,8,9,10,11,0,1,2,3,4,5]),
+      odState: Array(4).fill([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]),
       vialOpacities: this.props.vialOpacities,
       generalOpacity: this.props.generalOpacity,
       valueInputs: this.props.valueInputs,
@@ -117,19 +117,19 @@ export default class ODCalGUI extends Component<Props> {
       newState[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
     }
     for (var i = 0; i < zippedSamples.length; i++) {
-      newState[i][11] = zippedSamples[i][0]
+      newState[i][17] = zippedSamples[i][0]
       newState[i][0] = zippedSamples[i][1]
       newState[i][1] = zippedSamples[i][2]
       newState[i][2] = zippedSamples[i][3]
       newState[i][3] = zippedSamples[i][4]
       newState[i][4] = zippedSamples[i][5]
-      newState[i][17] = zippedSamples[i][6]
+      newState[i][5] = zippedSamples[i][6]
       newState[i][6] = zippedSamples[i][7]
       newState[i][7] = zippedSamples[i][8]
       newState[i][8] = zippedSamples[i][9]
       newState[i][9] = zippedSamples[i][10]
       newState[i][10] = zippedSamples[i][11]
-      newState[i][5] = zippedSamples[i][12]
+      newState[i][11] = zippedSamples[i][12]
       newState[i][12] = zippedSamples[i][13]
       newState[i][13] = zippedSamples[i][14]
       newState[i][14] = zippedSamples[i][15]
@@ -162,19 +162,19 @@ export default class ODCalGUI extends Component<Props> {
       newState[i] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],];
     }
     for (var i = 0; i < zippedSamples.length; i++) {
-      newState[i][0] = zippedSamples[i][11]
+      newState[i][0] = zippedSamples[i][17]
       newState[i][1] = zippedSamples[i][0]
       newState[i][2] = zippedSamples[i][1]
       newState[i][3] = zippedSamples[i][2]
       newState[i][4] = zippedSamples[i][3]
       newState[i][5] = zippedSamples[i][4]
-      newState[i][6] = zippedSamples[i][17]
+      newState[i][6] = zippedSamples[i][5]
       newState[i][7] = zippedSamples[i][6]
       newState[i][8] = zippedSamples[i][7]
       newState[i][9] = zippedSamples[i][8]
       newState[i][10] = zippedSamples[i][9]
       newState[i][11] = zippedSamples[i][10]
-      newState[i][12] = zippedSamples[i][5]
+      newState[i][12] = zippedSamples[i][11]
       newState[i][13] = zippedSamples[i][12]
       newState[i][14] = zippedSamples[i][13]
       newState[i][15] = zippedSamples[i][14]

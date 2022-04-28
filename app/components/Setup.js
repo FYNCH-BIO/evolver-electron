@@ -38,7 +38,10 @@ export default class Setup extends Component<Props> {
       this.control = Array.from(new Array(32).keys()).map(item => Math.pow(2,item));
       this.props.socket.emit('getactivecal', {});
       this.props.socket.emit('getfitnames', {});
-      this.props.socket.on('broadcast', function(response) {this.handleRawData(this.handlePiIncoming(response.data), this.state.showRawOD, this.state.showRawTemp)}.bind(this));
+      this.props.socket.on('broadcast', function(response) {
+        if (!response.dummy) {
+          this.handleRawData(this.handlePiIncoming(response.data), this.state.showRawOD, this.state.showRawTemp)
+        }}.bind(this));
       this.props.socket.on('fitnames', function(response) {
         var odCalFiles = [];
         var tempCalFiles = [];
@@ -58,6 +61,7 @@ export default class Setup extends Component<Props> {
 
       }.bind(this))
       this.props.socket.on('activecalibrations', function(response) {
+        console.log(response)
         var activeODCal;
         var activeTempCal;
         var activePumpCal;
@@ -87,6 +91,7 @@ export default class Setup extends Component<Props> {
     console.log(this.props.socket)
     this.props.logger.info('Routed to Setup Page.')
     var initialData = this.state.rawVialData;
+    console.log(initialData)
     initialData = this.handleRawToCal(initialData);
     initialData = this.formatVialSelectStrings(initialData, 'od');
     initialData = this.formatVialSelectStrings(initialData, 'temp');
@@ -109,6 +114,7 @@ export default class Setup extends Component<Props> {
   }
 
   handlePiIncoming = (response) => {
+    console.log(response)
     var responseData = JSON.parse(JSON.stringify(response));
     var rawData = Array.apply(null, Array(16)).map(function () {});
     for(var i = 0; i < this.state.vialData.length; i++) {
@@ -116,7 +122,7 @@ export default class Setup extends Component<Props> {
       rawData[i].vial = this.state.vialData[i].vial;
       rawData[i].selected = this.state.vialData[i].selected;
 
-      rawData[i].od_135 = responseData.od_135[i];
+      //rawData[i].od_135 = responseData.od_135[i];
       rawData[i].od_90 = responseData.od_90[i];
       rawData[i].temp = responseData.temp[i];
     }
@@ -124,7 +130,6 @@ export default class Setup extends Component<Props> {
   }
 
   handleRawData = (rawData, showRawOD, showRawTemp) => {
-    console.log(rawData)
     var newVialData = this.handleRawToCal(rawData, showRawOD, showRawTemp);
     if (!showRawOD && (this.state.odCal.length !== 0)){
       newVialData = this.formatVialSelectStrings(newVialData, 'od');
@@ -169,6 +174,9 @@ export default class Setup extends Component<Props> {
             console.log(err);
         }
         try {
+          console.log(newVialData)
+          console.log(this.state.tempCal)
+          console.log(showRawTemp)
           if ((!showRawTemp) && (this.state.tempCal.length !== 0)){
             newVialData[i].temp = this.linearRawToCal(newVialData[i].temp, this.state.tempCal.coefficients[i]).toFixed(2);
           } else if (this.state.tempCal.length == 0) {

@@ -18,11 +18,11 @@ const styles = theme => ({
     display: 'flex',
     width: '300px',
     padding: '0px 0px 30px 0px',
-    justifyContent: 'center',
+    justifyContent: 'left',
   },
   label: {
     color: 'white',
-    textAlign: 'center',
+    textAlign: 'left',
     fontSize: '20px',
     fontWeight: 'bold',
     '&$focused': {
