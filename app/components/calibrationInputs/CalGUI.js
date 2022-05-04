@@ -160,15 +160,23 @@ export default class ODcalGUI extends Component<Props> {
 
   render() {
     const { odState } = this.state;
-
-    return(
-      <div>
+    let outputs;
+    if (this.props.displayGraphs) {
+        outputs = <div></div>
+    }
+    else {
+        outputs = 
+                      <div>
         <VialItem
           currentValue = {this.state.zipped}
         />
         <VialOutline
           readProgress = {this.state.readProgress}/>
       </div>
+    }
+
+    return(
+            <div>{outputs}</div>
 
     );
   }

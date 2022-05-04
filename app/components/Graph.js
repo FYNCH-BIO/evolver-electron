@@ -258,8 +258,10 @@ class Graph extends React.Component {
             ymax={this.state.ymax}
             timePlotted={this.state.timePlotted}
             downsample = {this.state.downsample}
-            xaxisName = {this.state.xaxisName}
-            onDataZoom = {this.handleDataZoom}/> :
+            yaxisName = {this.state.xaxisName}
+            xaxisName = {'EXPERIMENT TIME (h)'}
+            onDataZoom = {this.handleDataZoom}
+            dataType = {{type: 'experiment'}}/> :
         <div className="logViewer"><AceEditor
             value={this.state.logData}
             width='750px'

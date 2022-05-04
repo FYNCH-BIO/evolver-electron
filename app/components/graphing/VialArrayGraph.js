@@ -47,6 +47,7 @@ class VialArrayGraph extends React.Component {
       timePlotted: this.props.timePlotted,
       downsample: this.props.downsample,
       parameter: this.props.parameter,
+      yaxisName: this.props.yaxisName,
       xaxisName: this.props.xaxisName,
       activePlot: this.props.activePlot,
       data: [],
@@ -54,7 +55,9 @@ class VialArrayGraph extends React.Component {
       missingData: false,
       useDatazoomForAll: false,
       datazoomStart: 0,
-      datazoomEnd: 100
+      datazoomEnd: 100,
+      dataType: this.props.dataType,
+      passedData: this.props.passedData,
     };
   }
 
@@ -75,7 +78,8 @@ class VialArrayGraph extends React.Component {
         ymax: this.props.ymax,
         loaded: false,
         missingData: false,
-        xaxisName: this.props.xaxisName,
+        yaxisName: this.props.yaxisName,
+        xaxisName: this.props.xaxisName
       },
         () => this.getData())
     }
@@ -114,7 +118,7 @@ class VialArrayGraph extends React.Component {
     }
     return option
   }
-  
+
   getDownsample = (dataArray, start, end) => {
       // Variable downsampling based on data length. This is for the ALL x timescale, which uses -1 as a flag.
       var downsample = this.state.downsample;
@@ -127,24 +131,24 @@ class VialArrayGraph extends React.Component {
       }
       if ((downsample === -1 && trimmedData.length > 5000) || this.state.useDatazoomForAll) {
         downsample = Math.ceil(trimmedData.length / 100);
-      }      
+      }
       return downsample;
   }
-  
+
   handleDatazoom = (dzObject) => {
       console.log(dzObject);
       this.setState({datazoomStart: dzObject.start, datazoomEnd: dzObject.end, useDatazoomForAll:true, timePlotted: 'None'}, () => {
           this.getData();
           this.props.onDataZoom();
       })
-      
+
   }
 
   getData = () => {
     var option = []; var compiled_data = [];
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
-      if (!fs.existsSync(path.join(this.props.exptDir,'data'))) {
+      if (this.state.dataType.type !== 'calibration' && !fs.existsSync(path.join(this.props.exptDir,'data'))) {
         this.setState({missingData: true});
         return;
       }
@@ -153,9 +157,28 @@ class VialArrayGraph extends React.Component {
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = Number.MAX_SAFE_INTEGER;
-        if (this.state.timePlotted !== 'ALL') {
-            timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));   
-        }        
+        if (this.state.timePlotted !== 'ALL' && this.state.dataType.type !== 'calibration') {
+            timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
+        }
+
+        if (this.props.dataType.type === 'calibration') {
+            var vialData;
+            try {
+                vialData = this.props.passedData.vialData[this.props.dataType.param][i]
+                for (var j = 0; j < vialData.length; j++) {
+                    var dataAverage = 0;
+                    for (var k = 0; k < vialData[j].length; k++) {
+                        dataAverage = dataAverage + vialData[j][k]
+                    }
+                    dataAverage = dataAverage / vialData[j].length
+                    data.push([this.state.passedData.enteredValuesFloat[j], dataAverage]);
+                }
+            }
+            catch (error) {
+                this.setState({missingData: true});
+                return;
+            }
+        }
 
         if (this.state.parameter == 'OD'){
           ymin = -0.1;
@@ -167,16 +190,16 @@ class VialArrayGraph extends React.Component {
             this.setState({missingData: true});
             return;
           }
-          
+
           var lastTime = odArray[odArray.length -2].split(',')[0]
           var lowerTime = this.state.useDatazoomForAll ? this.state.datazoomStart/100 * lastTime : odArray[1].split(',')[0];
           var upperTime = this.state.useDatazoomForAll ? this.state.datazoomEnd/100 * lastTime: lastTime;
           var downsample = this.getDownsample(odArray, lowerTime, upperTime);
           for (var j = odArray.length -1 ; j > 1; j=j-downsample) {
-            var parsed_value = odArray[j].split(',') 
+            var parsed_value = odArray[j].split(',')
            parsed_value[0] = parseFloat(parsed_value[0])
-            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(4))         
-            if (this.state.useDatazoomForAll) {                
+            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(4))
+            if (this.state.useDatazoomForAll) {
                 if (parsed_value[0] >= lowerTime && parsed_value[0] <= upperTime) {
                     data.push(parsed_value);
                 }
@@ -190,7 +213,7 @@ class VialArrayGraph extends React.Component {
             }
           }
         }
- 
+
        if (this.state.parameter == 'Temp'){
           ymin = 20;
           var tempArray;
@@ -200,14 +223,14 @@ class VialArrayGraph extends React.Component {
           catch (error) {
             this.setState({missingData: true});
             return;
-          }          
+          }
           var lastTime = tempArray[tempArray.length -2].split(',')[0]
           var lowerTime = this.state.useDatazoomForAll ? this.state.datazoomStart/100 * lastTime : tempArray[1].split(',')[0];
           var upperTime = this.state.useDatazoomForAll ? this.state.datazoomEnd/100 * lastTime: lastTime;
           var downsample = this.getDownsample(tempArray, lowerTime, upperTime);
           // Last element is blank. TODO: Fix in dpu code.
           for (var j = tempArray.length - 2 ; j > 1; j=j-downsample) {
-            var parsed_value = tempArray[j].split(',')            
+            var parsed_value = tempArray[j].split(',')
             parsed_value[0] = parseFloat(parsed_value[0])
             parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(2))
             if (this.state.useDatazoomForAll) {
@@ -220,7 +243,7 @@ class VialArrayGraph extends React.Component {
                   break;
                 } else {
                   data.push(parsed_value)
-                }                
+                }
             }
           }
         }
@@ -273,6 +296,10 @@ class VialArrayGraph extends React.Component {
         }
         compiled_data[i] = data;
         option.push(this.singleVial(this.state.activePlot, data, ymin, this.state.ymax))
+      }
+      if (this.state.dataType.type === 'calibration') {
+          compiled_data = compiled_data.slice(12,16).concat(compiled_data.slice(8,12)).concat(compiled_data.slice(4,8)).concat(compiled_data.slice(0,4));
+          option = option.slice(12,16).concat(option.slice(8,12)).concat(option.slice(4,8)).concat(option.slice(0,4));
       }
       this.setState({data: compiled_data, option: option, loaded: true, missingData: false})
     }
@@ -448,7 +475,12 @@ class VialArrayGraph extends React.Component {
 
   render() {
     const { classes, theme } = this.props;
-
+    var graphMargin = '25px 20px 0px 345px';
+    var graphWidth = '190px';
+    if (this.state.dataType.type === 'calibration') {
+        graphMargin = '30px 40px 0px 85px';
+        graphWidth = '250px';
+    }
     let loadingText;
     if (!this.state.loaded) {
       if (this.state.missingData) {
@@ -468,7 +500,7 @@ class VialArrayGraph extends React.Component {
             <div key={index}>
               <ReactEcharts ref={index} key={index}
                 option={this.state.option[index]}
-                style={{height: 140, width: 190}} />
+                style={{height: 140, width: graphWidth}} />
               {loadingText}
             </div>
             ))}
@@ -490,14 +522,13 @@ class VialArrayGraph extends React.Component {
         </div>
     }
 
-
     return (
-      <div className='row' style={{position: 'absolute', margin: '25px 20px 0px 345px'}} >
+      <div className='row' style={{position: 'absolute', margin: graphMargin}} >
         <Paper square elevation={10} className={classes.xaxisTitle}>
-          <Typography variant="h5" className={classes.title}> EXPERIMENT TIME (h) </Typography>
+          <Typography variant="h5" className={classes.title}> {this.state.xaxisName} </Typography>
         </Paper>
         <Paper square elevation={10} className={classes.yaxisTitle}>
-          <Typography variant="h5" className={classes.title}> {this.state.xaxisName} </Typography>
+          <Typography variant="h5" className={classes.title}> {this.state.yaxisName} </Typography>
         </Paper>
         {graph}
       </div>
