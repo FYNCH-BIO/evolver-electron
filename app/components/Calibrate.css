@@ -198,7 +198,7 @@ ul {
 .odAdvanceBtn {
   position: absolute;
   margin: 540px 0px 0px 348px;
-  height: 80px;
+  height: 40px;
   width: 120px;
   background-color: white;
   color: black;
@@ -213,7 +213,7 @@ ul {
 .odBackBtn {
   position: absolute;
   margin: 540px 0px 0px 63px;
-  height: 80px;
+  height: 40px;
   width: 120px;
   background-color: white;
   color: black;
@@ -238,10 +238,30 @@ ul {
 .measureBtn {
   position: absolute;
   margin: 540px 0px 0px 196px;
-  height: 80px;
+  height: 40px;
   width: 140px;
   background-color: white;
   color: black;
+}
+
+.odViewGraphBtn {
+  position: absolute;
+  height: 40px;
+  width: 406px;
+  background-color: white;
+  color: black;
+  top: 590px;
+  left: 48px;
+}
+
+.odViewGraphBtnBack {
+  position: absolute;
+  height: 40px;
+  width: 150px;
+  background-color: white;
+  color: black;
+  top: 590px;
+  left: 48px;    
 }
 
 .statusText {
@@ -250,13 +270,13 @@ ul {
 
 .readStopBtn {
   position: absolute;
-  margin: 18px 0px 0px -33px;
+  margin: 8px 0px 0px -26px;
 }
 
 .tempAdvanceBtn {
   position: absolute;
   margin: 540px 0px 0px 348px;
-  height: 70px;
+  height: 40px;
   width: 120px;
   background-color: white;
   color: black;
@@ -271,7 +291,7 @@ ul {
 .tempBackBtn {
   position: absolute;
   margin: 540px 0px 0px 63px;
-  height: 70px;
+  height: 40px;
   width: 120px;
   background-color: white;
   color: black;
@@ -285,7 +305,7 @@ ul {
 .tempMeasureBtn {
   position: absolute;
   margin: 540px 0px 0px 196px;
-  height: 70px;
+  height: 40px;
   width: 140px;
   background-color: white;
   color: black;

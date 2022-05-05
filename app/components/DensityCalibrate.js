@@ -14,6 +14,7 @@ import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
+import VialArrayGraph from './graphing/VialArrayGraph';
 const Store = require('electron-store');
 const store = new Store(); //runningODCal
 
@@ -42,7 +43,7 @@ const cardStyles = theme => ({
     color: '#f58245'
   },
   circle: {
-    strokeWidth: '3px'
+    strokeWidth: '4px'
   }
 });
 
@@ -77,7 +78,8 @@ class ODcal extends React.Component {
       resumeQuestion: 'Start new calibration or resume?',
       resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate.",
-      vialsRead: 0
+      vialsRead: 0,
+      displayGraphs: false
     };
     this.props.socket.on('broadcast', function(response) {
         console.log(response);
@@ -201,7 +203,7 @@ class ODcal extends React.Component {
     this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
   };
 
-  stopRead = () => {
+  stopRead = () => {      
     this.props.socket.emit('stopread', {});
     this.handleUnlockBtns()
     // remove existing data for particular layout
@@ -383,6 +385,10 @@ class ODcal extends React.Component {
     }
     return shift;
   }
+  
+  handleGraph = () => {
+    this.setState({displayGraphs: !this.state.displayGraphs});
+  }
 
   render() {
     const { classes, theme } = this.props;
@@ -421,9 +427,9 @@ class ODcal extends React.Component {
           variant="static"
           value={this.state.readProgress}
           color="primary"
-          size= {50}
+          size= {35}
         />
-        <FaStop size={15} className = "readStopBtn"/>
+        <FaStop size={18} className = "readStopBtn"/>
       </button>
     }
 
@@ -445,9 +451,9 @@ class ODcal extends React.Component {
         </button>
     }
 
-    let progressButtons;
+    let progressButtons; 
     if (this.state.inputsEntered) {
-      progressButtons =
+        progressButtons = <div>
         <div className="row" style={{position: 'absolute'}}>
           <button
             className="odBackBtn"
@@ -457,6 +463,8 @@ class ODcal extends React.Component {
           </button>
           {measureButton}
           {btnRight}
+          </div>
+        <button className="odViewGraphBtn" onClick={this.handleGraph}>VIEW COLLECTED DATA</button>
         </div>;
     } else {
       progressButtons =
@@ -469,6 +477,7 @@ class ODcal extends React.Component {
       </div>;
           }
 
+    let calGraphic = null;
     let statusText;
     if (!this.state.inputsEntered) {
       statusText = <p className="statusText"> Please enter OD calibration Values. </p>
@@ -485,43 +494,69 @@ class ODcal extends React.Component {
 
     if (this.state.exiting) {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
+    } 
+
+    let linearProgress;
+    let graphs;
+    let calInputs;    
+    let odCalTitles = <div></div>;
+    let backArrow = <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>;
+    if (this.state.displayGraphs) {
+        linearProgress = <div></div>
+        graphs = <VialArrayGraph 
+            parameter = {this.state.parameter}
+            exptDir = {'na'}
+            activePlot = {'ALL'}
+            ymax = {4095}
+            timePlotted = {this.state.timePlotted}
+            downsample = {this.state.downsample}
+            xaxisName = {'OPTICAL DENSITY'}
+            yaxisName = {'ADC VALUE'}
+            dataType = {{type:'calibration', param: 'od90'}}
+            passedData = {{vialData: this.state.vialData, enteredValuesFloat: this.state.enteredValuesFloat}}/>;
+        calInputs = <div></div>;
+        progressButtons = <div><button className="odViewGraphBtnBack" onClick={this.handleGraph}>BACK</button></div>;
+        backArrow = <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '-2px', left: '-35px'}} id="experiments" onClick={this.handleGraph}><FaArrowLeft/></button>
+    }    
+    else {
+        linearProgress = <div><LinearProgress
+              classes= {{
+                root: classes.progressBar,
+                colorPrimary: classes.colorPrimary,
+                bar: classes.bar
+              }}
+              variant="determinate"
+              value={this.state.progressCompleted} />
+            {statusText}</div>;
+        graphs = <div></div>;
+        calInputs = <ODcalInput
+          onChangeValue={this.handleODChange}
+          enteredValues = {this.state.enteredValues}/>
+        odCalTitles = <button
+          className="odCalTitles"
+          onClick={this.handleKeyboardModal}><h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4></button>
     }
+    calGraphic = <div><Card className={classes.cardODcalGUI}>
+            <ODcalGUI
+              ref={this.child}
+              displayGraphs = {this.state.displayGraphs}
+              vialOpacities = {this.state.vialOpacities}
+              generalOpacity = {this.state.generalOpacity}
+              valueInputs = {this.state.enteredValuesFloat}
+              readProgress = {this.state.vialProgress}
+              vialLabels = {this.state.vialLabels}/>
+              {linearProgress}
+          </Card>
+        </div>    
 
     return (
       <div>
-        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>
-        <ODcalInput
-          onChangeValue={this.handleODChange}
-          onInputsEntered = {this.state.inputsEntered}
-          enteredValues = {this.state.enteredValues}/>
-        {progressButtons}
-
-        <Card className={classes.cardODcalGUI}>
-          <ODcalGUI
-            ref={this.child}
-            vialOpacities = {this.state.vialOpacities}
-            generalOpacity = {this.state.generalOpacity}
-            valueInputs = {this.state.enteredValuesFloat}
-            initialZipped = {this.state.initialZipped}
-            readProgress = {this.state.vialProgress}
-            vialLabels = {this.state.vialLabels}/>
-
-          <LinearProgress
-            classes= {{
-              root: classes.progressBar,
-              colorPrimary: classes.colorPrimary,
-              bar: classes.bar
-            }}
-            variant="determinate"
-            value={this.state.progressCompleted} />
-          {statusText}
-        </Card>
-
-        <button
-          className="odCalTitles"
-          onClick={this.handleKeyboardModal}>
-          <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
-        </button>
+        {backArrow}
+        {calGraphic}
+        {graphs}        
+        {progressButtons}        
+        {calInputs}        
+        {odCalTitles}
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert
           alertOpen= {this.state.alertOpen}
@@ -534,7 +569,6 @@ class ODcal extends React.Component {
           alertAnswers = {this.state.resumeAnswers}
           onAlertAnswer = {this.onResumeAnswer}/>
       </div>
-
     );
   }
 }
