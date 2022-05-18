@@ -15,8 +15,15 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
 import VialArrayGraph from './graphing/VialArrayGraph';
+
+const { ipcRenderer } = require('electron');
 const Store = require('electron-store');
 const store = new Store(); //runningODCal
+const remote = require('electron').remote;
+const app = remote.app;
+const http = require('https');
+var path = require('path');
+var fs = require('fs');
 
 const densityButtons = Array.from(Array(16).keys())
 
@@ -71,7 +78,7 @@ class ODcal extends React.Component {
       timesRead: 3,
       experimentName:'',
       alertOpen: false,
-      alertQuestion: 'Logging Values...',
+      alertQuestion: 'Running calibration...',
       alertAnswers: ['Retry', 'Exit'],
       exiting: false,
       resumeOpen: false,
@@ -79,10 +86,20 @@ class ODcal extends React.Component {
       resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate.",
       vialsRead: 0,
-      displayGraphs: false
+      displayGraphs: false,
+      displayCalibration: true,
+      calibration: null
     };
+    if (!fs.existsSync(path.join(app.getPath('userData'), 'calibration'))) {
+        fs.mkdirSync(path.join(app.getPath('userData'), 'calibration'));
+        var calibrationsFile = fs.createWriteStream(path.join(app.getPath('userData'), 'calibration', 'calibrate.py'));
+        var calibrationScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/calibration/calibrate.py", function(response) {response.pipe(calibrationsFile)});
+    }
+    ipcRenderer.on('calibration-finished', (event, calibrationName) => {this.props.socket.emit('getcalibration', {name: calibrationName})});
+    this.props.socket.on('calibration', function(response) {
+        this.setState({displayGraphs: true, displayCalibration: true, alertOpen: false, calibration: response});
+    }.bind(this));
     this.props.socket.on('broadcast', function(response) {
-        console.log(response);
         console.log(this.state.vialData);
         var newVialData = this.state.vialData;
         // if stop was pressed or user still moving vials around, don't want to continue
@@ -148,7 +165,8 @@ class ODcal extends React.Component {
 
     this.props.socket.on('calibrationrawcallback', function(response) {
       if (response == 'success'){
-        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+        store.delete('runningODCal');
+        ipcRenderer.send('start-calibration', this.state.experimentName, this.props.socket.io.opts.hostname, 'sigmoid', this.state.experimentName, 'od_90', true);
       }
     }.bind(this));
   }
@@ -203,7 +221,7 @@ class ODcal extends React.Component {
     this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
   };
 
-  stopRead = () => {      
+  stopRead = () => {
     this.props.socket.emit('stopread', {});
     this.handleUnlockBtns()
     // remove existing data for particular layout
@@ -334,7 +352,6 @@ class ODcal extends React.Component {
 
   handleFinishExpt = () => {
     this.setState({alertOpen: true})
-    console.log("Experiment Finished!");
     var d = new Date();
     var currentTime = d.getTime();
 
@@ -385,7 +402,7 @@ class ODcal extends React.Component {
     }
     return shift;
   }
-  
+
   handleGraph = () => {
     this.setState({displayGraphs: !this.state.displayGraphs});
   }
@@ -451,7 +468,7 @@ class ODcal extends React.Component {
         </button>
     }
 
-    let progressButtons; 
+    let progressButtons;
     if (this.state.inputsEntered) {
         progressButtons = <div>
         <div className="row" style={{position: 'absolute'}}>
@@ -494,16 +511,16 @@ class ODcal extends React.Component {
 
     if (this.state.exiting) {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
-    } 
+    }
 
     let linearProgress;
     let graphs;
-    let calInputs;    
+    let calInputs;
     let odCalTitles = <div></div>;
     let backArrow = <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>;
     if (this.state.displayGraphs) {
         linearProgress = <div></div>
-        graphs = <VialArrayGraph 
+        graphs = <VialArrayGraph
             parameter = {this.state.parameter}
             exptDir = {'na'}
             activePlot = {'ALL'}
@@ -512,12 +529,13 @@ class ODcal extends React.Component {
             downsample = {this.state.downsample}
             xaxisName = {'OPTICAL DENSITY'}
             yaxisName = {'ADC VALUE'}
+            displayCalibration = {this.state.displayCalibration}
             dataType = {{type:'calibration', param: 'od90'}}
-            passedData = {{vialData: this.state.vialData, enteredValuesFloat: this.state.enteredValuesFloat}}/>;
+            passedData = {{vialData: this.state.vialData, enteredValuesFloat: this.state.enteredValuesFloat, calibration: this.state.calibration}}/>;
         calInputs = <div></div>;
         progressButtons = <div><button className="odViewGraphBtnBack" onClick={this.handleGraph}>BACK</button></div>;
         backArrow = <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '-2px', left: '-35px'}} id="experiments" onClick={this.handleGraph}><FaArrowLeft/></button>
-    }    
+    }
     else {
         linearProgress = <div><LinearProgress
               classes= {{
@@ -547,15 +565,15 @@ class ODcal extends React.Component {
               vialLabels = {this.state.vialLabels}/>
               {linearProgress}
           </Card>
-        </div>    
+        </div>
 
     return (
       <div>
         {backArrow}
         {calGraphic}
-        {graphs}        
-        {progressButtons}        
-        {calInputs}        
+        {graphs}
+        {progressButtons}
+        {calInputs}
         {odCalTitles}
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert

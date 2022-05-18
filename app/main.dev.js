@@ -32,6 +32,8 @@ const BLANK = 17;
 
 var path = require('path');
 var ps = require('ps-node');
+var fs = require('fs');
+const http = require('https');
 const Store = require('electron-store');
 const { exec } = require("child_process");
 const { dialog } = require('electron')
@@ -69,7 +71,7 @@ function storeRunningExpts() {
 /* Handle startup of a python shell instance to run the DPU */
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
-  var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');   
+  var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
   console.log(pythonPath);
   var options = {
       mode: 'text',
@@ -90,6 +92,27 @@ function startPythonExpt(exptDir, flag) {
   });
   storeRunningExpts();
   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+}
+
+function startPythonCalibration(calibrationName, ip, fitType, fitName, params) {
+    var scriptName = path.join(app.getPath('userData'), 'calibration', 'calibrate.py');
+    var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+    var options = {
+        mode: 'text',
+        pythonPath: pythonPath,
+        args: ['--always-yes',
+                '--no-graph',
+                '-a', ip,
+                '-n', calibrationName,
+                '-f', fitName,
+                '-t', fitType,
+                '-p', params]
+    }
+    var pyShell = new PythonShell(scriptName, options);
+    pyShell.on('close', function() {
+        console.log('Calibration finished for ' + calibrationName);
+        mainWindow.webContents.send('calibration-finished', calibrationName);
+    })
 }
 
 /* Handle killing and relaunching experiments not connected to application. */
@@ -142,7 +165,11 @@ ipcMain.on('stop-script', (event, arg) => {
        delete exptMap[arg];
        storeRunningExpts();
        mainWindow.webContents.send('running-expts',Object.keys(exptMap));}, 3000);
-   
+
+});
+
+ipcMain.on('start-calibration', (event, experimentName, ip, fitType, fitName, params) => {
+    startPythonCalibration(experimentName, ip, fitType, fitName, params);
 });
 
 ipcMain.on('running-expts', (event, arg) => {

@@ -14,6 +14,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
 import VialArrayGraph from './graphing/VialArrayGraph';
+const http = require('https');
+var path = require('path');
+var fs = require('fs');
+const remote = require('electron').remote;
+const app = remote.app;
+const { ipcRenderer } = require('electron');
 const Store = require('electron-store');
 const store = new Store(); //runningTempCal
 
@@ -109,17 +115,27 @@ class TempCal extends React.Component {
       experimentName:'',
       readsFinished: 0,
       alertOpen: false,
-      alertQuestion: 'Logging Values...',
+      alertQuestion: 'Running calibration...',
       alertAnswers: ['Retry', 'Exit'],
       exiting: false,
       resumeOpen: false,
       resumeQuestion: 'Start new calibration or resume?',
       resumeAnswers: ['New', 'Resume'],
       keyboardPrompt: "Enter File Name or press ESC to autogenerate.",
-      displayGraps: false
+      displayGraps: false,
+      displayCalibration: true,
+      calibration: null
     };
+    if (!fs.existsSync(path.join(app.getPath('userData'), 'calibration'))) {
+        fs.mkdirSync(path.join(app.getPath('userData'), 'calibration'));
+        var calibrationsFile = fs.createWriteStream(path.join(app.getPath('userData'), 'calibration', 'calibrate.py'));
+        var calibrationScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/calibration/calibrate.py", function(response) {response.pipe(calibrationsFile)});
+    }
+    ipcRenderer.on('calibration-finished', (event, calibrationName) => {this.props.socket.emit('getcalibration', {name: calibrationName})});
+    this.props.socket.on('calibration', function(response) {
+        this.setState({displayGraphs: true, displayCalibration: true, alertOpen: false, calibration: response});
+    }.bind(this));
     this.props.socket.on('broadcast', function(response) {
-      console.log(response);
       var newVialData = this.state.vialData;
       let returnedTemps = generateVialLabel (response, this.state.tempStream, this.state.roomTempAvg)
       let tempStream = returnedTemps[0];
@@ -182,7 +198,8 @@ class TempCal extends React.Component {
 
     this.props.socket.on('calibrationrawcallback', function(response) {
       if (response == 'success'){
-        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+          store.delete('runningTempCal');
+          ipcRenderer.send('start-calibration', this.state.experimentName, this.props.socket.io.opts.hostname, 'linear', this.state.experimentName, 'temp', true);
       }
     }.bind(this));
 
@@ -359,7 +376,7 @@ class TempCal extends React.Component {
 
   handleRecordedData = (currentStep) => {
     var displayedData = Array(16).fill('');
-    var vialData = this.state.vialData
+    var vialData = this.state.vialData;
     for (var i = 0; i < vialData.length; i++) {
         if (currentStep === this.state.vialData[i].step) {
             displayedData = this.state.vialData[i].enteredValues;
@@ -371,7 +388,7 @@ class TempCal extends React.Component {
 
   handleTempInput = (tempValues) => {
     this.setState({enteredValues: tempValues});
-   }
+    }
 
    handleKeyboardInput = (input) => {
      var exptName;
@@ -385,7 +402,6 @@ class TempCal extends React.Component {
 
    handleFinishExpt = (finishFlag) => {
       this.setState({alertOpen: true})
-      console.log("Experiment Finished!");
       var d = new Date();
       var currentTime = d.getTime();
       var enteredValuesStructured = [];
@@ -404,7 +420,6 @@ class TempCal extends React.Component {
         }
       }
       var saveData = {name: this.state.experimentName, calibrationType: "temperature", timeCollected: currentTime, measuredData: enteredValuesStructured, fits: [], raw: [{param: 'temp', vialData: vialDataStructured}]}
-      console.log(saveData);
       this.props.socket.emit('setrawcalibration', saveData);
    }
 
@@ -433,7 +448,7 @@ class TempCal extends React.Component {
      }
      this.setState({resumeOpen:false})
    }
-   
+
    handleGraph = () => {
        this.setState({displayGraphs: !this.state.displayGraphs});
    }
@@ -550,7 +565,7 @@ class TempCal extends React.Component {
     if (this.state.exiting) {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
     }
-    
+
     let calGraphic;
     let graphs;
     let calInputs;
@@ -559,17 +574,18 @@ class TempCal extends React.Component {
     let backArrow = <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>;
     if (this.state.displayGraphs) {
         linearProgress = <div></div>
-        graphs = <VialArrayGraph 
+        graphs = <VialArrayGraph
             parameter = {this.state.parameter}
             exptDir = {'na'}
             activePlot = {'ALL'}
-            ymax = {4095}
+            ymax = {55}
             timePlotted = {this.state.timePlotted}
             downsample = {this.state.downsample}
-            xaxisName = {'TEMPERATURE (C)'}
-            yaxisName = {'ADC VALUE'}
+            xaxisName = {'ADC VALUE'}
+            yaxisName = {'TEMPERATURE (C)'}
+            displayCalibration = {this.state.displayCalibration}
             dataType = {{type:'calibration', param: 'temp'}}
-            passedData = {{vialData: this.state.vialData, enteredValues: this.state.enteredValues}}/>;    
+            passedData = {{vialData: this.state.vialData, enteredValuesFloat: this.state.enteredValues, calibration: this.state.calibration}}/>;
         calInputs = <div></div>;
         progressButtons = <div><button className="odViewGraphBtnBack" onClick={this.handleGraph}>BACK</button></div>;
         backArrow = <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '-2px', left: '-35px'}} id="experiments" onClick={this.handleGraph}><FaArrowLeft/></button>
@@ -595,7 +611,7 @@ class TempCal extends React.Component {
             value={this.state.progressCompleted} />
             {statusText}</div>;
     }
-    
+
     calGraphic = <Card className={classes.cardTempCalGUI}>
           <TempCalGUI
             vialOpacities = {this.state.vialOpacities}
