@@ -90,7 +90,7 @@ class PumpCal extends React.Component {
     for (var i = 0; i < data.length; i++) {
       vialData.push(Object.assign({},data[i]));
     }
-    this.state = {
+   this.state = {
       currentStep: 0,
       pumpCalModes: [{arrayName: 'IN1', arrayMode: 'NA'}, {arrayName: 'IN2', arrayMode: 'NA'}, {arrayName: 'E', arrayMode: 'NA'}],
       pumpCalModesFiltered: [],
@@ -118,7 +118,6 @@ class PumpCal extends React.Component {
         this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
       }
     }.bind(this));
-
   }
 
   componentWillUnmount() {
@@ -164,7 +163,7 @@ class PumpCal extends React.Component {
     }
     else {
       statusText = `Press PUMP to run ${pumpCalModes[currentStep-1].arrayName} for ${pumpTime} seconds`;
-    }    
+    }
     var buttonBackText;
     var buttonAdvanceText;
     if (currentStep === 1) {
@@ -258,9 +257,6 @@ class PumpCal extends React.Component {
    }
 
    onAlertAnswer = (answer) => {
-     if (answer == 'Retry'){
-       this.handleFinishExpt();
-     }
      if (answer == 'Exit'){
        store.delete('runningPumpCal');
        this.setState({exiting: true});
