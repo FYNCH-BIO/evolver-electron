@@ -153,6 +153,8 @@ class VialArrayGraph extends React.Component {
     var option = []; var compiled_data = []; var calibrationData = []; var compiledCalibrationData = [];
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
+      var maxDataPoint = this.state.ymax;
+      var minDataPoint = this.state.ymin;      
       if (this.state.dataType.type !== 'calibration' && !fs.existsSync(path.join(this.props.exptDir,'data'))) {
         this.setState({missingData: true});
         return;
@@ -178,6 +180,12 @@ class VialArrayGraph extends React.Component {
                             dataAverage = dataAverage + vialData[j][k]
                         }
                         dataAverage = dataAverage / vialData[j].length
+                        if (dataAverage > maxDataPoint) {
+                            maxDataPoint = dataAverage;
+                        }
+                        if (dataAverage < minDataPoint) {
+                            minDataPoint = dataAverage;
+                        }
                     data.push([this.state.passedData.enteredValuesFloat[j], dataAverage]);
                     }
                 }
@@ -190,6 +198,12 @@ class VialArrayGraph extends React.Component {
                             averageTemp = averageTemp + tempData[i][k];
                         }
                         averageTemp = averageTemp / tempData[i].length
+                        if (dataAverage > maxDataPoint) {
+                            maxDataPoint = dataAverage;
+                        }
+                        if (dataAverage < minDataPoint) {
+                            minDataPoint = dataAverage;
+                        }                        
                         data.push([averageTemp, parseFloat(vialData[j].enteredValues[i])]);
                     }
                 }
@@ -259,7 +273,7 @@ class VialArrayGraph extends React.Component {
         }
 
        if (this.state.parameter == 'Temp'){
-          ymin = 20;
+          minDataPoint = 20;
           var tempArray;
           try {
             tempArray = fs.readFileSync(tempPath).toString().split('\n');
@@ -291,10 +305,11 @@ class VialArrayGraph extends React.Component {
             }
           }
         }
-
+                
+        this.setState({ymin: minDataPoint, ymax: maxDataPoint});
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
-        option[i] = this.allVials(i, data, ymin, this.state.ymax, calibrationData)
+        option[i] = this.allVials(i, data, this.state.ymin, this.state.ymax, calibrationData)
         }
       } else {
         var odPath =  path.join(this.props.exptDir, 'data', 'OD', 'vial' + this.state.activePlot + '_OD.txt');
@@ -415,7 +430,8 @@ class VialArrayGraph extends React.Component {
             }
         },
         axisLabel: {
-          fontSize: 14
+          fontSize: 13,
+          rotate: 40
           }
       }
     ],
