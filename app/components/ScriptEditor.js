@@ -91,7 +91,8 @@ class ScriptEditor extends React.Component {
       option: 0,
       changeNameDisabled: false,
       vialConfiguration: [],
-      evolverIp: this.props.evolverIp
+      evolverIp: this.props.evolverIp,
+      exptLocation: this.props.exptLocation
     };
 
     var customScriptMd5 = md5File.sync(path.join(this.state.exptDir, 'custom_script.py'));
@@ -149,6 +150,9 @@ class ScriptEditor extends React.Component {
     var editedExpts = store.get('editedExpts', {});
     if (editedExpts[this.state.exptName] && !this.state.option) {
       this.setState({option: 1, selectedEditor: exptEditorOptions.find(a => a.value == 'fileEditor')});
+    }
+    if (this.props.exptLocation !== prevProps.exptLocation) {
+        this.setState({exptLocation: this.props.exptLocastion});
     }
     ipcRenderer.send('running-expts');
   }
