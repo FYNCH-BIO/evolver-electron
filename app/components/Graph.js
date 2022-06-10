@@ -18,6 +18,9 @@ const remote = require('electron').remote;
 const app = remote.app;
 const { dialog } = require('electron').remote
 
+const Store = require('electron-store');
+const store = new Store();
+
 var path = require('path');
 var os = require('os');
 var zipdir = require('zip-dir');
@@ -64,8 +67,14 @@ class Graph extends React.Component {
       deleteExptAlertOpen: false,
       deleteExptAlertDirections: "",
       cloneOpen: false,
-      cloneDirections: 'Enter a new experiment name:'
+      cloneDirections: 'Enter a new experiment name:',
+      exptLocation: app.getPath('userData') 
     };
+    
+    if (store.get('exptLocation')) {
+        this.setState({exptLocation: store.get('exptLocation')});
+    }
+    
     ipcRenderer.on('running-expts', (event, arg) => {
       var disablePlay = false;
       var changeNameDisabled = false;
@@ -231,7 +240,7 @@ class Graph extends React.Component {
   }
   
     createNewExperiment = (exptName) => {
-        var newDir = path.join(app.getPath('userData'), 'experiments', exptName);
+        var newDir = path.join(this.state.exptLocation, 'experiments', exptName);
         var oldDir = path.join(this.state.exptDir);
         console.log(oldDir);
         if (!fs.existsSync(newDir)) {
@@ -280,8 +289,8 @@ class Graph extends React.Component {
         <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneExpt()}><FaCopy size={25}/></button>
         </div>;
 
-    return (
-      <div>
+    return ( 
+     <div>
         {backButton}
         <h4 className="graphTitle">{exptName}</h4>
         {dataDisplay}
