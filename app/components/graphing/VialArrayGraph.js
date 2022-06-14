@@ -305,7 +305,9 @@ class VialArrayGraph extends React.Component {
             }
           }
         }
-                
+        var percentage = maxDataPoint * .05;
+        minDataPoint = minDataPoint - percentage;
+        maxDataPoint = maxDataPOint + percentage;
         this.setState({ymin: minDataPoint, ymax: maxDataPoint});
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
