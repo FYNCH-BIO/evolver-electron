@@ -116,9 +116,16 @@ export default class Setup extends Component<Props> {
       rawData[i].vial = this.state.vialData[i].vial;
       rawData[i].selected = this.state.vialData[i].selected;
 
-      rawData[i].od_135 = responseData.od_135[i];
-      rawData[i].od_90 = responseData.od_90[i];
-      rawData[i].temp = responseData.temp[i];
+      if (responseData.od_135)
+      {
+          rawData[i].od_135 = responseData.od_135[i];          
+      }
+      if (responseData.od_90) {
+          rawData[i].od_90 = responseData.od_90[i];          
+      }
+      if (responseData.temp) {
+          rawData[i].temp = responseData.temp[i];          
+      }      
     }
     return rawData
   }
