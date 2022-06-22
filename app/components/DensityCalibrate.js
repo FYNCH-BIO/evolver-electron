@@ -524,7 +524,7 @@ class ODcal extends React.Component {
             parameter = {this.state.parameter}
             exptDir = {'na'}
             activePlot = {'ALL'}
-            ymax = {4095}
+            ymax = {65000}
             timePlotted = {this.state.timePlotted}
             downsample = {this.state.downsample}
             xaxisName = {'OPTICAL DENSITY'}
