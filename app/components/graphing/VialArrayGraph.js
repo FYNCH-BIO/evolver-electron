@@ -44,6 +44,7 @@ class VialArrayGraph extends React.Component {
     this.state = {
       option: this.initializeGraphs(),
       ymax: this.props.ymax,
+      ymin: -0.1,
       timePlotted: this.props.timePlotted,
       downsample: this.props.downsample,
       parameter: this.props.parameter,
@@ -141,20 +142,29 @@ class VialArrayGraph extends React.Component {
   }
 
   handleDatazoom = (dzObject) => {
-      console.log(dzObject);
       this.setState({datazoomStart: dzObject.start, datazoomEnd: dzObject.end, useDatazoomForAll:true, timePlotted: 'None'}, () => {
           this.getData();
           this.props.onDataZoom();
       })
 
   }
+  
+  getStandardDeviation = (array, mean) => {
+      var n = array.length;
+      var sumSquares = 0
+      for (var i = 0; i < array.length; i++) {
+          sumSquares = sumSquares + Math.pow(array[i] - mean, 2);
+      }
+      var stdev = Math.pow(sumSquares / n, 0.5);
+      return stdev;
+  }
 
   getData = () => {
-    var option = []; var compiled_data = []; var calibrationData = []; var compiledCalibrationData = [];
+    var option = []; var compiled_data = []; var calibrationData = []; var compiledCalibrationData = []; var errorData = []; var compiledErrorData = [];
     if (this.state.activePlot == 'ALL'){
       console.log('Plotting All Vials!')
       var maxDataPoint = this.state.ymax;
-      var minDataPoint = this.state.ymin;      
+      var minDataPoint = this.state.ymin;
       if (this.state.dataType.type !== 'calibration' && !fs.existsSync(path.join(this.props.exptDir,'data'))) {
         this.setState({missingData: true});
         return;
@@ -162,14 +172,13 @@ class VialArrayGraph extends React.Component {
       for (var i = 0; i < 16; i++) {
         var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
-        var data = []; var ymin; var calibrationData = [];
+        var data = []; var ymin; var calibrationData = []; var errorData = [];
         var timePlotted = Number.MAX_SAFE_INTEGER;
         if (this.state.timePlotted !== 'ALL' && this.state.dataType.type !== 'calibration') {
             timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
         }
 
         if (this.props.dataType.type === 'calibration') {
-            console.log(this.state.passedData.vialData);
             var vialData;
             try {
                 if (this.state.dataType.param === 'od90') {
@@ -179,15 +188,19 @@ class VialArrayGraph extends React.Component {
                         for (var k = 0; k < vialData[j].length; k++) {
                             dataAverage = dataAverage + vialData[j][k]
                         }
-                        dataAverage = dataAverage / vialData[j].length
+                        dataAverage = dataAverage / vialData[j].length;
                         if (dataAverage > maxDataPoint) {
                             maxDataPoint = dataAverage;
                         }
                         if (dataAverage < minDataPoint) {
-                            minDataPoint = dataAverage;
+                            minDataPoint = Math.max(-0.1, dataAverage);
                         }
                     data.push([this.state.passedData.enteredValuesFloat[j], dataAverage]);
+                    if (this.state.passedData.enteredValuesFloat[j].length != 0 && !isNaN(dataAverage)) {
+                        var stdDev = this.getStandardDeviation(vialData[j], dataAverage);
+                        errorData.push([this.state.passedData.enteredValuesFloat[j], dataAverage + stdDev, dataAverage - stdDev]);
                     }
+                  }
                 }
                 if (this.state.dataType.param === 'temp') {
                     vialData = this.state.passedData.vialData;
@@ -197,7 +210,7 @@ class VialArrayGraph extends React.Component {
                         for (var k = 0; k < tempData[i].length; k++) {
                             averageTemp = averageTemp + tempData[i][k];
                         }
-                        averageTemp = averageTemp / tempData[i].length
+                        averageTemp = averageTemp / tempData[i].length;
                         if (dataAverage > maxDataPoint) {
                             maxDataPoint = dataAverage;
                         }
@@ -218,11 +231,19 @@ class VialArrayGraph extends React.Component {
                     var fit = this.state.passedData.calibration.fits[0];
                     var coefficients = fit.coefficients[i]
                     var measuredData = this.state.passedData.calibration.measuredData[i];
-                    console.log(this.state.passedData.calibration);
                     if (fit.type === 'sigmoid') {
+                        var a = coefficients[0];
+                        var b = coefficients[1];
+                        var c = coefficients[2];
+                        var d = coefficients[3];
                         for (var j = 0; j < measuredData.length; j++) {
-                            calibrationData.push([measuredData[j], coefficients[0] + (coefficients[1] - coefficients[0]) / (1 + (10^((coefficients[2] - measuredData[j]) * coefficients[3])))])
+                            var calVal = a + (b - a) / (1 + (10**((c - measuredData[j]) * d)));
+                            calibrationData.push([measuredData[j], calVal]);
                         }
+                        // Have to sort or else it gets plotted funky.
+                        calibrationData.sort(function(a, b) {
+                            return a[0] - b[0];
+                        });
                     }
                     if (fit.type === 'linear') {
                        for (var j = 0; j < this.state.passedData.vialData.length; j++) {
@@ -305,13 +326,14 @@ class VialArrayGraph extends React.Component {
             }
           }
         }
-        var percentage = maxDataPoint * .05;
-        minDataPoint = minDataPoint - percentage;
-        maxDataPoint = maxDataPOint + percentage;
+        var percentage = maxDataPoint * .03;
+        minDataPoint = Math.max(-0.1, minDataPoint - percentage);
+        maxDataPoint = maxDataPoint + percentage;
         this.setState({ymin: minDataPoint, ymax: maxDataPoint});
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
-        option[i] = this.allVials(i, data, this.state.ymin, this.state.ymax, calibrationData)
+        compiledErrorData[i] = errorData;
+        option[i] = this.allVials(i, data, minDataPoint, maxDataPoint, calibrationData, errorData)
         }
       } else {
         var odPath =  path.join(this.props.exptDir, 'data', 'OD', 'vial' + this.state.activePlot + '_OD.txt');
@@ -363,10 +385,10 @@ class VialArrayGraph extends React.Component {
           compiled_data = compiled_data.slice(12,16).concat(compiled_data.slice(8,12)).concat(compiled_data.slice(4,8)).concat(compiled_data.slice(0,4));
           option = option.slice(12,16).concat(option.slice(8,12)).concat(option.slice(4,8)).concat(option.slice(0,4));
       }
-      this.setState({data: compiled_data, option: option, loaded: true, missingData: false})
+      this.setState({data: compiled_data, option: option, loaded: true, missingData: false});
     }
 
-  allVials = (vial, data, ymin, ymax, calibrationData) => ({
+  allVials = (vial, data, ymin, ymax, calibrationData, errorData) => ({
     title: {
       text:'Vial ' + vial,
       top: -5,
@@ -457,6 +479,45 @@ class VialArrayGraph extends React.Component {
           itemStyle: {
               opacity: 0
           }
+      },
+      {
+          type: 'custom',
+          name: 'error',
+          itemStyle: {
+              borderWidth: 1.5
+          },
+          renderItem: function (params, api) {
+              var xValue = api.value(0);
+              var highPoint = api.coord([xValue, api.value(1)]);
+              var lowPoint = api.coord([xValue, api.value(2)]);
+              var halfWidth = api.size([1,0])[0] * .01;
+              var style = api.style({
+                  stroke: api.visual('color'),
+                  fill: undefined
+              });
+              return {
+                  type: 'group',
+                  children: [
+                      {
+                          type: 'line',
+                          transition: ['shape'],
+                          shape: {
+                              x1: highPoint[0],
+                              y1: highPoint[1],
+                              x2: lowPoint[0],
+                              y2: lowPoint[1]
+                          },
+                          style: style
+                      }
+                  ]
+              };
+          },
+          encode: {
+              x: 0,
+              y: [1, 2]
+          },
+          data: errorData,
+          z: 100
       }
     ]
   });
