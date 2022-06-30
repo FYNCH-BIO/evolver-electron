@@ -138,6 +138,9 @@ class VialArrayGraph extends React.Component {
       if ((downsample === -1 && trimmedData.length > 5000) || this.state.useDatazoomForAll) {
         downsample = Math.ceil(trimmedData.length / 100);
       }
+      if (downsample === -1) {
+          downsample = 1;
+      }
       return downsample;
   }
 
@@ -311,7 +314,7 @@ class VialArrayGraph extends React.Component {
           for (var j = tempArray.length - 2 ; j > 1; j=j-downsample) {
             var parsed_value = tempArray[j].split(',')
             parsed_value[0] = parseFloat(parsed_value[0])
-            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(2))
+            parsed_value[1] = parseFloat(Number(parsed_value[1]).toFixed(2));
             if (this.state.useDatazoomForAll) {
                 if (parsed_value[0] >= lowerTime && parsed_value[0] <= upperTime) {
                     data.push(parsed_value)
@@ -327,9 +330,15 @@ class VialArrayGraph extends React.Component {
           }
         }
         var percentage = maxDataPoint * .03;
-        minDataPoint = Math.max(-0.1, minDataPoint - percentage);
-        maxDataPoint = maxDataPoint + percentage;
-        this.setState({ymin: minDataPoint, ymax: maxDataPoint});
+        if (this.props.dataType.type === 'calibration') {
+            minDataPoint = Math.max(-0.1, minDataPoint - percentage);
+            maxDataPoint = maxDataPoint + percentage;
+            this.setState({ymin: minDataPoint, ymax: maxDataPoint});            
+        }
+        else {
+            minDataPoint = this.state.ymin;
+            maxDataPoint = this.state.ymax;
+        }
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
         compiledErrorData[i] = errorData;

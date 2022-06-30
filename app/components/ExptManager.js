@@ -81,9 +81,9 @@ class ExptManager extends React.Component {
         console.log('We just got ip from main for some reason ' + arg);
       this.setState({evolverIp: arg});
       });
-    if (!fs.existsSync(path.join(this.state.exptLocation, this.state.scriptDir))) {
-      fs.mkdirSync(path.join(this.state.exptLocation, this.state.scriptDir));
-      fs.mkdirSync(path.join(this.state.exptLocation, 'template'));
+    if (!fs.existsSync(path.join(app.getPath('userData'), this.state.scriptDir))) {
+      fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir));
+      fs.mkdirSync(path.join(app.getPath('userData'), 'template'));
       var customScriptFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'custom_script.py'));
       var evolverFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'eVOLVER.py'));
       var nbstreamreaderFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'nbstreamreader.py'));
@@ -150,7 +150,7 @@ class ExptManager extends React.Component {
 
     createNewExperiment = (exptName) => {
         var newDir = path.join(this.state.exptLocation, this.state.scriptDir, exptName);
-        var oldDir = path.join(this.state.exptLocation, "template");
+        var oldDir = path.join(app.getPath('userData'), "template");
         if (!fs.existsSync(newDir)) {
             fs.mkdirSync(newDir);
         }
