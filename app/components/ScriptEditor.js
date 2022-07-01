@@ -10,6 +10,7 @@ import TstatEditor from './experiment-configuration/TstatEditor'
 import ReactTable from "react-table";
 import Select from 'react-select';
 import ModalClone from './python-shell/ModalClone';
+import ModalAlert from './ModalAlert';
 import DeleteExptModal from './DeleteExptModal';
 import EvolverSelect from './evolverConfigs/EvolverSelect'
 import ReactTooltip from 'react-tooltip';
@@ -78,6 +79,8 @@ class ScriptEditor extends React.Component {
       cloneExptAlertDirections: "Enter new experiment name",
       deleteExptAlertDirections: "",
       deleteExptAlertOpen: false,
+      mustSaveAlertOpen : false,
+      mustSaveAlertQuestion: "You must save before running the experiment (bottom right of the page).",
       newFileAlertDirections: "Enter the new filename",
       deleteExptAlertButtonText: "Delete",
       saveAlertButtonText: "Save File",
@@ -327,8 +330,14 @@ class ScriptEditor extends React.Component {
   }
 
   handlePlay = (exptToPlay) => {
-    ipcRenderer.send('start-script', exptToPlay);
-    this.setState({disablePlay: true});
+    console.log(this.state.selectedEditor);
+    if (fs.existsSync(path.join(this.state.exptDir, 'eVOLVER_parameters.json')) || this.state.selectedEditor.value === 'fileEditor') {
+        ipcRenderer.send('start-script', exptToPlay);
+        this.setState({disablePlay: true});
+    }
+    else {
+        this.setState({mustSaveAlertOpen: true})
+    }
   }
 
   onStop = (exptToStop) =>  {
@@ -356,6 +365,11 @@ class ScriptEditor extends React.Component {
       this.setState({exptName: response})
       fs.rename(this.state.exptDir, path.join(path.dirname(this.state.exptDir), response));
     }
+  }
+  
+  mustSaveAlertAnswer = () => {
+      this.setState({mustSaveAlertOpen: false})
+      console.log("Must save alert closed.");
   }
 
   render() {
@@ -489,6 +503,10 @@ class ScriptEditor extends React.Component {
           {buttons}
           {editorComponent}
           {selector}
+          <ModalAlert
+            alertOpen = {this.state.mustSaveAlertOpen}
+            alertQuestion = {this.state.mustSaveAlertQuestion}
+            onAlertAnswer = {this.mustSaveAlertAnswer} />
           <ModalClone
             alertOpen = {this.state.changeNameAlertOpen}
             alertQuestion = {this.state.changeExptNameDirections}
