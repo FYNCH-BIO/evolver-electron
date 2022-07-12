@@ -31,10 +31,15 @@ git commit -a --no-verify -m "Put comment here"
 
 ## Packaging
 
-To package apps for the local platform (Does not work well when compiling in other platforms. e.g. compile in OSX for OSX):
-
+To package for only your local platform:
 ```bash
 $ yarn package
+```
+
+To package apps for all platforms:
+
+```bash
+$ yarn package-all
 ```
 
 To package app for Raspberry Pi, first simulate Pi with Docker container:
