@@ -87,9 +87,9 @@ class ExptManager extends React.Component {
       var customScriptFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'custom_script.py'));
       var evolverFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'eVOLVER.py'));
       var nbstreamreaderFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'nbstreamreader.py'));
-      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile); console.log('done saving stuff');});
-      var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
-      var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
+      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile); console.log('done saving stuff');});
+      var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
+      var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
     }
   }
 
