@@ -53,6 +53,8 @@ var maxShells = 5;
 var exptMap = {};
 var activeIp = '';
 
+var isWin = process.platform === "win32";
+
 /* Get array of running experiments from exptMap. Store path and pid information only. */
 function storeRunningExpts() {
   var runningExpts = Object.keys(exptMap).reduce(function(obj, x) {
@@ -72,7 +74,9 @@ function storeRunningExpts() {
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
   var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
-  console.log(pythonPath);
+  if (isWin) {
+    pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+  }
   var options = {
       mode: 'text',
       pythonPath: pythonPath,
@@ -97,6 +101,9 @@ function startPythonExpt(exptDir, flag) {
 function startPythonCalibration(calibrationName, ip, fitType, fitName, params) {
     var scriptName = path.join(app.getPath('userData'), 'calibration', 'calibrate.py');
     var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+    if (isWin) {
+        pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+    }
     var options = {
         mode: 'text',
         pythonPath: pythonPath,
