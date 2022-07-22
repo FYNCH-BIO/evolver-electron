@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
-import routes from '../../constants/routes.json';
+import routes from '../constants/routes.json';
 
 
 
@@ -14,26 +14,27 @@ const cardStyles = {
 };
 
 
-class ModalClone extends React.Component {
+class DeleteExptModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
       answers: this.props.alertAnswers,
-      value: '',
-      stayOnPage: this.props.stayOnPage
+      useLink: this.props.useLink,
+      buttonText: this.props.buttonText,
+      value: this.props.value
     };
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.alertOpen !== prevProps.alertOpen) {
-      this.setState({ open: this.props.alertOpen})
+      this.setState({ open: this.props.alertOpen, question: this.props.alertQuestion})
     }
   }
 
   componentWillReceiveProps(nextProps) {
-      this.setState({open:nextProps.alertOpen});
+      this.setState({open:nextProps.alertOpen, question: this.props.alertQuestion});
   }
 
   onOpenModal = () => {
@@ -41,36 +42,27 @@ class ModalClone extends React.Component {
   };
 
   onCloseModal = () => {
+    this.props.onAlertAnswer(0);
     this.setState({open: false, value:''});
-    this.props.onAlertAnswer(false);
   };
 
-  handleAnswer = () => {
-    this.props.onAlertAnswer(this.state.value);
+  handleAnswer = (value) => {
+    this.props.onAlertAnswer(1, value);
     this.setState({open: false, value: ''});
-  }
-
-  handleChange = (event) => {
-      this.setState({value: event.target.value});
   }
 
   render() {
     const { open } = this.state;
-
-    var submitButton;
-    if (this.state.stayOnPage) {
-      submitButton = <button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button>
+    var confirmButton;
+    if (this.state.useLink) {
+      confirmButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
+              onClick={() => this.handleAnswer()}
+              className={styles.alertBtns}>
+              {this.state.buttonText}
+              </button></Link>
     }
     else {
-      submitButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button></Link>
+      confirmButton = <button onClick={() => this.handleAnswer(this.state.value)} className={styles.alertBtns}>{this.state.buttonText}</button>;
     }
 
     return (
@@ -87,25 +79,20 @@ class ModalClone extends React.Component {
              modal: styles.newExptModal,
              overlay: styles.customOverlay
            }}>
-           <div style={{height: '180px'}}>
+           <div style={{height: '120px'}}>
               <p style={{textAlign: 'center', margin: '20px 50px 15px 50px', fontStyle: 'italic', fontSize: '24px',fontWeight: 'bold'}}>
                 {this.state.question}
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
-                  <input
-                    className={styles.alertInput}
-                    type="text"
-                    value={this.state.value}
-                    onChange={this.handleChange}
-                    id="cloneAlertExperimentInput">
-                  </input>
+              {confirmButton}
+              <button onClick={this.onCloseModal} className={styles.alertBtns}>Cancel</button>
               </div>
-              {submitButton}
             </div>
           </Modal>
       </div>
+
     );
   }
 }
 
-export default withStyles(cardStyles)(ModalClone);
+export default withStyles(cardStyles)(DeleteExptModal);

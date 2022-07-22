@@ -68,11 +68,11 @@ const styles = theme => ({
   },
   card: {
     width: 440,
-    height: 190,
+    height: 195,
     backgroundColor: 'black',
   },
   cardSpacer: {
-    height: 15,
+    height: 10,
     backgroundColor: 'black',
   },
   stepperStyle: {
@@ -108,7 +108,15 @@ function ActiveButtons(props) {
     return <LightButtons onSubmitButton={props.onSubmitButton}/>;
   }
   if (currentTag == 'calibrate') {
-    return <CalibrationButtons onSelectNewCal={props.onSelectNewCal}  tempCalFiles= {props.tempCalFiles} odCalFiles={props.odCalFiles}activeTempCal={props.activeTempCal} activeODCal={props.activeODCal} showRawTemp= {props.showRawTemp} showRawOD= {props.showRawOD}/>
+    return <CalibrationButtons onSelectNewCal={props.onSelectNewCal}
+              tempCalFiles = {props.tempCalFiles}
+              odCalFiles = {props.odCalFiles}
+              pumpCalFiles = {props.pumpCalFiles}
+              activeTempCal = {props.activeTempCal}
+              activeODCal = {props.activeODCal}
+              activePumpCal = {props.activePumpCal}
+              showRawTemp = {props.showRawTemp}
+              showRawOD = {props.showRawOD}/>
   }
   return null;
 }
@@ -120,8 +128,10 @@ class SwipeableTextMobileStepper extends React.Component {
       activeStep: 0,
       activeTempCal: this.props.activeTempCal,
       activeODCal: this.props.activeODCal,
+      activePumpCal: this.props.activePumpCal,
       tempCalFiles: this.props.tempCalFiles,
       odCalFiles: this.props.odCalFiles,
+      pumpCalFiles: this.props.pumpCalFiles,
       showRawTemp: this.props.showRawTemp,
       showRawOD: this.props.showRawOD
     };
@@ -129,22 +139,28 @@ class SwipeableTextMobileStepper extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.activeTempCal !== prevProps.activeTempCal) {
-      this.setState({ activeTempCal: this.props.activeTempCal})
+      this.setState({ activeTempCal: this.props.activeTempCal});
     }
     if (this.props.activeODCal !== prevProps.activeODCal) {
-      this.setState({ activeODCal: this.props.activeODCal})
+      this.setState({ activeODCal: this.props.activeODCal});
+    }
+    if (this.props.activePumpCal !== prevProps.activePumpCal) {
+      this.setState({activePumpCal: this.props.activePumpCal});
     }
     if (this.props.tempCalFiles !== prevProps.tempCalFiles) {
-      this.setState({ tempCalFiles: this.props.tempCalFiles})
+      this.setState({ tempCalFiles: this.props.tempCalFiles});
     }
     if (this.props.odCalFiles !== prevProps.odCalFiles) {
-      this.setState({ odCalFiles: this.props.odCalFiles})
+      this.setState({ odCalFiles: this.props.odCalFiles});
+    }
+    if (this.props.pumpCalFiles !== prevProps.pumpCalFiles) {
+      this.setState({pumpCalFiles: this.props.pumpCalFiles});
     }
     if (this.props.showRawOD !== prevProps.showRawOD) {
-      this.setState({ showRawOD: this.props.showRawOD})
+      this.setState({ showRawOD: this.props.showRawOD});
     }
     if (this.props.showRawTemp !== prevProps.showRawTemp) {
-      this.setState({ showRawTemp: this.props.showRawTemp})
+      this.setState({ showRawTemp: this.props.showRawTemp});
     }
   }
 
@@ -196,8 +212,10 @@ class SwipeableTextMobileStepper extends React.Component {
                       currentButtons={activeStep}
                       activeTempCal={this.state.activeTempCal}
                       activeODCal={this.state.activeODCal}
+                      activePumpCal={this.state.activePumpCal}
                       tempCalFiles= {this.state.tempCalFiles}
                       odCalFiles={this.state.odCalFiles}
+                      pumpCalFiles={this.state.pumpCalFiles}
                       showRawTemp= {this.state.showRawTemp}
                       showRawOD= {this.state.showRawOD}
                       currentTag={tutorialSteps[activeStep].outputTag}

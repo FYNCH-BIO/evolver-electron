@@ -21,11 +21,11 @@ const styles = {
   },
 };
 
-class StirSlider extends React.Component {
+class StartODSlider extends React.Component {
   state = {
-    value: 8,
+    value: .3,
     min: 0,
-    max: 15,
+    max: 2,
   };
 
   handleChange = (event, value) => {
@@ -33,7 +33,7 @@ class StirSlider extends React.Component {
   };
 
   clickAdd = (event,value) => {
-    let newValue = this.state.value + 1
+    let newValue = this.state.value + .05
     if(newValue > this.state.max){
       newValue = this.state.max;
     }
@@ -41,7 +41,7 @@ class StirSlider extends React.Component {
   }
 
   clickSubtract = (value) => {
-    let newValue = this.state.value - 1
+    let newValue = this.state.value - .05
     if(newValue < this.state.min){
       newValue = this.state.min;
     }
@@ -49,7 +49,7 @@ class StirSlider extends React.Component {
   }
 
   clickSubmit = (event) => {
-      this.props.onSubmitButton("stir", (Math.round(this.state.value * 100)/100).toFixed(0));
+      this.props.onSubmitButton("startOD", (Math.round(this.state.value * 100)/100).toFixed(2));
   }
 
   render() {
@@ -62,7 +62,7 @@ class StirSlider extends React.Component {
             <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickSubtract}><i className="fa fa-minus"></i></button>
               <button className = "btn btn-lg btn-outline-secondary setupButton" onClick={this.clickSubmit}>
                 <span className="slider-label">
-                   Stir: {(Math.round(this.state.value * 100)/100).toFixed(0)}
+                   Start OD: {(Math.round(this.state.value * 100)/100).toFixed(2)}
                 </span>
               </button>
             <button type="button" className="btn btn-outline-secondary btn-circle setupButton" onClick={this.clickAdd}><i className="fa fa-plus"></i></button>
@@ -70,7 +70,7 @@ class StirSlider extends React.Component {
             value={value}
             min={this.state.min}
             max={this.state.max}
-            step={1}
+            step={.05}
             aria-labelledby="label"
             onChange={this.handleChange}
             classes={{
@@ -86,8 +86,8 @@ class StirSlider extends React.Component {
   }
 }
 
-StirSlider.propTypes = {
+StartODSlider.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(StirSlider);
+export default withStyles(styles)(StartODSlider);

@@ -14,10 +14,10 @@ function isDisabled(currentVial) {
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
   if (numberSelected == 0) {
-    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons selectall">Select All</button></SelectAll>
+    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtonsPumpCal">Select All</button></SelectAll>
   }
   else {
-    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons selectall">Clear Selection</button></DeselectAll>
+    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtonsPumpCal">Clear Selection</button></DeselectAll>
   }
   return null;
 }
@@ -26,20 +26,20 @@ function ActiveButtons(state) {
 const styles = {
   card: {
     width: 580,
-    height: 620,
+    height: 630,
     margin: '3px 5px 15px 20px',
   },
 };
 
-const Label = ({ selecting, selected, vial, od, temp}) => (
+const Label = ({ selecting, selected, vial, IN1, IN2, E}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="temp-label">{`${temp}`}</span><br/>
-    <span className="OD-label">{`${od}`}</span>
-    <br />
+    <span className="IN1-label">{`${IN1}`}</span><br/>
+    <span className="IN2-label">{`${IN2}`}</span><br/>
+    <span className="E-label">{`${E}`}</span><br/>
   </div>
 )
 
@@ -50,10 +50,10 @@ class List extends Component {
 
   render() {
     return (
-      <div style={{width: 560}}>
+      <div style={{width: 595}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} od={item.od} temp={item.temp}/>
+            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} IN1={item.IN1} IN2={item.IN2} E={item.E}/>
           ))}
         </div>
       </div>
@@ -62,7 +62,7 @@ class List extends Component {
 }
 
 const Album = ({
-  selectableRef, selected, selecting, strain, vial, od, temp
+  selectableRef, selected, selecting, strain, vial, IN1, IN2, E
 }) => (
   <div
     id = {"vialID-" + vial}
@@ -75,7 +75,7 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} od={od} temp={temp}/>
+    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} IN1={IN1} IN2={IN2} E={E}/>
   </div>
 )
 
@@ -152,14 +152,13 @@ class VialSelector extends Component<Props>  {
               <div className="button-position">
                 <ActiveButtons selectedItems={this.state.selectedItems} />
               </div>
-
             </SelectableGroup>
           </div>
-          <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons selector" onClick={this.toggleOrder}>{buttonLabel}</button>
+          <div className= "toggle-button-position-cal">
+            <button className = "btn btn-md vialSelectorButtonsPumpCal" onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
-          <div className="stop-button-position">
-          <button className = "btn btn-md stopAllButton" > FORCE STOP ALL </button>
+          <div className="stop-cal-button-position">
+          <button className = "btn btn-md pump-cal-stop-button" > FORCE STOP ALL </button>
           </div>
         </Card>
     )

@@ -4,17 +4,27 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import routes from '../constants/routes.json';
 import { withStyles } from '@material-ui/core/styles';
-import {FaArrowLeft} from 'react-icons/fa';
+import {FaArrowLeft, FaPen} from 'react-icons/fa';
 import ScriptFinder from './python-shell/ScriptFinder'
 import Card from '@material-ui/core/Card';
 const { ipcRenderer } = require('electron');
 import ModalClone from './python-shell/ModalClone';
+import ModalReset from './python-shell/ModalReset';
+import ReactTooltip from 'react-tooltip';
 
 const remote = require('electron').remote;
 const app = remote.app;
+const http = require('https');
+const Store = require('electron-store');
+const store = new Store();
+const { dialog } = require('electron').remote
 
 var fs = require('fs');
+var rimraf = require('rimraf');
 var path = require('path');
+var os = require('os');
+
+const filesToCopy = ['custom_script.py', 'eVOLVER.py', 'nbstreamreader.py', 'pump_cal.txt', 'eVOLVER_parameters.json'];
 
 const styles = {
   cardRoot: {
@@ -30,145 +40,149 @@ const styles = {
     top: '60px',
     left: '75px',
     overflowY: 'auto'
-  },
-  cardPyshell: {
-    top: '200px',
-    left: '30px',
   }
 };
 
 function startScript(exptDir) {
-    var volume = 20;
-    var jsonParams = '';
-    var paramFilename = path.join(exptDir, 'tstat_parameters.json');
-    var parameters = {};
-    var temp = [];
-    var stir = [];
-    var lower = [];
-    var upper = [];
-    if (fs.existsSync(paramFilename)) {      
-        jsonParams = JSON.parse(fs.readFileSync(paramFilename, 'utf8'));            
-        for (var i = 0; i < jsonParams.length; i++) {
-            temp.push(jsonParams[i].temp);
-            stir.push(jsonParams[i].stir);
-            upper.push(jsonParams[i].upper);
-            lower.push(jsonParams[i].lower);
-        }
-        parameters = {'temp_input':temp, 'stir_input': stir, 'lower_thresh': lower, 'upper_thresh': upper, 'volume':volume};            
-    } 
-    var evolverIp = '192.168.1.3';
-    var evolverPort = 8081;
-    var name = 'testing_pyshell';
-    ipcRenderer.send('start-script', ['start', {'zero':true, 'continue':false, 'overwrite':true, 'parameters':parameters, 'evolver-ip':evolverIp, 'evolver-port':evolverPort, 'name':name, 'script': exptDir}, exptDir]);        
-}
-
+    ipcRenderer.send('start-script', exptDir);
+};
 
 class ExptManager extends React.Component {
   constructor(props) {
     super(props);
+    var exptLocation = app.getPath('userData');
+    if (store.get('exptLocation')) {
+        exptLocation = store.get('exptLocation');
+    }
     this.state = {
-      scriptDir: '/legacy/data',
+      scriptDir: 'experiments',
+      exptLocation: exptLocation,
       activeScript: '',
       runningExpts: [],
-      pausedExpts: [],
       alertOpen: false,
+      resetOpen: false,
+      resetQuestion: 'Are you sure you want to reset this experiment? All data will be deleted.',
       alertDirections: 'Enter new experiment name',
       exptToClone: '',
-      refind: false
+      refind: false,
+      evolverIp: this.props.evolverIp            
     };
-    
+
     ipcRenderer.on('to-renderer', (event, arg) => {
-        console.log(arg);
     });
 
     ipcRenderer.on('running-expts', (event, arg) => {
-        console.log('running');
-        console.log(arg);
-        this.setState({runningExpts: arg});
+        this.setState({runningExpts: arg, disablePlay: false});
     });
-    
-    ipcRenderer.on('paused-expts', (event, arg) => {
-        console.log('paused');
-        console.log(arg);        
-        this.setState({pausedExpts: arg});
-    });
-    
-    ipcRenderer.send('paused-expts');
+
     ipcRenderer.send('running-expts');
+
+    ipcRenderer.on('get-ip', (event, arg) => {
+        console.log('We just got ip from main for some reason ' + arg);
+      this.setState({evolverIp: arg});
+      });
+    if (!fs.existsSync(path.join(app.getPath('userData'), this.state.scriptDir))) {
+      fs.mkdirSync(path.join(app.getPath('userData'), this.state.scriptDir));
+      fs.mkdirSync(path.join(app.getPath('userData'), 'template'));
+      var customScriptFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'custom_script.py'));
+      var evolverFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'eVOLVER.py'));
+      var nbstreamreaderFile = fs.createWriteStream(path.join(this.state.exptLocation, 'template', 'nbstreamreader.py'));
+      var customScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/custom_script.py", function(response) {response.pipe(customScriptFile); console.log('done saving stuff');});
+      var evolverRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/eVOLVER.py", function(response) {response.pipe(evolverFile)});
+      var nbstreamreaderRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/master/experiment/template/nbstreamreader.py", function(response) {response.pipe(nbstreamreaderFile)});
+    }
   }
 
   handleSelectFolder = (activeFolder) => {
-    var exptDir = app.getPath('userData') + this.state.scriptDir + '/' + activeFolder;
+    var exptDir = path.join(this.state.exptLocation, this.state.scriptDir, activeFolder);
     var activeScript = activeFolder + '/' + 'custom_script.py';
     if (this.state.exptDir !== exptDir){
       this.setState({exptDir: exptDir, activeScript: activeScript});
     }
   }
-  
+
   handleStart = (script) => {
-    startScript(app.getPath('userData') + this.state.scriptDir + '/' + script);
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
+    startScript(path.join(this.state.exptLocation, this.state.scriptDir, script));
+    this.setState({disablePlay: true});
+    console.log("starting received");
   }
 
   handleStop = (script) => {
-    ipcRenderer.send('stop-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
+    ipcRenderer.send('stop-script', path.join(this.state.exptLocation, this.state.scriptDir, script));
   }
-  
-  handlePause = (script) => {
-    ipcRenderer.send('pause-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
-    setTimeout(function () {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-    }, 1000);
-  }
-  
+
   handleContinue = (script) => {
-     ipcRenderer.send('continue-script', app.getPath('userData') + this.state.scriptDir + '/' + script);
-     setTimeout(function() {
-        ipcRenderer.send('paused-expts');
-        ipcRenderer.send('running-expts');
-     });
-   }
-   
+     ipcRenderer.send('continue-script', path.join(this.state.exptLocation, this.state.scriptDir, script));
+  };
+
     handleEdit = (script) => {
     };
 
     handleGraph = (script) => {
-         console.log(script);
     };
 
     handleClone = (script) => {
-        this.setState({alertOpen: true, exptToClone: script});
+        this.setState({alertOpen: true});
+    };
+
+    handleReset = (script, running) => {
+      if (running) {
+        this.setState({resetOpen: true, resetQuestion: 'Cannot reset a running experiment. Please stop the experiment before resetting.', ableToReset: false});
+      }
+      else {
+        this.setState({resetOpen: true, resetQuestion: 'Are you sure you want to reset this experiment? All data will be deleted.', exptToReset: script, ableToReset: true});
+      }
+    };
+
+    onResumeReset = (reset) => {
+      this.setState({resetOpen: false});
+      if (reset) {
+        rimraf(path.join(this.state.exptLocation, this.state.scriptDir, this.state.exptToReset, 'data'), function() {console.log('removed expt data')});
+      }
     };
 
     onResumeClone = (exptName) => {
         this.setState({alertOpen: false});
-        this.createNewExperiment(exptName, this.state.exptToClone);
-        
+        if (exptName !== false) {
+          this.createNewExperiment(exptName, this.state.exptToClone);
+        }
     };
-    
-    createNewExperiment = (exptName, exptToClone) => {
-        var newDir = path.join(app.getPath('userData') + this.state.scriptDir, exptName);
-        var oldDir = path.join(app.getPath('userData') + this.state.scriptDir, exptToClone);
+
+    createNewExperiment = (exptName) => {
+        var newDir = path.join(this.state.exptLocation, this.state.scriptDir, exptName);
+        var oldDir = path.join(app.getPath('userData'), "template");
         if (!fs.existsSync(newDir)) {
             fs.mkdirSync(newDir);
         }
-        fs.copyFileSync(path.join(oldDir, 'custom_script.py'), path.join(newDir, 'custom_script.py'));
-        fs.copyFileSync(path.join(oldDir, 'eVOLVER_module.py'), path.join(newDir, 'eVOLVER_module.py'));
-        fs.copyFileSync(path.join(oldDir, 'main_eVOLVER.py'), path.join(newDir, 'main_eVOLVER.py'));
-        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
-        fs.copyFileSync(path.join(oldDir, 'nbstreamreader.py'), path.join(newDir, 'nbstreamreader.py'));
-        if (fs.existsSync(path.join(oldDir, 'tstat_parameters.json'))) {
-            fs.copyFileSync(path.join(oldDir, 'tstat_parameters.json'), path.join(newDir, 'tstat_parameters.json'));
-        }        
+        filesToCopy.forEach(function (filename) {
+          if (fs.existsSync(path.join(oldDir, filename))) {
+            fs.copyFileSync(path.join(oldDir, filename), path.join(newDir, filename));
+          }
+        });
         this.setState({refind: !this.state.refind});
+    }
+    
+    resetDefaultExptDir = () => {
+        this.setState({exptLocation: app.getPath('userData')});
+        store.set('exptLocation', app.getPath('userData'));
+    }
+    
+    changeExptDirectory = () => {
+        var exptDirectory = this.state.exptLocation;
+        var isWin = os.platform() === 'win32';
+        if (!isWin) {
+            exptDirectory = dialog.showOpenDialog({properties: ['openDirectory']});
+        }
+        else {
+            exptDirectory = dialog.showOpenDialog({properties: ['openDirectory']});
+        }
+        var exptLocation = exptDirectory[0];
+        var basename = path.basename(exptLocation);
+        if (basename === this.state.scriptDir) {
+            exptLocation = path.dirname(exptLocation);
+        }
+        this.setState({exptLocation: exptLocation});
+        store.set('exptLocation', exptLocation);
     }
 
   render() {
@@ -177,28 +191,35 @@ class ExptManager extends React.Component {
     return (
       <div>
         <h2 className="managerTitle"> eVOLVER Scripts </h2>
-
+        <div className="directoryDiv"><span style={{fontWeight: "bold"}}>Expt Directory: </span><span className="expt-dir-text" style={{color:"#f58245"}}>{path.join(this.state.exptLocation, this.state.scriptDir)}</span><button class="expt-dir-btn" data-tip="Change Expt Directory." onClick={this.changeExptDirectory}><FaPen size={15}/></button></div>
         <Card classes={{root:classes.cardRoot}} className={classes.cardScript}>
           <ScriptFinder subFolder={this.state.scriptDir}
-            isScript= {true} 
+            isScript= {true}
             onSelectFolder={this.handleSelectFolder}
-            onClone={this.handleClone} 
-            onEdit={this.handleEdit} 
-            onGraph={this.handleGraph} 
-            onStart={this.handleStart} 
-            onStop={this.handleStop} 
-            onPause={this.handlePause} 
-            onContinue={this.handleContinue} 
-            runningExpts={this.state.runningExpts} 
-            pausedExpts={this.state.pausedExpts}
-            refind={this.state.refind}/>
+            onEdit={this.handleEdit}
+            onGraph={this.handleGraph}
+            onStart={this.handleStart}
+            onStop={this.handleStop}
+            onContinue={this.handleContinue}
+            runningExpts={this.state.runningExpts}
+            refind={this.state.refind}
+            evolverIp = {this.state.evolverIp}
+            disablePlay = {this.state.disablePlay}
+            exptLocation = {this.state.exptLocation}/>
         </Card>
-        
         <Link className="expManagerHomeBtn" id="experiments" to={routes.HOME}><FaArrowLeft/></Link>
+        <ReactTooltip />
+        <button className="newExptButton" data-tip="Create a new experiment." onClick={this.handleClone}>New Experiment</button>
+        <button className="resetDefaultExptDirButton" data-tip="Reset to the default experiment directory location."onClick={this.resetDefaultExptDir}>Default Expt Dir</button>
         <ModalClone
           alertOpen= {this.state.alertOpen}
           alertQuestion = {this.state.alertDirections}
           onAlertAnswer = {this.onResumeClone}/>
+        <ModalReset
+          resetOpen = {this.state.resetOpen}
+          resetQuestion = {this.state.resetQuestion}
+          onResetAnswer = {this.onResumeReset}
+          ableToReset = {this.state.ableToReset}/>
       </div>
     );
   }

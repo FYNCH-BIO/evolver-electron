@@ -3,6 +3,7 @@ import { SelectableGroup, createSelectable,  SelectAll, DeselectAll  } from 'rea
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
+import ReactTooltip from 'react-tooltip';
 
 
 const disabledVial = []
@@ -14,10 +15,10 @@ function isDisabled(currentVial) {
 function ActiveButtons(state) {
   const numberSelected = state.selectedItems.length;
   if (numberSelected == 0) {
-    return <SelectAll className="selectable-button"><button  className="btn btn-md vialSelectorButtons">Select All</button></SelectAll>
+      return <SelectAll className="selectable-button"><div><ReactTooltip/><button  className="btn btn-md vialSelectorButtons tstat" data-tip="Select all vials to apply settings simultaneously">Select All</button></div></SelectAll>
   }
   else {
-    return <DeselectAll className="selectable-button"><button className="btn btn-md vialSelectorButtons">Clear Selection</button></DeselectAll>
+      return <DeselectAll className="selectable-button"><div><ReactTooltip/><button className="btn btn-md vialSelectorButtons tstat" data-tip="De-select all selected vials">Clear Sel.</button></div></DeselectAll>
   }
   return null;
 }
@@ -25,27 +26,54 @@ function ActiveButtons(state) {
 
 const styles = {
   card: {
-    width: 580,
+    width: 560,
     height: 620,
     margin: '3px 5px 15px 20px',
   }
 };
 
-const Label = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
+const LabelTStat = ({ selecting, selected, vial, upper, lower, temp, stir}) => (
   <div
   className="album-label">
     <h2>
     Vial <span>{`${vial}`}</span>
     </h2>
-    <span className="upper-label"> {`${upper}`} </span><br/>
-    <span className="lower-label"> {`${lower}`} </span><br/>       
-    <span className="temp-label"> {`${temp}`} </span>
-    <span className="stir-label"> {`${stir}`} </span>     
+    <span className="upper-label"> {`${upper}`} -</span>
+    <span className="lower-label"> {`${lower}`} </span><br/>
+    <span className="temp-label"> {`${temp}`} </span><br/>
+    <span className="stir-label"> {`${stir}`} </span>
     <br />
   </div>
 )
 
-class List extends Component {
+const LabelCStat = ({ selecting, selected, vial, rate, temp, stir, startTime, startOD}) => (
+  <div
+  className="album-label">
+    <h2>
+    Vial <span>{`${vial}`}</span>
+    </h2>
+    <span className="rate-label"> {`${rate}`} </span><br/>
+    <span className="temp-label"> {`${temp}`} </span>
+    <span className="stir-label"> {`${stir}`} </span><br/>
+    <span className="startTime-label"> {`${startTime}`} </span><br/>
+    <span className="startOD-label"> {`${startOD}`} </span><br/>            
+  </div>
+)
+
+const LabelGrowthCurve = ({ selecting, selected, vial, temp, stir}) => (
+  <div
+  className="album-label">
+    <h2>
+    Vial <span>{`${vial}`}</span>
+    </h2>
+    <br/>
+    <span className="temp-label"> {`${temp}`} </span>
+    <span className="stir-label"> {`${stir}`} </span>
+    <br />
+  </div>
+)
+
+class TStatList extends Component {
   componentDidUpdate(nextProps) {
     return nextProps.items !== this.props.items
   }
@@ -55,7 +83,7 @@ class List extends Component {
       <div style={{width: 560}}>
         <div className="centered">
           {this.props.items.map((item) => (
-            <SelectableAlbum key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
+            <SelectableAlbumTStat key={item.vial} vial={item.vial} selected={item.selected} upper={item.upper} lower={item.lower} temp={item.temp} stir={item.stir}/>
           ))}
         </div>
       </div>
@@ -63,7 +91,43 @@ class List extends Component {
   }
 }
 
-const Album = ({
+class CStatList extends Component {
+  componentDidUpdate(nextProps) {
+    return nextProps.items !== this.props.items
+  }
+
+  render() {
+    return (
+      <div style={{width: 560}}>
+        <div className="centered">
+          {this.props.items.map((item) => (
+            <SelectableAlbumCStat key={item.vial} vial={item.vial} selected={item.selected} rate={item.rate} temp={item.temp} stir={item.stir} startTime={item.startTime} startOD={item.startOD}/>
+          ))}
+        </div>
+      </div>
+    )
+  }
+}
+
+class GrowthCurveList extends Component {
+  componentDidUpdate(nextProps) {
+    return nextProps.items !== this.props.items
+  }
+
+  render() {
+    return (
+      <div style={{width: 560}}>
+        <div className="centered">
+          {this.props.items.map((item) => (
+            <SelectableAlbumGrowthCurve key={item.vial} vial={item.vial} selected={item.selected} temp={item.temp} stir={item.stir}/>
+          ))}
+        </div>
+      </div>
+    )
+  }
+}
+
+const AlbumTStat = ({
   selectableRef, selected, selecting, strain, vial, upper, lower, temp, stir
 }) => (
   <div
@@ -77,11 +141,49 @@ const Album = ({
     `}
   >
     <div className="tick">+</div>
-    <Label selected={selected} selecting={selecting} vial={vial} strain={strain} upper={upper} lower={lower} temp={temp} stir={stir}/>
+    <LabelTStat selected={selected} selecting={selecting} vial={vial} strain={strain} upper={upper} lower={lower} temp={temp} stir={stir}/>
   </div>
 )
 
-const SelectableAlbum = createSelectable(Album)
+const AlbumCStat = ({
+  selectableRef, selected, selecting, strain, vial, rate, temp, stir, startTime, startOD
+}) => (
+  <div
+    id = {"vialID-" + vial}
+    ref={selectableRef}
+    className={`
+      ${(isDisabled(vial)) && 'not-selectable'}
+      item
+      ${selecting && 'selecting'}
+      ${selected && 'selected'}
+    `}
+  >
+    <div className="tick">+</div>
+    <LabelCStat selected={selected} selecting={selecting} vial={vial} strain={strain} rate={rate} temp={temp} stir={stir} startTime={startTime} startOD={startOD}/>
+  </div>
+)
+
+const AlbumGrowthCurve = ({
+  selectableRef, selected, selecting, strain, vial, temp, stir
+}) => (
+  <div
+    id = {"vialID-" + vial}
+    ref={selectableRef}
+    className={`
+      ${(isDisabled(vial)) && 'not-selectable'}
+      item
+      ${selecting && 'selecting'}
+      ${selected && 'selected'}
+    `}
+  >
+    <div className="tick">+</div>
+    <LabelGrowthCurve selected={selected} selecting={selecting} vial={vial} strain={strain} temp={temp} stir={stir}/>
+  </div>
+)
+
+const SelectableAlbumTStat = createSelectable(AlbumTStat);
+const SelectableAlbumCStat = createSelectable(AlbumCStat);
+const SelectableAlbumGrowthCurve = createSelectable(AlbumGrowthCurve);
 
 
 
@@ -131,13 +233,24 @@ class TstatVialSelector extends Component<Props>  {
     const { classes } = this.props;
     const { items } = this.props
     const { reversed } = this.state
-    
+
     const orderedItems = reversed ? items.slice(12,16).concat(items.slice(8,12)).concat(items.slice(4,8)).concat(items.slice(0,4)) : items
     const buttonLabel = reversed ? this.state.buttonBack: this.state.buttonFront
 
+    var list;
+    if (this.props.function == 'turbidostat') {
+      list = <TStatList items={orderedItems}/>
+    }
+    else if (this.props.function == 'growthcurve') {
+      list = <GrowthCurveList items={orderedItems}/>;
+    }
+    else if (this.props.function == 'chemostat') {
+      list = <CStatList items={orderedItems}/>;
+    }
+
     return (
         <Card className={classes.card}>
-          <div className="vialArray-gui" style={{display: 'flex', justifyContent:'center', alignItems:'center',}}>
+          <div className="vialArray-gui tstat" style={{display: 'flex'}}>
             <SelectableGroup
               ref={ref => (window.selectableGroup = ref)}
               className="main"
@@ -151,19 +264,24 @@ class TstatVialSelector extends Component<Props>  {
               onSelectionFinish={this.handleSelectionFinish}
               ignoreList={['.not-selectable']}
             >
-              <List items={orderedItems} />
+              {list}
 
-              <div className="button-position">
+              <div className="button-position tstat">
                 <ActiveButtons selectedItems={this.state.selectedItems}/>
               </div>
 
             </SelectableGroup>
           </div>
-          <div className= "toggle-button-position">
-            <button className = "btn btn-md vialSelectorButtons" onClick={this.toggleOrder}>{buttonLabel}</button>
+          <div className= "toggle-button-position tstat">
+            <ReactTooltip />
+            <button className = "btn btn-md tstatSelectorButtons" data-tip="Flip ordering of vials." onClick={this.toggleOrder}>{buttonLabel}</button>
           </div>
           <div className="save-button-position">
-          <button className = "btn btn-md saveAllButton" onClick={this.props.onSave}> SAVE EXPERIMENT </button>
+          <ReactTooltip />
+          <button className = "btn btn-md saveAllButton" data-tip="Save settings for experiment." onClick={this.props.onSave}>Save Expt.</button>
+          </div>
+          <div className = "reset-button-position">
+          <button className = "btn btn-md resetAllButton" data-tip="Reset experiment parameters to defaults." onClick={this.props.onResetToDefault}>Reset</button>
           </div>
         </Card>
     )

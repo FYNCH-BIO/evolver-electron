@@ -1,5 +1,9 @@
 ## About
 A desktop app created to control the basic functions of the eVOLVER and perform calibrations via a GUI.
+## Setup
+
+This application uses the yarn package manager. Visit https://classic.yarnpkg.com/en/docs/install#debian-stable for additional information on installing yarn on your computer. The documentation also includes OS specific installation instructions under 'Alternatives'. Note that development of this application was done using Yarn 1 and not Yarn 2.  
+
 
 ## Install
 - **If you have installation or compilation issues with this project, please see [the debugging guide](https://github.com/chentsulin/electron-react-boilerplate/issues/400)**
@@ -34,12 +38,17 @@ git add .
 git commit -a --no-verify -m "Put comment here"
 ```
 
-### Packaging
+## Packaging
 
-To package apps for the local platform (Does not work well when compiling in other platforms. e.g. compile in OSX for OSX):
-
+To package for only your local platform:
 ```bash
 $ yarn package
+```
+
+To package apps for all platforms:
+
+```bash
+$ yarn package-all
 ```
 
 To package app for Raspberry Pi, first simulate Pi with Docker container:
@@ -58,6 +67,23 @@ Package for Raspberry Pi:
 
 ```bash
 $ yarn package-rpi
+```
+
+Next, scp the file to the Raspberry Pi:
+
+```bash
+$ scp release/evolver-electron-1.0.0.AppImage pi@<RPI_IP>:~/evolver-electron-1.0.0.AppImage-new
+```
+
+NOTE: Do not directly overwrite the file - add `-new` to the end so that it copies next to the current build.
+
+Now ssh to the Raspberry Pi, backup the old version and replace it with the new. Restart the raspberry pi to finish the installation.
+
+```bash
+$ ssh pi@<RPI_IP>
+$ mv evolver-electron-1.0.0.AppImage evolver-electron-1.0.0.AppImage-old
+$ mv evolver-electron-1.0.0.AppImage-new evolver-electron-1.0.0.AppImage
+$ sudo reboot now
 ```
 
 ## Credit

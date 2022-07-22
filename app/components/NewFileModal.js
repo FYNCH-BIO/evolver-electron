@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
-import routes from '../../constants/routes.json';
 
 
 
@@ -14,15 +13,14 @@ const cardStyles = {
 };
 
 
-class ModalClone extends React.Component {
+class NewFileModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
       answers: this.props.alertAnswers,
-      value: '',
-      stayOnPage: this.props.stayOnPage
+      value: ''
     };
   }
 
@@ -31,7 +29,7 @@ class ModalClone extends React.Component {
       this.setState({ open: this.props.alertOpen})
     }
   }
-
+  
   componentWillReceiveProps(nextProps) {
       this.setState({open:nextProps.alertOpen});
   }
@@ -41,15 +39,15 @@ class ModalClone extends React.Component {
   };
 
   onCloseModal = () => {
+    this.props.onAlertAnswer('');
     this.setState({open: false, value:''});
-    this.props.onAlertAnswer(false);
   };
 
   handleAnswer = () => {
     this.props.onAlertAnswer(this.state.value);
     this.setState({open: false, value: ''});
   }
-
+  
   handleChange = (event) => {
       this.setState({value: event.target.value});
   }
@@ -57,28 +55,12 @@ class ModalClone extends React.Component {
   render() {
     const { open } = this.state;
 
-    var submitButton;
-    if (this.state.stayOnPage) {
-      submitButton = <button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button>
-    }
-    else {
-      submitButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button></Link>
-    }
-
     return (
       <div>
         <Modal
           open={open}
           closeOnEsc={false}
-          closeOnOverlayClick={false}
+          closeOnOverlayClick={false}             
           onClose={this.onCloseModal}
           onRequestClose={this.onCloseModal}
           center
@@ -87,12 +69,12 @@ class ModalClone extends React.Component {
              modal: styles.newExptModal,
              overlay: styles.customOverlay
            }}>
-           <div style={{height: '180px'}}>
+           <div style={{height: '120px'}}>
               <p style={{textAlign: 'center', margin: '20px 50px 15px 50px', fontStyle: 'italic', fontSize: '24px',fontWeight: 'bold'}}>
                 {this.state.question}
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
-                  <input
+                  <input                    
                     className={styles.alertInput}
                     type="text"
                     value={this.state.value}
@@ -100,12 +82,17 @@ class ModalClone extends React.Component {
                     id="cloneAlertExperimentInput">
                   </input>
               </div>
-              {submitButton}
+              <button
+              onClick={this.handleAnswer}
+              className={styles.alertBtns}>
+              Submit
+              </button>              
             </div>
           </Modal>
       </div>
+
     );
   }
 }
 
-export default withStyles(cardStyles)(ModalClone);
+export default withStyles(cardStyles)(NewFileModal);

@@ -16,7 +16,7 @@ const materialStyles = {
     padding: '0px 0px 0px 25px',
   },
   labelText: {
-    padding: '8px 20px 0px 0px',
+    padding: '10px 20px 0px 0px',
     color: 'white',
     fontWeight: 'bold',
     fontSize: '20px',
@@ -34,8 +34,10 @@ class CalibrationButtons extends React.Component {
       open: false,
       activeTempCal: this.props.activeTempCal,
       activeODCal: this.props.activeODCal,
+      activePumpCal: this.props.activePumpCal,
       tempCalFiles: this.props.tempCalFiles,
       odCalFiles: this.props.odCalFiles,
+      pumpCalFiles: this.props.pumpCalFiles,
       modalFiles: [],
       modalParameter: '',
       showRawTemp: this.props.showRawTemp,
@@ -44,22 +46,28 @@ class CalibrationButtons extends React.Component {
   }
   componentDidUpdate(prevProps) {
     if (this.props.activeTempCal !== prevProps.activeTempCal) {
-      this.setState({ activeTempCal: this.props.activeTempCal})
+      this.setState({ activeTempCal: this.props.activeTempCal});
     }
     if (this.props.activeODCal !== prevProps.activeODCal) {
-      this.setState({ activeODCal: this.props.activeODCal})
+      this.setState({ activeODCal: this.props.activeODCal});
+    }
+    if (this.props.activePumpCal !== prevProps.activePumpCal) {
+      this.setState({activePumpCal: this.props.activePumpCal});
     }
     if (this.props.tempCalFiles !== prevProps.tempCalFiles) {
-      this.setState({ tempCalFiles: this.props.tempCalFiles})
+      this.setState({ tempCalFiles: this.props.tempCalFiles});
     }
     if (this.props.odCalFiles !== prevProps.odCalFiles) {
-      this.setState({ odCalFiles: this.props.odCalFiles})
+      this.setState({ odCalFiles: this.props.odCalFiles});
+    }
+    if (this.props.pumpCalFiles !== prevProps.pumpCalFiles) {
+      this.setState({pumpCalFiles: this.props.pumpCalFiles});
     }
     if (this.props.showRawOD !== prevProps.showRawOD) {
-      this.setState({ showRawOD: this.props.showRawOD})
+      this.setState({ showRawOD: this.props.showRawOD});
     }
     if (this.props.showRawTemp !== prevProps.showRawTemp) {
-      this.setState({ showRawTemp: this.props.showRawTemp})
+      this.setState({ showRawTemp: this.props.showRawTemp});
     }
   }
 
@@ -84,6 +92,14 @@ class CalibrationButtons extends React.Component {
       modalParameter: 'temp'
     });
   }
+  changeActivePumpCal = () => {
+    console.log(this.state.pumpCalFiles);
+    this.setState({
+      open: true,
+      modalFiles: this.state.pumpCalFiles,
+      modalParameter: 'pump'
+    });
+  }
 
   toggleRawTemp = () => {
     this.props.onSelectNewCal('rawtemp', []);
@@ -96,10 +112,13 @@ class CalibrationButtons extends React.Component {
   selectNewCal = (index) => {
     this.setState({ open: false });
     if (this.state.modalParameter == 'od') {
-      this.props.onSelectNewCal(this.state.modalParameter, [this.state.activeTempCal, this.state.modalFiles[index]]);
+      this.props.onSelectNewCal(this.state.modalParameter, [this.state.activePumpCal, this.state.activeTempCal, this.state.modalFiles[index]]);
     }
     else if (this.state.modalParameter == 'temp') {
-      this.props.onSelectNewCal(this.state.modalParameter, [this.state.activeODCal, this.state.modalFiles[index]]);
+      this.props.onSelectNewCal(this.state.modalParameter, [this.state.activePumpCal, this.state.activeODCal, this.state.modalFiles[index]]);
+    }
+    else if (this.state.modalParameter == 'pump') {
+      this.props.onSelectNewCal(this.state.modalParameter, [this.state.activeTempCal, this.state.activeODCal, this.state.modalFiles[index]]);
     }
   }
 
@@ -132,6 +151,10 @@ class CalibrationButtons extends React.Component {
             <Typography variant="h5" className={classes.labelText}> OD: </Typography>
             <button className='calibrationBtns' onClick={this.changeActiveODCal}>{this.state.activeODCal}</button>
             <button className={odRawBtn} onClick={this.toggleRawOD}>RAW</button>
+          </div>
+          <div className='row centered'>
+            <Typography variant="h5" className={classes.labelText}> Pump: </Typography>
+            <button className='calibrationBtns' onClick={this.changeActivePumpCal}>{this.state.activePumpCal}</button>
           </div>
           {/*<div className='row centered'>
             <Typography variant="h5" className={classes.labelText}> Pump: </Typography>

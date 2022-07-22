@@ -107,6 +107,8 @@ class ConfigModal extends React.Component {
         {activeBtnLabel}
         <Modal
           open={open}
+          closeOnEsc={false}
+          closeOnOverlayClick={false}          
           onClose={this.onCloseModal}
           classNames={{
              closeButton: styles.customcloseButton,

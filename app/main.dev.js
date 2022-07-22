@@ -17,111 +17,179 @@ let mainWindow = null;
 
 /*
  * Ipc communication so background windows can talk to the renderer.
- * 
- */ 
+ *
+ */
 
+/* Constants for indexing commands for ps.lookup */
+const ZERO = 3;
+const OVERWRITE = 5;
+const CONTINUE = 7;
+const PARAMETERS = 9;
+const EVOLVERIP = 11;
+const EVOLVERPORT = 13;
+const NAME = 15;
+const BLANK = 17;
+
+var path = require('path');
+var ps = require('ps-node');
+var fs = require('fs');
+const http = require('https');
+const Store = require('electron-store');
+const { exec } = require("child_process");
+const { dialog } = require('electron')
+const { PythonShell } = require('python-shell');
+
+const store = new Store({
+  defaults:{
+    running_expts: [],
+    first_visit: null
+  }
+});
 var backgroundShells = [];
 var tasks = [];
 var available = [];
 var maxShells = 5;
 
 var exptMap = {};
-var pausedExpts = [];
+var activeIp = '';
 
-function makeBackgroundShell() {
-    if (backgroundShells.length >= maxShells) {
+var isWin = process.platform === "win32";
+
+/* Get array of running experiments from exptMap. Store path and pid information only. */
+function storeRunningExpts() {
+  var runningExpts = Object.keys(exptMap).reduce(function(obj, x) {
+    var data = {
+      path: x,
+      pid: exptMap[x].childProcess.pid
+    };
+    obj.push(data);
+    return obj;
+  }, []);
+  console.log('updating electron store');
+  store.set('running_expts', runningExpts);
+  console.log(store.get('running_expts'));
+};
+
+/* Handle startup of a python shell instance to run the DPU */
+function startPythonExpt(exptDir, flag) {
+  var scriptName = path.join(exptDir, 'eVOLVER.py');
+  var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+  if (isWin) {
+    pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+  }
+  var options = {
+      mode: 'text',
+      pythonPath: pythonPath,
+      args: flag
+    };
+  var pyShell = new PythonShell(scriptName, options);
+  pyShell.on('message', function(message) {
+    console.log(message);
+  });
+  exptMap[exptDir] = pyShell;
+  var pid = pyShell.childProcess.pid;
+  pyShell.on('close', function() {
+    console.log('eVOLVER script with PID ' + pid + ' closed.');
+     delete exptMap[exptDir];
+     storeRunningExpts();
+     mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+  });
+  storeRunningExpts();
+  mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+}
+
+function startPythonCalibration(calibrationName, ip, fitType, fitName, params) {
+    var scriptName = path.join(app.getPath('userData'), 'calibration', 'calibrate.py');
+    var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+    if (isWin) {
+        pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+    }
+    var options = {
+        mode: 'text',
+        pythonPath: pythonPath,
+        args: ['--always-yes',
+                '--no-graph',
+                '-a', ip,
+                '-n', calibrationName,
+                '-f', fitName,
+                '-t', fitType,
+                '-p', params]
+    }
+    var pyShell = new PythonShell(scriptName, options);
+    pyShell.on('close', function() {
+        console.log('Calibration finished for ' + calibrationName);
+        mainWindow.webContents.send('calibration-finished', calibrationName);
+    })
+}
+
+/* Handle killing and relaunching experiments not connected to application. */
+function killExpts(relaunch) {
+  var running_expts_copy = []
+  for (var i = 0; i < store.get('running_expts').length; i++) {
+    running_expts_copy.push(store.get('running_expts')[i]);
+  }
+  store.set('running_expts', []);
+  for (var i = 0; i < running_expts_copy.length; i++) {
+    ps.lookup({pid: running_expts_copy[i].pid}, function(err, resultList) {
+      if (err) {
+        throw new Error(err);
+      }
+      if (resultList.length === 0) {
         return;
+      }
+      var expt_process = resultList[0];
+      for (var i = 0; i < expt_process.arguments.length; i++) {
+        if (expt_process.arguments[i].includes('eVOLVER.py')) {
+          ps.kill(expt_process.pid, function(err) {
+            if (err) {
+              throw new Error(err);
+            }
+            else {
+              console.log('Process %s has been killed!', expt_process.pid);
+            }
+          });
+          break;
+        }
+      }
+    });
+    if (relaunch) {
+      console.log("Relaunching")
+      startPythonExpt(running_expts_copy[i].path, '--always-yes');
     }
-    var pyshellWindow = new BrowserWindow({show:false, nodeIntegrationInWorker: true});
-    pyshellWindow.loadURL('file://' + __dirname + '/' + 'background.html');
-    pyshellWindow.on('closed', () => {
-        console.log('bg window closed');
-    });    
+  }
 }
-
-function runPyshells() {
-    if (available.length === 0) {
-        makeBackgroundShell();
-    }
-    while (available.length > 0 && tasks.length > 0) {
-        var task = tasks.shift();
-        if (task.length === 3) {
-            var pyShell = available.shift();
-            pyShell.send(task[0], task[1]);
-            exptMap[task[2]] = pyShell;
-            
-        }
-        else {
-            available.shift().send(task[0], task[1]);
-        }
-        if (available.length === 0 && tasks.length > 0) {
-            makeBackgroundShell();
-        }
-    }
-}
-
-ipcMain.on('for-renderer', (event, arg) => {
-    mainWindow.webContents.send(arg[0], arg[1]);
-});
 
 ipcMain.on('start-script', (event, arg) => {
-    tasks.push([arg[0], arg[1], arg[2]]);
-    runPyshells();
-});
-
-ipcMain.on('send-message', (event, arg) => {  
-   var recipientShell = exptMap[arg[0]];
-   recipientShell.send(arg[1], arg[2]);   
-});
-
-ipcMain.on('pause-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
-   recipientShell.send('pause-script');
-   pausedExpts.push(arg);
-});
-
-ipcMain.on('continue-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
-   recipientShell.send('continue-script');
-   for (var i = 0; i < pausedExpts.length; i++) {
-       if (pausedExpts[i] === arg) {
-           pausedExpts.splice(i, 1);
-       }
-   }    
+    console.log(arg);
+  startPythonExpt(arg, '--always-yes');
 });
 
 ipcMain.on('stop-script', (event, arg) => {
-   var recipientShell = exptMap[arg];
-   recipientShell.send('stop-script');
-   delete exptMap[arg];
-   for (var i = 0; i < pausedExpts.length; i++) {
-       if (pausedExpts[i] === arg) {
-           pausedExpts.splice(i, 1);
-       }
-   }    
+   exptMap[arg].send('stop-script');
+   // Wait 3 seconds for the commands to be sent to stop the pumps before killing the process
+   setTimeout(() => {
+       exptMap[arg].childProcess.kill();
+       delete exptMap[arg];
+       storeRunningExpts();
+       mainWindow.webContents.send('running-expts',Object.keys(exptMap));}, 3000);
+
+});
+
+ipcMain.on('start-calibration', (event, experimentName, ip, fitType, fitName, params) => {
+    startPythonCalibration(experimentName, ip, fitType, fitName, params);
 });
 
 ipcMain.on('running-expts', (event, arg) => {
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap)); 
+   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
 });
 
-ipcMain.on('paused-expts', (event, arg) => {
-   mainWindow.webContents.send('paused-expts', pausedExpts);
-});
+ipcMain.on('active-ip', (event, arg) => {
+  mainWindow.webContents.send('get-ip', arg);
+  });
 
-ipcMain.on('ready', (event, arg) => {
-    if (!backgroundShells.includes(event.sender)) {
-        backgroundShells.push(event.sender);
-    }
-    
-    // remove the thread from the expt map
-    console.log(arg);
-    console.log(exptMap[arg]);
-    delete exptMap[arg];
-    
-    available.push(event.sender);
-    runPyshells();
-});
+ipcMain.on('kill-expts', (event, arg) => {
+  killExpts(arg.relaunch);
+  });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -133,7 +201,6 @@ if (
   process.env.DEBUG_PROD === 'true'
 ) {
   require('electron-debug')();
-  const path = require('path');
   const p = path.join(__dirname, '..', 'app', 'node_modules');
   require('module').globalPaths.push(p);
 }
@@ -148,15 +215,15 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
-
 function createWindow () {
-  var position = []
+  var position = [];
   if (mainWindow) {
-    position = mainWindow.getPosition()
+    position = mainWindow.getPosition();
   }
   else {
-    position = [0,0]
+    position = [0,0];
   }
+
   mainWindow = new BrowserWindow({
     show: false,
     width: 1110,
@@ -166,15 +233,20 @@ function createWindow () {
     minHeight: 666,
     resizable: false,
     x: position[0]+20,
-    y: position[1]+20
-
+    y: position[1]+20,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
+
   if (process.env.START_FULLSCREEN) {
     mainWindow.setFullScreen(true);
   }
   mainWindow.setMenu(null);
   mainWindow.loadURL(`file://${__dirname}/app.html`);
-  // mainWindow.webContents.openDevTools()
+
+  // Uncomment to view dev tools on startup.
+  //mainWindow.webContents.openDevTools();
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -191,33 +263,32 @@ function createWindow () {
   });
 
   mainWindow.on('close', function(e){
-    var choice = require('electron').dialog.showMessageBox(this,
+    if (store.get('running_expts').length > 0) {
+      var runningExpts = [];
+      var message = '';
+      var detail = '';
+
+      for (var i = 0; i < store.get('running_expts').length; i++) {
+        var temp = store.get('running_expts')[i].path;
+        runningExpts.push(temp.split('/').pop())
+      };
+      message = 'The following running experiments have been detected and will persist if the application is closed. Would you still like to close the application?';
+      detail = runningExpts.join('\n');
+
+      var choice = dialog.showMessageBox(this,
         {
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
-          message: 'Are you sure you want to quit? Any running scripts will be terminated.'
-       });
+          message: message,
+          detail: detail
+          });
+    };
        if(choice == 1){
          e.preventDefault();
        }
     });
-
-   if (!process.env.START_FULLSCREEN) {
-     const menuBuilder = new MenuBuilder(mainWindow);
-     const template = menuBuilder.buildMenu();
-     // template[1].submenu[0] = {
-     //     label: 'New Window',
-     //     accelerator: 'Command+N',
-     //     click: () => {
-     //       createWindow()
-     //     }
-     //   }
-     const menu = Menu.buildFromTemplate(template);
-
-     Menu.setApplicationMenu(menu);
-   }
- }
+ };
 
 
 /**
@@ -234,17 +305,19 @@ app.on('ready', async () => {
     process.env.DEBUG_PROD === 'true'
   ) {
     await installExtensions();
-  }
-
-  createWindow ()
+  };
+  store.set('first_visit', null);
+  createWindow ();
 });
 
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
-  }
+  };
 });
 
+/*
+setAboutPanelOptions() only available for macOS
 app.setAboutPanelOptions({
   copyright: "Copyright © 2019 Fynch Biosciences Inc."
-});
+});*/

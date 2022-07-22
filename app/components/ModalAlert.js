@@ -1,11 +1,9 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
-import routes from '../../constants/routes.json';
 
 
 
@@ -14,13 +12,12 @@ const cardStyles = {
 };
 
 
-class ModalClone extends React.Component {
+class ModalAlert extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
-      answers: this.props.alertAnswers,
       value: '',
       stayOnPage: this.props.stayOnPage
     };
@@ -50,28 +47,15 @@ class ModalClone extends React.Component {
     this.setState({open: false, value: ''});
   }
 
-  handleChange = (event) => {
-      this.setState({value: event.target.value});
-  }
-
   render() {
     const { open } = this.state;
 
-    var submitButton;
-    if (this.state.stayOnPage) {
-      submitButton = <button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button>
-    }
-    else {
-      submitButton = <Link className="cloneButton" id="clone" to={{pathname: routes.EXPTMANAGER}}><button
-        onClick={() => this.handleAnswer()}
-        className={styles.alertBtns}>
-        Submit
-      </button></Link>
-    }
+    var acceptButton;
+    acceptButton = <button
+      onClick={() => this.handleAnswer()}
+      className={styles.alertBtns}>
+      OK
+    </button>
 
     return (
       <div>
@@ -92,15 +76,8 @@ class ModalClone extends React.Component {
                 {this.state.question}
               </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
-                  <input
-                    className={styles.alertInput}
-                    type="text"
-                    value={this.state.value}
-                    onChange={this.handleChange}
-                    id="cloneAlertExperimentInput">
-                  </input>
+                      {acceptButton}
               </div>
-              {submitButton}
             </div>
           </Modal>
       </div>
@@ -108,4 +85,4 @@ class ModalClone extends React.Component {
   }
 }
 
-export default withStyles(cardStyles)(ModalClone);
+export default withStyles(cardStyles)(ModalAlert);

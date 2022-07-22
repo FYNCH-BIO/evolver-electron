@@ -17,7 +17,7 @@ const styles = theme => ({
     borderRadius: '10px',
     display: 'flex',
     width: '300px',
-    padding: '0px 0px 15px 0px',
+    padding: '0px 0px 30px 0px',
     justifyContent: 'center',
   },
   label: {
@@ -34,32 +34,33 @@ const styles = theme => ({
     textAlign: 'center'
   },
   labelRoot: {
-    margin: '0px 6px 0px 6px'
+    margin: '0px 0px 35px 55px'
   },
   radio: {
     color: 'white',
     '&$checked': {
       color: 'orange',
     },
-    padding: '0px 5px 0px 0px'
+    padding: '0px 17px 0px 0px'
   },
   checked: {},
   focused: {},
 });
 
 
-class VialArrayBtns extends React.Component {
+class PumpCalRadioButtons extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       value: this.props.value,
       labels: this.props.labels,
-      title: this.props.radioTitle
+      title: this.props.radioTitle,
+      name: this.props.name
     };
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.labels !== prevProps.labels || this.props.value !== prevProps.value) {
+    if (this.props.labels !== prevProps.labels) {
       this.setState({
         labels: this.props.labels,
         value: this.props.value})
@@ -70,47 +71,30 @@ class VialArrayBtns extends React.Component {
   }
 
   handleChange = event => {
-    this.props.onSelectRadio(event.target.value);
     this.setState({ value: event.target.value });
+    this.props.onSelectRadio(this.state.name, event.target.value);
+
   };
 
   render() {
     const { classes } = this.props;
 
+    var radioControl = <Radio classes={{root: classes.radio,checked: classes.checked}}/>
+    var radioClasses = {label: classes.radiolabel, root: classes.labelRoot};
+
     return (
       <div style={{margin: '0px 0px 0px 0px'}}>
-        <FormControl component="fieldset">
-          <FormLabel classes={{ root: classes.label, focused: classes.focused}} component="legend">{this.state.title}</FormLabel>
-          <RadioGroup
-            aria-label="Gender"
-            name="gender1"
-            row
-            classes={{
-              root: classes.root
-              }}
-            value={this.state.value}
-            onChange={this.handleChange}
-          >
-            {this.state.labels.map((labels, index) => (
-                <FormControlLabel
-                  key = {index}
-                  labelPlacement="end"
-                  classes={{ label: classes.radiolabel, root: classes.labelRoot}}
-                  value={labels} control={
-                    <Radio
-                    classes={{
-                      root: classes.radio,
-                      checked: classes.checked}}
-                    />}
-                  label={labels} />
-            ))}
-          </RadioGroup>
-        </FormControl>
-
+      <FormControl component="fieldset">
+        <RadioGroup name={this.props.name} value={this.state.value} row onChange={this.handleChange}>
+          <FormControlLabel value="fast" classes={radioClasses} control={radioControl} />
+          <FormControlLabel value="slow" classes={radioClasses} control={radioControl}/>
+          <FormControlLabel value="NA" classes={radioClasses} control={radioControl} />
+        </RadioGroup>
+      </FormControl>
       </div>
 
     );
   }
 }
 
-export default withStyles(styles)(VialArrayBtns);
+export default withStyles(styles)(PumpCalRadioButtons);

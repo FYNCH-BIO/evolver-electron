@@ -13,6 +13,42 @@
   height: 40px;
 }
 
+.newExptButton {
+  position: absolute;
+  top: 550px;
+  left: 275px;
+  width: 300px;
+}
+
+.resetDefaultExptDirButton {
+  position: absolute;
+  width: 300px;
+  top: 550px;
+  left: 590px;
+}
+
+.directoryDiv {
+  position: absolute;
+  top: 26px;
+  left: 400px;
+}
+
+.expt-dir-btn {
+  position: absolute;
+  left: 115px;
+  top: -15px;
+  border: none;
+  width: 50px;
+  background-color: #000000;
+}
+
+.expt-dir-text {
+    position: absolute;
+    left: 165px;
+    top: 0px;
+    width: 525px;
+}
+
 .RunScript{
   position: absolute;
   align-items: center;
@@ -43,7 +79,6 @@
   background-color: black;
   border: none;
   color: #f58245;
-
 }
 
 
@@ -63,7 +98,6 @@
 .ReactTable {
   position: absolute;
   left: -5px;
-  width: 1050px;
   color: white;
 }
 

@@ -1,4 +1,4 @@
-.expEditorHomeBtn{
+.expEditorHomeBtn {
   background-color: black;
   position: absolute;
   margin: 12px 0px 0px 40px;
@@ -6,18 +6,19 @@
   font-size: 30px;
 }
 
-.expEditorHomeBtn:hover{
+.expEditorHomeBtn:hover {
   color: white;
 }
 
-.editorTitle{
+.editorTitle {
   position: absolute;
-  top: 15px;
-  left: 90px;
+  top: 19px;
+  left: 80px;
   z-index: 10;
+  font-size: 25px;
 }
 
-.expEditorHomeBtn{
+.expEditorHomeBtn {
   background-color: black;
   position: absolute;
   margin: 12px 0px 0px 40px;
@@ -25,8 +26,14 @@
   font-size: 30px;
 }
 
-.expEditorHomeBtn:hover{
+.expEditorHomeBtn:hover {
   color: white;
+}
+
+.filesTable {
+  position: absolute;
+  top: 60px;
+  left: 20px;
 }
 
 /* If you want the content centered horizontally and vertically */
@@ -34,4 +41,118 @@
   text-align: center;
   float: none;
   margin: 0 auto;
+}
+
+.ReactTable.ft input {
+  height: 25px;
+}
+
+.ReactTable.ft {
+  position: absolute;
+  left: 5px;
+  width: 600px;
+  color: white;
+}
+
+.ft .rt-th {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: left;
+  font-style: italic;
+  color: #f58245;
+}
+
+.ft .rt-td {
+  height: 30px;
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.ReactTable.ft .-pagination {
+  width: 400px;
+  padding-top: 12px;
+}
+
+.ReactTable.ft .-pagination .-previous,
+.ReactTable .-pagination .-next {
+  color: white;
+  border-radius: 10px;
+  padding-right: 10px;
+}
+
+.ReactTable.ft .-pagination .-pageJump {
+  width: 80px;
+}
+
+.ReactTable .-pagination .-btn {
+  color: #f58245;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 18px;
+}
+.ReactTable .rt-noData {
+  position: absolute;
+  top: 100px;
+  left: 185px;
+  font-size: 20px;
+  height: 60px;
+  padding: 15px 20px 15px 20px;
+  color: black;
+}
+
+.ebfe {
+  width: 60px;
+  height: 50px;
+}
+
+.editor-buttons .ebfe {
+  margin: 5px 5px 5px 5px;
+  font-size: 15px;
+}
+
+.editor-buttons .ebfe:active {
+  background: grey;
+}
+
+.editor-buttons {
+  position: absolute;
+  left: 53px;
+  top: 575px;
+  overflow: auto;
+  overflow-y: auto;
+}
+
+.editor-control-buttons {
+  position: absolute;
+  left: 280px;
+  top: 579px;
+  width: 100px;
+  overflow-y: auto;
+}
+
+.select-div {
+  position: absolute;
+  left: 840px;
+  top: 15px;
+  width: 270px;
+}
+
+#editor {
+  height: 570px;
+  width: 675px;
+}
+
+.editorEvolverSelect {
+  position: absolute;
+  left: 350px;
+  top: 15px;
+}
+
+.edit-expt-name-btn {
+  position: absolute;
+  left: 390px;
+  top: -5px;
+  border: none;
+  width: 50px;
+  background-color: #000000;
 }
