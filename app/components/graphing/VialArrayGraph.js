@@ -165,14 +165,14 @@ class VialArrayGraph extends React.Component {
   getData = () => {
     var option = []; var compiled_data = []; var calibrationData = []; var compiledCalibrationData = []; var errorData = []; var compiledErrorData = [];
     if (this.state.activePlot == 'ALL'){
-      console.log('Plotting All Vials!')
-      var maxDataPoint = this.state.ymax;
-      var minDataPoint = this.state.ymin;
+      console.log('Plotting All Vials!');
       if (this.state.dataType.type !== 'calibration' && !fs.existsSync(path.join(this.props.exptDir,'data'))) {
         this.setState({missingData: true});
         return;
       }
       for (var i = 0; i < 16; i++) {
+        var maxDataPoint = this.state.ymax;
+        var minDataPoint = this.state.ymin;
         var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
         var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
         var data = []; var ymin; var calibrationData = []; var errorData = [];
@@ -297,7 +297,7 @@ class VialArrayGraph extends React.Component {
         }
 
        if (this.state.parameter == 'Temp'){
-          minDataPoint = 20;
+          minDataPoint = 15;
           var tempArray;
           try {
             tempArray = fs.readFileSync(tempPath).toString().split('\n');
@@ -328,16 +328,6 @@ class VialArrayGraph extends React.Component {
                 }
             }
           }
-        }
-        var percentage = maxDataPoint * .03;
-        if (this.props.dataType.type === 'calibration') {
-            minDataPoint = Math.max(-0.1, minDataPoint - percentage);
-            maxDataPoint = maxDataPoint + percentage;
-            this.setState({ymin: minDataPoint, ymax: maxDataPoint});            
-        }
-        else {
-            minDataPoint = this.state.ymin;
-            maxDataPoint = this.state.ymax;
         }
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
@@ -432,7 +422,6 @@ class VialArrayGraph extends React.Component {
         type: 'value',
         name: 'Time(h)',
         scale: true,
-        interval: 48,
         splitLine: {
            show: false
         },
@@ -442,8 +431,8 @@ class VialArrayGraph extends React.Component {
             }
         },
         axisLabel: {
-          fontSize: 13,
-          rotate: 40
+          fontSize: 10,
+          rotate: 45
         }
       }
     ],
@@ -463,8 +452,8 @@ class VialArrayGraph extends React.Component {
             }
         },
         axisLabel: {
-          fontSize: 13,
-          rotate: 40
+          fontSize: 10,
+          rotate: 45
           }
       }
     ],
