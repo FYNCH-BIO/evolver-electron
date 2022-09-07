@@ -86,6 +86,37 @@ $ mv evolver-electron-1.0.0.AppImage-new evolver-electron-1.0.0.AppImage
 $ sudo reboot now
 ```
 
+## Docker Build and Run
+
+Download and install Docker.
+
+  + Linux: check your package manager / distribution instructions.
+  + Mac: [Instructions](https://docs.docker.com/docker-for-mac/install/)
+  + Windows: [Instructions](https://docs.docker.com/docker-for-windows/install/) (Windows 10) / [Instructions](https://docs.docker.com/toolbox/toolbox_install_windows/) (Windows 7/8)
+  
+Pull, and Build the image:
+```bash
+    docker build -t evolver-electron .
+    docker run -p 1212:1212 -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY:0 evolver-electron
+```
+
+### Docker Additional Requirement
+ eVOLVER relies on x11 as a GUI which can be installed following the instructions below and replacing the environmental variable `DISPLAY=$DISPLAY:0` with an appropriate line from `Docker Environmental Variables` sub-section   
+ 
+Macs, can install [xQuartz](https://www.xquartz.org/) with additional configuration [here](https://gist.github.com/cschiewek/246a244ba23da8b9f0e7b11a68bf3285)   
+Windows, can install [Cygwin](https://x.cygwin.com/) with additional configuraiton [here](https://www.kombitz.com/2020/01/31/how-to-configure-cygwin-x-for-remote-connection/)   
+A restart may be needed after installation, but a test container can be ran via:   
+```bash
+docker run -p 1212:1212 -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY:0 nonasoftware/evolver-electron:latest
+```
+
+### Docker Environmental Variables
+```
+macOS: -e DISPLAY=docker.for.mac.host.internal:0
+Windows: -e DISPLAY=host.docker.internal:0
+Linux: --net=host -e DISPLAY=:0
+```
+
 ## Credit
 
 - [Zachary Heins](https://github.com/zheins)
