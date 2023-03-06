@@ -101,8 +101,8 @@
 }
 
 .ebfe {
-  width: 60px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
 }
 
 .editor-buttons .ebfe {
@@ -117,7 +117,7 @@
 .editor-buttons {
   position: absolute;
   left: 53px;
-  top: 565px;
+  top: 575px;
   overflow: auto;
   overflow-y: auto;
 }
@@ -132,9 +132,9 @@
 
 .select-div {
   position: absolute;
-  left: 900px;
+  left: 840px;
   top: 15px;
-  width: 340px;
+  width: 270px;
 }
 
 #editor {
@@ -144,6 +144,15 @@
 
 .editorEvolverSelect {
   position: absolute;
-  left: 400px;
+  left: 350px;
   top: 15px;
+}
+
+.edit-expt-name-btn {
+  position: absolute;
+  left: 390px;
+  top: -5px;
+  border: none;
+  width: 50px;
+  background-color: #000000;
 }

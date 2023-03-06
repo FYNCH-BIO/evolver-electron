@@ -8,6 +8,6 @@ export default class GraphingPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <Graph exptDir={this.props.location.exptDir}/>;
+    return <Graph exptDir={this.props.location.exptDir} evolverIp={this.props.location.evolverIp}/>;
   }
 }

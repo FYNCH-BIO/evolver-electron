@@ -111,6 +111,14 @@ button {
   width: 120px;
 }
 
+.toggle-button-position-cal {
+  text-align: left;
+  position: relative;
+  top: -59px;
+  left: 45px;
+  width: 100px;
+}
+
 /* If you want the content centered horizontally and vertically */
 .vialArray-gui {
   padding-left: 0px;
@@ -138,6 +146,17 @@ button {
   border: 2px solid white;
 }
 
+.vialSelectorButtonsPumpCal {
+  width: 150px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: #1e1a1b;
+  color: white;
+  border: 2px solid white;
+  left:-40px;
+  top: -18px;
+}
+
 .button-position {
   text-align: right;
 }
@@ -154,7 +173,28 @@ button {
 .stop-button-position {
   text-align: right;
   position: absolute;
-  top: 544px;
+  top: 584px;
   left: 888px;
   width: 120px;
+}
+
+.stop-cal-button-position {
+  text-align: right;
+  position: absolute;
+  top: 567px;
+  left: 203px;
+  width: 180px;
+}
+
+.pump-cal-stop-button {
+  width: 178px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: white;
+  color: black;
+  border: 2px solid white;
+}
+
+.selectable-button {
+    left: 20px;
 }

@@ -11,3 +11,21 @@
     margin-right: 10px;
     text-align: center;
 }
+
+.circleGreen {
+    display:inline-block;
+    background-color: #32CD32;
+    border-radius: 50%;
+    width:15px;
+    height:15px;
+    margin:0px 0px 0px 30px;
+}
+
+.circleRed {
+    display:inline-block;
+    background-color: #DC143C;
+    border-radius: 50%;
+    width:15px;
+    height:15px;
+    margin:0px 0px 0px 30px;
+}

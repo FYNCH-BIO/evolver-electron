@@ -64,6 +64,7 @@ export default class TempCalGUI extends Component<Props> {
       quadLabels: this.props.quadLabels,
       zipped: [],
       readProgress: this.props.readProgress,
+      displayGraphs: this.props.displayGraphs,
       selectedSmartQuad: NaN
     };
   }
@@ -168,9 +169,12 @@ export default class TempCalGUI extends Component<Props> {
 
   render() {
     const { odState } = this.state;
-
-    return(
-      <div>
+    let outputs;
+    if (this.props.displayGraphs) {
+      outputs = <div></div>
+    }
+    else {
+        outputs = <div>
         <VialItem
           currentValue = {this.state.zipped}/>
         <QuadOutline
@@ -178,7 +182,10 @@ export default class TempCalGUI extends Component<Props> {
           onSmartQuadSelection = {this.handleSmartQuadSelection}
           type = "temp"/>
       </div>
+    }
 
-    );
+    return(
+            <div>{outputs}</div>
+);
   }
 }

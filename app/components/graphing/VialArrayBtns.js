@@ -59,7 +59,7 @@ class VialArrayBtns extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.labels !== prevProps.labels) {
+    if (this.props.labels !== prevProps.labels || this.props.value !== prevProps.value) {
       this.setState({
         labels: this.props.labels,
         value: this.props.value})

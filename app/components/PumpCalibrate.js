@@ -103,7 +103,7 @@ class PumpCal extends React.Component {
     for (var i = 0; i < data.length; i++) {
       vialData.push(Object.assign({}, data[i]));
     }
-    this.state = {
+   this.state = {
       currentStep: 0,
       pumpCalModes: [{
         arrayName: 'IN1',
@@ -149,7 +149,6 @@ class PumpCal extends React.Component {
         })
       }
     }.bind(this));
-
   }
 
   componentWillUnmount() {
@@ -246,126 +245,96 @@ class PumpCal extends React.Component {
       vialData[i][this.state.pumpCalModesFiltered[this.state.currentStep - 1].arrayName] = pumpAmountValues[i] !== '' ? pumpAmountValues[i] / this.state.pumpTimes[this.state.pumpCalModesFiltered[this.state.currentStep - 1].arrayMode] : '--';
     }
 
-    vialData = this.formatVialSelectStrings(vialData, this.state.pumpCalModesFiltered[this.state.currentStep - 1].arrayName);
+    vialData = this.formatVialSelectStrings(vialData, this.state.pumpCalModesFiltered[this.state.currentStep-1].arrayName);
 
-    this.setState({
-      vialData: vialData,
-      enteredValues: enteredValues
-    });
-  }
+    this.setState({vialData: vialData, enteredValues: enteredValues});
+   }
 
-  handleKeyboardInput = (input) => {
-    var exptName;
-    if (input == '') {
-      exptName = 'Pump-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-    } else {
-      exptName = input
-    }
-    this.setState({
-      experimentName: exptName
-    });
-  }
+   handleKeyboardInput = (input) => {
+     var exptName;
+     if (input == ''){
+       exptName = 'Pump-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+     } else {
+       exptName = input
+     }
+     this.setState({experimentName: exptName});
+   }
 
-  handleFinishExpt = (finishFlag) => {
-    this.setState({
-      alertOpen: true
-    })
-    console.log("Experiment Finished!");
-    var d = new Date();
-    var currentTime = d.getTime();
-    var measuredData = [];
-    var vialDataStructured = this.state.enteredValues['IN1'].concat(this.state.enteredValues['E']).concat(this.state.enteredValues['IN2']);
-    var mode;
-    var coefficients = [];
-    for (var i = 0; i < 48; i++) {
-      if (i < 16) {
-        mode = this.state.pumpCalModes[0].arrayMode;
-      } else if (i < 32) {
-        mode = this.state.pumpCalModes[2].arrayMode;
-      } else {
-        mode = this.state.pumpCalModes[1].arrayMode;
+   handleFinishExpt = (finishFlag) => {
+      this.setState({alertOpen: true})
+      console.log("Experiment Finished!");
+      var d = new Date();
+      var currentTime = d.getTime();
+      var measuredData = [];
+      var vialDataStructured = this.state.enteredValues['IN1'].concat(this.state.enteredValues['E']).concat(this.state.enteredValues['IN2']);
+      var mode;
+      var coefficients = [];
+      for (var i = 0; i < 48; i++) {
+        if (i < 16) {
+          mode = this.state.pumpCalModes[0].arrayMode;
+        }
+        else if (i < 32) {
+          mode = this.state.pumpCalModes[2].arrayMode;
+        }
+        else {
+          mode = this.state.pumpCalModes[1].arrayMode;
+        }
+        measuredData[i] = mode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
+        if (vialDataStructured[i] !== '') {
+          coefficients.push(vialDataStructured[i] / measuredData[i]);
+        }
+        else {
+          coefficients.push('');
+        }
+        vialDataStructured[i] = [vialDataStructured[i]];
       }
-      measuredData[i] = mode === 'fast' ? this.state.pumpTimes.fast : this.state.pumpTimes.slow;
-      if (vialDataStructured[i] !== '') {
-        coefficients.push(vialDataStructured[i] / measuredData[i]);
-      } else {
-        coefficients.push('');
-      }
-      vialDataStructured[i] = [vialDataStructured[i]];
-    }
 
 
-    var fit = {
-      name: this.state.experimentName + '-fit',
-      type: 'constant',
-      timeFit: currentTime,
-      active: false,
-      params: ['pump'],
-      coefficients: coefficients
-    };
-    var saveData = {
-      name: this.state.experimentName,
-      calibrationType: "pump",
-      timeCollected: currentTime,
-      measuredData: measuredData,
-      fits: [fit],
-      raw: [{
-        param: 'pump',
-        vialData: vialDataStructured
-      }]
-    }
-    console.log(saveData);
-    this.props.socket.emit('setrawcalibration', saveData);
-  }
+      var fit = {name: this.state.experimentName + '-fit', type: 'constant', timeFit: currentTime, active: false, params: ['pump'], coefficients: coefficients};
+      var saveData = {name: this.state.experimentName, calibrationType: "pump", timeCollected: currentTime, measuredData: measuredData, fits: [fit], raw: [{param: 'pump', vialData: vialDataStructured}]}
+      console.log(saveData);
+      this.props.socket.emit('setrawcalibration', saveData);
+   }
 
-  handleKeyboardModal = () => {
-    this.keyboard.current.onOpenModal();
-  }
+   handleKeyboardModal = () => {
+     this.keyboard.current.onOpenModal();
+   }
 
-  onAlertAnswer = (answer) => {
-    if (answer == 'Retry') {
-      this.handleFinishExpt();
-    }
-    if (answer == 'Exit') {
-      store.delete('runningPumpCal');
-      this.setState({
-        exiting: true
-      });
-    }
-  }
+   onAlertAnswer = (answer) => {
+     if (answer == 'Exit'){
+       store.delete('runningPumpCal');
+       this.setState({exiting: true});
+     }
+   }
 
-  onResumeAnswer = (answer) => {
-    if (answer == 'New') {
-      this.keyboard.current.onOpenModal();
-      store.delete('runningPumpCal');
-    }
-    if (answer == 'Resume') {
-      var previousState = store.get('runningPumpCal');
-      this.setState(previousState);
-    }
-    this.setState({
-      resumeOpen: false
-    })
-  };
+   onResumeAnswer = (answer) => {
+     if (answer == 'New'){
+       this.keyboard.current.onOpenModal();
+       store.delete('runningPumpCal');
+     }
+     if (answer == 'Resume'){
+       var previousState = store.get('runningPumpCal');
+       this.setState(previousState);
+     }
+     this.setState({resumeOpen:false})
+   };
 
-  onSelectVials = (selectedVials) => {
-    this.setState({
-      selectedVials: selectedVials
-    });
-  };
+   onSelectVials = (selectedVials) =>    {
+     this.setState({selectedVials: selectedVials});
+   };
 
-  formatVialSelectStrings = (newData, parameter) => {
-    for (var i = 0; i < newData.length; i++) {
-      var value;
-      if (parameter == 'IN1') {
-        value = newData[i].IN1 === '--' ? '--' : newData[i].IN1.toFixed(2);
-        newData[i].IN1 = 'IN1: ' + value + ' ml/s';
-      }
-      if (parameter == 'IN2') {
-        value = newData[i].IN2 === '--' ? '--' : newData[i].IN2.toFixed(2);
-        newData[i].IN2 = 'IN2: ' + value + ' ml/s';
-      }
-      if (parameter == 'E') {
+   formatVialSelectStrings = (newData, parameter) => {
+     for(var i = 0; i < newData.length; i++) {
+       var value;
+       if (parameter == 'IN1'){
+         value = newData[i].IN1 === '--' ? '--' : newData[i].IN1.toFixed(2);
+         newData[i].IN1 = 'IN1: ' + value + ' ml/s';
+       }
+       if (parameter == 'IN2'){
+         value = newData[i].IN2 === '--' ? '--' : newData[i].IN2.toFixed(2);
+         newData[i].IN2 = 'IN2: ' + value + ' ml/s';
+       }
+       if (parameter == 'E'){
         value = newData[i].E === '--' ? '--' : newData[i].E.toFixed(2);
         newData[i].E = 'E: ' + value + ' ml/s';
       }
@@ -424,16 +393,7 @@ class PumpCal extends React.Component {
     } = this.state;
 
     var pumpConfig;
-    var statusText = < p className = "statusText"
-    style = {
-      {
-        position: 'absolute',
-        top: '600px',
-        left: '100px'
-      }
-    } > {
-      this.state.statusText
-    } < /p>
+    var statusText = <p className="statusText" style={{position: 'absolute', top: '608px', left: '100px'}}>{this.state.statusText}</p>
     var progressButtons;
     var leftButton = null;
     var pumpButton = null;

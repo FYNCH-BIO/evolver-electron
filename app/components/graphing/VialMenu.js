@@ -34,19 +34,21 @@ class VialMenu extends React.Component {
 
   render() {
     let plotToggle;
+    let title;
     if (this.state.activePlot == 'ALL') {
+      title = `SQ${this.state.selectedSmartQuad} ALL`
       plotToggle =
       <div style={{
         width:'200px',
         height: '200px',
         position: 'absolute',
-        margin: '455px 0px 0px 25px'}}>
+        margin: '440px 0px 0px 25px'}}>
           <button
             className = 'allMenuBtnSelected'
             onClick={() => this.handlePlotToggle('ALL')}
             key= 'allVials'
             id='allVials'>
-            <p className='allMenuBtnTextSelected'>SQ{this.state.selectedSmartQuad}ALL</p>
+            <p className='allMenuBtnTextSelected'>{title}</p>
           </button>
       </div>
     } else {
@@ -55,7 +57,7 @@ class VialMenu extends React.Component {
         width:'200px',
         height: '200px',
         position: 'absolute',
-        margin: '455px 0px 0px 25px'}}>
+        margin: '440px 0px 0px 25px'}}>
           <button
             className = 'allMenuBtn'
             onClick={() => this.handlePlotToggle('ALL')}
@@ -69,11 +71,11 @@ class VialMenu extends React.Component {
     return (
 
       <div>
-        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '350px 0px 0px 8px' }}>PLOT SELECTION</p>
+        <p style={{fontSize: '21px', fontWeight: 'bold', position: 'absolute', margin: '335px 0px 0px 8px' }}>PLOT SELECTION</p>
         <div style={{
           width:'300px',
           position: 'absolute',
-          margin: '380px 0px 0px 10px'
+          margin: '365px 0px 0px 10px'
           }}>
         {quadButtons.map((quadButton, index) => (
           quadButton == this.state.selectedSmartQuad ?
@@ -98,8 +100,16 @@ class VialMenu extends React.Component {
           width:'200px',
           height: '200px',
           position: 'absolute',
-          margin: '455px 0px 0px 10px'}}>
+          margin: '440px 0px 0px 10px'}}>
           {vialButtons.map((vialButton, index) => (
+            vialButton == this.state.activePlot ?
+            <button
+              className = 'vialPlotsMenuBtnsSelected'
+              onClick={() => this.handlePlotToggle(vialButton)}
+              key= {vialButton}
+              id={vialButton}>
+              <p className='vialPlotMenuBtnsTextSelected'>{vialButton}</p>
+            </button> :
             <button
               className = 'vialPlotsMenuBtns'
               onClick={() => this.handlePlotToggle(vialButton)}

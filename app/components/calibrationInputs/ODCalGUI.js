@@ -210,17 +210,22 @@ export default class ODCalGUI extends Component<Props> {
 
   render() {
     const { odState } = this.state;
-
+    let outputs;
+    if (this.props.displayGraphs) {
+      outputs = <div></div>
+    } else {
+      outputs =
+        <div>
+          <ODVialItem
+            currentValue = {this.state.zipped}/>
+          <QuadOutline
+            readProgress = {this.state.readProgress}
+            onSmartQuadSelection = {this.handleSmartQuadSelection}
+            type = "od"/>
+        </div>
+    }
     return(
-      <div>
-        <ODVialItem
-          currentValue = {this.state.zipped}/>
-        <QuadOutline
-          readProgress = {this.state.readProgress}
-          onSmartQuadSelection = {this.handleSmartQuadSelection}
-          type = "od"/>
-      </div>
-
+      <div>{outputs}</div>
     );
   }
 }

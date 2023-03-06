@@ -16,6 +16,13 @@ import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
 import ModalAlert from './calibrationInputs/ModalAlert';
+import VialArrayGraph from './graphing/VialArrayGraph';
+const http = require('https');
+var path = require('path');
+var fs = require('fs');
+const remote = require('electron').remote;
+const app = remote.app;
+const { ipcRenderer } = require('electron');
 const Store = require('electron-store');
 const store = new Store(); //runningTempCal
 
@@ -43,7 +50,7 @@ const styles = {
     color: '#f58245',
   },
   circle: {
-    strokeWidth: '3px',
+    strokeWidth: '4px',
   }
 };
 
@@ -95,7 +102,7 @@ class TempCal extends React.Component {
       selectedSmartQuad: 0,
       quadLabels: ['SQ0', 'SQ1', 'SQ2', 'SQ3'],
       smartQuadLabels: ['SQ0 Sensor Average','SQ1 Sensor Average','SQ2 Sensor Average','SQ3 Sensor Average'],
-      quadsData: [],
+      quadsData: {'temp':[]},
       powerLevels: [[1250,1250,1250,1250], [1875,1875,1875,1875], [2500,2500,2500,2500]],
       timesRead: 3,
       valueInputs: [],
@@ -110,23 +117,34 @@ class TempCal extends React.Component {
       experimentName:'',
       readsFinished: 0,
       alertOpen: false,
-      alertQuestion: 'Logging Values...',
+      alertQuestion: 'Running calibration...',
       alertAnswers: ['Retry', 'Exit'],
       exiting: false,
       resumeOpen: false,
       resumeQuestion: 'Start new calibration or resume?',
       resumeAnswers: ['New', 'Resume'],
-      keyboardPrompt: "Enter File Name or press ESC to autogenerate."
-
+      keyboardPrompt: "Enter File Name or press ESC to autogenerate.",
+      displayGraps: false,
+      displayCalibration: true,
+      calibration: null
+    };
+    if (!fs.existsSync(path.join(app.getPath('userData'), 'calibration'))) {
+        fs.mkdirSync(path.join(app.getPath('userData'), 'calibration'));
+        var calibrationsFile = fs.createWriteStream(path.join(app.getPath('userData'), 'calibration', 'calibrate.py'));
+        var calibrationScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/calibration/calibrate.py", function(response) {response.pipe(calibrationsFile)});
     }
+    ipcRenderer.on('calibration-finished', (event, calibrationName) => {this.props.socket.emit('getcalibration', {name: calibrationName})});
+    this.props.socket.on('calibration', function(response) {
+        this.setState({displayGraphs: true, displayCalibration: true, alertOpen: false, calibration: response});
+    }.bind(this));
     this.props.socket.on('broadcast', function(response) {
-      console.log(response);
+      console.log(response)
       if (response.dummy) {
-        console.log("dummy broadcast received");
+        console.log("dummy broadcoast received");
         return
       }
       var newQuadsData = this.state.quadsData;
-      let returnedTemps = generateQuadLabel (response, this.state.tempStream)
+      let returnedTemps = generateQuadLabel (response, this.state.tempStream, this.state.roomTempAvg)
       let tempStream = returnedTemps[0];
       let valueInputs = returnedTemps[1];
 
@@ -178,7 +196,8 @@ class TempCal extends React.Component {
 
     this.props.socket.on('calibrationrawcallback', function(response) {
       if (response == 'success'){
-        this.setState({alertQuestion: 'Successfully Logged. Do you want to exit?'})
+          store.delete('runningTempCal');
+          ipcRenderer.send('start-calibration', this.state.experimentName, this.props.socket.io.opts.hostname, 'linear', this.state.experimentName, 'temp', true);
       }
     }.bind(this));
 
@@ -444,6 +463,10 @@ class TempCal extends React.Component {
      this.setState({resumeOpen:false})
    }
 
+   handleGraph = () => {
+       this.setState({displayGraphs: !this.state.displayGraphs});
+   }
+
   render() {
     const { classes, theme } = this.props;
     const { currentStep } = this.state;
@@ -500,9 +523,9 @@ class TempCal extends React.Component {
           variant="static"
           value={this.state.readProgress}
           color="primary"
-          size= {50}
+          size= {35}
         />
-        <FaStop size={15} className = "readStopBtn"/>
+        <FaStop size={18} className = "readStopBtn"/>
       </button>;
 
       statusText = <p className="statusText">Collecting raw values from eVOLVER...</p>;
@@ -538,7 +561,7 @@ class TempCal extends React.Component {
         </button>
       </div>;
     } else {
-      progressButtons =
+        progressButtons = <div>
       <div className="row" style={{position: 'absolute'}}>
         <button
           className="tempBackBtn"
@@ -549,63 +572,80 @@ class TempCal extends React.Component {
         {measureButton}
         {btnRight}
       </div>
+      <button className="odViewGraphBtn" onClick={this.handleGraph}>VIEW COLLECTED DATA</button>
+      </div>
     }
 
     if (this.state.exiting) {
       return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
     }
     let tempCalInput;
-    if (this.state.selectedSmartQuad == 0) {
-      tempCalInput = <TempCalInput0
-        key='TempcalInput0'
-        id='TempcalInput0'
-        onChangeValue={this.handleTempInput}
-        onInputsEntered = {this.state.inputsEntered}
-        currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues[0]}/>
-    } else if (this.state.selectedSmartQuad == 1) {
-      tempCalInput = <TempCalInput1
-        key='TempcalInput1'
-        id='TempcalInput1'
-        onChangeValue={this.handleTempInput}
-        onInputsEntered = {this.state.inputsEntered}
-        currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues[1]}/>
-    } else if (this.state.selectedSmartQuad == 2) {
-      tempCalInput = <TempCalInput2
-        key='TempcalInput2'
-        id='TempcalInput2'
-        onChangeValue={this.handleTempInput}
-        onInputsEntered = {this.state.inputsEntered}
-        currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues[2]}/>
-    } else if (this.state.selectedSmartQuad == 3) {
-      tempCalInput = <TempCalInput3
-        key='TempcalInput3'
-        id='TempcalInput3'
-        onChangeValue={this.handleTempInput}
-        onInputsEntered = {this.state.inputsEntered}
-        currentSmartQuad = {this.state.selectedSmartQuad}
-        enteredValues = {this.state.enteredValues[3]}/>
-    };
+    let calGraphic;
+    let graphs;
+    let tempCalTitles = <div></div>;
+    let linearProgress;
+    let backArrow = <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>;
+    if (this.state.displayGraphs) {
+        linearProgress = <div></div>
+        graphs = <VialArrayGraph
+            selectedSmartQuad = {this.state.selectedSmartQuad}
+            parameter = {this.state.parameter}
+            exptDir = {'na'}
+            activePlot = {'ALL'}
+            ymax = {55}
+            timePlotted = {this.state.timePlotted}
+            downsample = {this.state.downsample}
+            xaxisName = {'ADC VALUE'}
+            yaxisName = {'TEMPERATURE (C)'}
+            displayCalibration = {this.state.displayCalibration}
+            dataType = {{type:'calibration', param: 'temp'}}
+            passedData = {{vialData: this.state.quadsData, enteredValuesFloat: this.state.enteredValues, calibration: this.state.calibration}}/>;
+        tempCalInput = <div></div>;
+        progressButtons = <div><button className="odViewGraphBtnBack" onClick={this.handleGraph}>BACK</button></div>;
+        backArrow = <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '-2px', left: '-35px'}} id="experiments" onClick={this.handleGraph}><FaArrowLeft/></button>
+    }
+    else {
+      graphs = <div></div>;
+      if (this.state.selectedSmartQuad == 0) {
+        tempCalInput = <TempCalInput0
+          key='TempcalInput0'
+          id='TempcalInput0'
+          onChangeValue={this.handleTempInput}
+          onInputsEntered = {this.state.inputsEntered}
+          currentSmartQuad = {this.state.selectedSmartQuad}
+          enteredValues = {this.state.enteredValues[0]}/>
+      } else if (this.state.selectedSmartQuad == 1) {
+        tempCalInput = <TempCalInput1
+          key='TempcalInput1'
+          id='TempcalInput1'
+          onChangeValue={this.handleTempInput}
+          onInputsEntered = {this.state.inputsEntered}
+          currentSmartQuad = {this.state.selectedSmartQuad}
+          enteredValues = {this.state.enteredValues[1]}/>
+      } else if (this.state.selectedSmartQuad == 2) {
+        tempCalInput = <TempCalInput2
+          key='TempcalInput2'
+          id='TempcalInput2'
+          onChangeValue={this.handleTempInput}
+          onInputsEntered = {this.state.inputsEntered}
+          currentSmartQuad = {this.state.selectedSmartQuad}
+          enteredValues = {this.state.enteredValues[2]}/>
+      } else if (this.state.selectedSmartQuad == 3) {
+        tempCalInput = <TempCalInput3
+          key='TempcalInput3'
+          id='TempcalInput3'
+          onChangeValue={this.handleTempInput}
+          onInputsEntered = {this.state.inputsEntered}
+          currentSmartQuad = {this.state.selectedSmartQuad}
+          enteredValues = {this.state.enteredValues[3]}/>
+      };
 
-    return (
-      <div>
-        <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}}><FaArrowLeft/></Link>
-        {tempCalInput}
-        {progressButtons}
-
-        <Card className={classes.cardTempCalGUI}>
-          <TempCalGUI
-            quadOpacities = {this.state.quadOpacities}
-            generalOpacity = {this.state.generalOpacity}
-            valueInputs = {this.state.valueInputs}
-            initialZipped = {this.state.initialZipped}
-            readProgress = {this.state.quadProgress}
-            onSmartQuadSelection = {this.handleSmartQuadSelection}
-            quadLabels = {this.state.smartQuadLabels}/>
-
-          <LinearProgress
+      tempCalTitles = <button
+        className="odCalTitles"
+        onClick={this.handleKeyboardModal}>
+        <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
+      </button>;
+      linearProgress = <div><LinearProgress
             classes= {{
               root: classes.progressBar,
               colorPrimary: classes.colorPrimary,
@@ -613,16 +653,31 @@ class TempCal extends React.Component {
             }}
             variant="determinate"
             value={this.state.progressCompleted} />
+            {statusText}</div>;
+    }
 
-          {statusText}
-
+    calGraphic = <Card className={classes.cardTempCalGUI}>
+          <TempCalGUI
+            quadOpacities = {this.state.quadOpacities}
+            displayGraphs = {this.state.displayGraphs}
+            generalOpacity = {this.state.generalOpacity}
+            valueInputs = {this.state.valueInputs}
+            initialZipped = {this.state.initialZipped}
+            readProgress = {this.state.quadProgress}
+            onSmartQuadSelection = {this.handleSmartQuadSelection}
+            quadLabels = {this.state.smartQuadLabels}/>
+          {linearProgress}
         </Card>
 
-        <button
-          className="odCalTitles"
-          onClick={this.handleKeyboardModal}>
-          <h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4>
-        </button>
+    return (
+      <div>
+        {backArrow}
+        {calGraphic}
+        {tempCalInput}
+        {graphs}
+        {progressButtons}
+        {tempCalTitles}
+
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} onFinishedExpt={this.handleFinishExpt} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert
           alertOpen= {this.state.alertOpen}

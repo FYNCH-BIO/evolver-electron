@@ -86,8 +86,6 @@ class CalInput extends React.Component {
     const { open } = this.state;
     const { classes, theme } = this.props;
 
-    let smartQuadLabel = 'Smart Quad ' + this.props.currentSmartQuad;
-
     return (
       <div>
         <div className="calInputColumns">

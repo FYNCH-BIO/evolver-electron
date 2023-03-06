@@ -61,6 +61,8 @@ class ModalReset extends React.Component {
       <div>
         <Modal
           open={open}
+          closeOnEsc={false}
+          closeOnOverlayClick={false}          
           onClose={this.onCloseModal}
           onRequestClose={this.onCloseModal}
           center

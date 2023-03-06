@@ -13,11 +13,14 @@ import Card from '@material-ui/core/Card';
 
 import TempSlider from '../setupButtons/TempSlider'
 import StirSlider from '../setupButtons/StirSlider'
+import RateSlider from '../setupButtons/RateSlider'
 import UpperODSlider from '../setupButtons/UpperODSlider'
 import LowerODSlider from '../setupButtons/LowerODSlider'
+import StartTimeSlider from '../setupButtons/StartTimeSlider'
+import StartODSlider from '../setupButtons/StartODSlider'
 
 
-const tutorialSteps = [
+const tutorialStepsTStat = [
   {
     label: 'Upper OD Threshold',
     outputTag: 'upper'
@@ -35,6 +38,40 @@ const tutorialSteps = [
     outputTag: 'stir'
   }
 ];
+
+const tutorialStepsGrowthRate = [
+  {
+    label: 'Temperature',
+    outputTag: 'temp'
+  },
+  {
+    label: 'Stir',
+    outputTag: 'stir'
+  }
+];
+
+const tutorialStepsCStat = [
+    {
+        label: 'Rate',
+        outputTag: 'rate'
+    },
+    {
+        label: 'Temperature',
+        outputTag: 'temp',        
+    },
+    {
+        label: 'Stir',
+        outputTag: 'stir'
+    },
+    {
+        label: 'Start Time',
+        outputTag: 'startTime'
+    },
+    {
+        label: 'Start OD',
+        outputTag: 'startOD'
+    }
+]
 
 const styles = theme => ({
   root: {
@@ -96,11 +133,20 @@ function ActiveButtons(props) {
   if (currentTag === 'lower') {
     return <LowerODSlider onSubmitButton={props.onSubmitButton}/>;
   }
+  if (currentTag === 'rate') {
+      return <RateSlider onSubmitButton={props.onSubmitButton}/>;
+  }
   if (currentTag === 'temp') {
     return <TempSlider onSubmitButton={props.onSubmitButton}/>;
   }
   if (currentTag === 'stir') {
     return <StirSlider onSubmitButton={props.onSubmitButton}/>;
+  }
+  if (currentTag === 'startTime') {
+      return <StartTimeSlider onSubmitButton={props.onSubmitButton}/>;
+  }
+  if (currentTag === 'startOD') {
+      return <StartODSlider onSubmitButton={props.onSubmitButton}/>;
   }
   return null;
 }
@@ -137,6 +183,17 @@ class SwipeableTextMobileStepper extends React.Component {
   render() {
     const { classes, theme } = this.props;
     const { activeStep } = this.state;
+    var tutorialSteps;
+    var tutorialSteps;
+    if (this.props.function == 'turbidostat') {
+        tutorialSteps = tutorialStepsTStat;
+    }
+    else if (this.props.function == 'chemostat') {
+        tutorialSteps = tutorialStepsCStat;
+    }
+    else {
+        tutorialSteps = tutorialStepsGrowthRate;
+    }
     const maxSteps = tutorialSteps.length;
 
     return (

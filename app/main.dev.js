@@ -32,6 +32,8 @@ const BLANK = 17;
 
 var path = require('path');
 var ps = require('ps-node');
+var fs = require('fs');
+const http = require('https');
 const Store = require('electron-store');
 const { exec } = require("child_process");
 const { dialog } = require('electron')
@@ -40,7 +42,8 @@ const { PythonShell } = require('python-shell');
 const store = new Store({
   defaults:{
     running_expts: [],
-    first_visit: null
+    first_visit: null,
+    dpu_env: '/Users/ezirayimerwolle/.pyenv/versions/dpu'
   }
 });
 var backgroundShells = [];
@@ -50,6 +53,8 @@ var maxShells = 5;
 
 var exptMap = {};
 var activeIp = '';
+
+var isWin = process.platform === "win32";
 
 /* Get array of running experiments from exptMap. Store path and pid information only. */
 function storeRunningExpts() {
@@ -69,10 +74,13 @@ function storeRunningExpts() {
 /* Handle startup of a python shell instance to run the DPU */
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
-  // We need to make the path a variable - needs to be either set by user or we require it to be installed at a specific location.
+  var pythonPath = path.join(store.get('dpu_env'), 'bin', 'python3');
+  if (isWin) {
+    pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+  }
   var options = {
       mode: 'text',
-      pythonPath: '/Users/ht_evolver/.pyenv/versions/evolver-electron/bin/python',
+      pythonPath: pythonPath,
       args: flag
     };
   var pyShell = new PythonShell(scriptName, options);
@@ -91,6 +99,30 @@ function startPythonExpt(exptDir, flag) {
   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
 }
 
+function startPythonCalibration(calibrationName, ip, fitType, fitName, params) {
+    var scriptName = path.join(app.getPath('userData'), 'calibration', 'calibrate.py');
+    var pythonPath = path.join(store.get('dpu_env'), 'bin', 'python3');
+    if (isWin) {
+        pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
+    }
+    var options = {
+        mode: 'text',
+        pythonPath: pythonPath,
+        args: ['--always-yes',
+                '--no-graph',
+                '-a', ip,
+                '-n', calibrationName,
+                '-f', fitName,
+                '-t', fitType,
+                '-p', params]
+    }
+    var pyShell = new PythonShell(scriptName, options);
+    pyShell.on('close', function() {
+        console.log('Calibration finished for ' + calibrationName);
+        mainWindow.webContents.send('calibration-finished', calibrationName);
+    })
+}
+
 /* Handle killing and relaunching experiments not connected to application. */
 function killExpts(relaunch) {
   var running_expts_copy = []
@@ -106,15 +138,15 @@ function killExpts(relaunch) {
       if (resultList.length === 0) {
         return;
       }
-      var process = resultList[0];
-      for (var i = 0; i < process.arguments.length; i++) {
-        if (process.arguments[i].includes('eVOLVER.py')) {
-          ps.kill(process.pid, function(err) {
+      var expt_process = resultList[0];
+      for (var i = 0; i < expt_process.arguments.length; i++) {
+        if (expt_process.arguments[i].includes('eVOLVER.py')) {
+          ps.kill(expt_process.pid, function(err) {
             if (err) {
               throw new Error(err);
             }
             else {
-              console.log('Process %s has been killed!', process.pid);
+              console.log('Process %s has been killed!', expt_process.pid);
             }
           });
           break;
@@ -129,14 +161,23 @@ function killExpts(relaunch) {
 }
 
 ipcMain.on('start-script', (event, arg) => {
+    console.log(arg);
   startPythonExpt(arg, '--always-yes');
 });
 
 ipcMain.on('stop-script', (event, arg) => {
-   exptMap[arg].childProcess.kill();
-   delete exptMap[arg]
-   storeRunningExpts();
-   mainWindow.webContents.send('running-expts',Object.keys(exptMap));
+   exptMap[arg].send('stop-script');
+   // Wait 3 seconds for the commands to be sent to stop the pumps before killing the process
+   setTimeout(() => {
+       exptMap[arg].childProcess.kill();
+       delete exptMap[arg];
+       storeRunningExpts();
+       mainWindow.webContents.send('running-expts',Object.keys(exptMap));}, 3000);
+
+});
+
+ipcMain.on('start-calibration', (event, experimentName, ip, fitType, fitName, params) => {
+    startPythonCalibration(experimentName, ip, fitType, fitName, params);
 });
 
 ipcMain.on('running-expts', (event, arg) => {

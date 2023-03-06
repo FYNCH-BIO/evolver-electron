@@ -8,10 +8,10 @@ import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
 import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
+import ReactTooltip from 'react-tooltip';
 import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
-import Circle from '../Circle'
 
 const remote = require('electron').remote;
 const Store = require('electron-store');
@@ -48,27 +48,29 @@ moment.updateLocale('en', {
 });
 
 function dirTree(dirname) {
-    var folderStats = fs.lstatSync(dirname),
-        info = {
-            key: path.basename(dirname),
-            extname: path.extname(dirname)
-        };
-    var timestamp = new Date(util.inspect(folderStats.mtime));
-    info.modifiedString = moment(timestamp).fromNow();
-    info.modified = moment(timestamp).valueOf();
-    info.size = folderStats.size;
-
-    if (folderStats.isDirectory()) {
-        info.type = "folder";
-        info.children = fs.readdirSync(dirname).map(function(child) {
-            return dirTree(dirname + '/' + child);
-        });
+    if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
     }
-    else {
+        var folderStats = fs.lstatSync(dirname),
+            info = {
+                key: path.basename(dirname),
+                extname: path.extname(dirname)
+            };
+        var timestamp = new Date(util.inspect(folderStats.mtime));
+        info.modifiedString = moment(timestamp).fromNow();
+        info.modified = moment(timestamp).valueOf();
+        info.size = folderStats.size;
 
-        info.type = "file";
-    }
+        if (folderStats.isDirectory()) {
+            info.type = "folder";
+            info.children = fs.readdirSync(dirname).map(function(child) {
+                return dirTree(dirname + '/' + child);
+            });
+        }
+        else {
 
+            info.type = "file";
+        }
     return info;
 }
 
@@ -82,7 +84,9 @@ class ScriptFinder extends React.Component {
       selection: 'undefined',
       subFolder: this.props.subFolder,
       isScript: this.props.isScript,
-      hoveredRow: null
+      hoveredRow: null,
+      evolverIp: this.props.evolverIp,
+      exptLocation: this.props.exptLocation
     };
   }
 
@@ -99,6 +103,11 @@ class ScriptFinder extends React.Component {
         subFolder: this.props.subFolder,
       })
     }
+    if (this.props.exptLocation !== prevProps.exptLocation) {
+        this.setState({exptLocation: this.props.exptLocation}, function() {
+            this.handleRefresh(this.props.subFolder);
+        });
+    }
   }
 
   componentWillReceiveProps(props) {
@@ -113,7 +122,7 @@ loadFileDir = (subFolder, isScript) => {
     return []
   }
   else{
-    var dirPath= path.join(app.getPath('userData'), subFolder);
+    var dirPath= path.join(this.state.exptLocation, subFolder);
     var resultJSON = {'data': dirTree(dirPath).children};
     if (isScript) {
       for (var i = 0; i < resultJSON['data'].length; i++) {
@@ -124,8 +133,7 @@ loadFileDir = (subFolder, isScript) => {
           if (fs.existsSync(logLocation)) {
             var logData = fs.readFileSync(logLocation, 'utf8');
             var dataLines = logData.split('\n');
-            var lastTime = dataLines[dataLines.length - 2].split(' ')[0]
-            lastTime = lastTime.substring(1, lastTime.length-1);
+            var lastTime = dataLines[dataLines.length - 2].split(' ').slice(0,2).join(' ')
             var d = new Date(lastTime);
             modifiedString = moment(d).fromNow();
             modified = moment(d).valueOf();
@@ -136,8 +144,8 @@ loadFileDir = (subFolder, isScript) => {
           }
           resultJSON['data'][i]['modifiedString'] = modifiedString;
           resultJSON['data'][i]['fullPath'] = path.join(subFolder, resultJSON['data'][i]['key']);
-          resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
-          resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(app.getPath('userData'), 'experiments', resultJSON['data'][i].key)) ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+          resultJSON['data'][i]['status'] = this.props.runningExpts.includes(path.join(this.state.exptLocation, 'experiments', resultJSON['data'][i].key)) ? 'Running' : 'Stopped';
+          resultJSON['data'][i]['statusDot'] = this.props.runningExpts.includes(path.join(this.state.exptLocation, 'experiments', resultJSON['data'][i].key)) ? <div className="circleGreen"></div> : <div className="circleRed"></div>;
           resultJSON['data'][i]['evolver'] = this.getEvolver(resultJSON['data'][i]['key']);
 
         }
@@ -158,7 +166,7 @@ loadFileDir = (subFolder, isScript) => {
 
   getEvolver = (expt) => {
     var evolverExptMap = store.get('evolverExptMap', {});
-    var evolver = evolverExptMap[path.join(app.getPath('userData'), this.props.subFolder, expt)] === undefined ? 'Not run yet' : evolverExptMap[path.join(app.getPath('userData'), this.props.subFolder, expt)];
+    var evolver = evolverExptMap[path.join(this.state.exptLocation, this.props.subFolder, expt)] === undefined ? 'Not run yet' : evolverExptMap[path.join(this.state.exptLocation, this.props.subFolder, expt)];
     return evolver;
   };
 
@@ -172,11 +180,11 @@ loadFileDir = (subFolder, isScript) => {
    };
 
    handlePlay = exptName => {
-       this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
+       this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, exptName)) ? this.props.onContinue(exptName): this.props.onStart(exptName);
    }
 
    getPathname = exptName => {
-      if (this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, exptName))) {
+      if (this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, exptName))) {
         return routes.GRAPHING;
       }
       return routes.EDITOR;
@@ -186,40 +194,41 @@ loadFileDir = (subFolder, isScript) => {
     const { classes } = this.props;
     const { fileJSON, dirLength } = this.state;
     for (var i = 0; i < fileJSON.length; i++) {
-      fileJSON[i].status = this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, fileJSON[i].key)) ? "Running" : "Stopped";
-      fileJSON[i].statusDot = fileJSON[i].status === "Running" ? <Circle bgColor='#32CD32'/> : <Circle bgColor='#DC143C'/>;
+      fileJSON[i].status = this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, fileJSON[i].key)) ? "Running" : "Stopped";
+      fileJSON[i].statusDot = fileJSON[i].status === "Running" ? <div className="circleGreen"></div> : <div className="circleRed"></div>;
     }
   var columns = [
       {
         Header: 'Name',
         accessor: 'key', // String-based value accessors!
         width: 400,
-        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><div style={{width: '650px'}}>{cellInfo.row.key}</div></Link>
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><div style={{width: '650px'}}>{cellInfo.row.key}</div></Link>
       },
       {
         Header: 'Last Run',
         accessor: 'modified',
-        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><span> {cellInfo.original.modifiedString} </span></Link>,
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><span> {cellInfo.original.modifiedString} </span></Link>,
         width: 120
       },
       {
           Header: 'Status',
           accessor: 'status',
           width: 90,
-          Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><div>{cellInfo.original.statusDot}</div></Link>
+          Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><div>{cellInfo.original.statusDot}</div></Link>
       },
       {
         Header: 'eVOLVER',
         accessor: 'evolver',
         width: 250,
-        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span></Link>,
+        Cell: cellInfo => <Link className="scriptFinderEditBtn" id="table" to={{pathname: this.getPathname(cellInfo.row.key), exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><span style={{fontSize: 20}}>{this.getEvolver(cellInfo.row.key)}</span></Link>,
       },
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key), evolverIp:this.props.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, exptDir: path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
-            {this.props.runningExpts.includes(path.join(app.getPath('userData'), this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
+            <ReactTooltip />
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key), evolverIp:this.state.evolverIp}}><button data-tip="Edit settings for this experiment" className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, evolverIp: this.state.evolverIp, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><button data-tip="View data for this experiment" className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
+            {this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)) ? <button data-tip="Stop this experiment" className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button data-tip="Resume or start this experiment" className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
            </div>),
           width: 400
       }];
@@ -243,7 +252,6 @@ loadFileDir = (subFolder, isScript) => {
               onClick: (e, handleOriginal) => {
                 this.setState({selection: rowInfo.index})
                 if (handleOriginal) {
-                  console.log('handling original')
                   handleOriginal()
                 }
               },

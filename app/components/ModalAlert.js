@@ -1,24 +1,25 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Modal from 'react-responsive-modal';
 import styles from './modal-styling.css';
+
 
 
 const cardStyles = {
 
 };
 
-class RelaunchModal extends React.Component {
+
+class ModalAlert extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: this.props.alertOpen,
       question: this.props.alertQuestion,
-      experiments: this.props.alertExperiments,
-      answers: this.props.alertAnswers
+      value: '',
+      stayOnPage: this.props.stayOnPage
     };
   }
 
@@ -38,27 +39,30 @@ class RelaunchModal extends React.Component {
 
   onCloseModal = () => {
     this.setState({open: false, value:''});
+    this.props.onAlertAnswer(false);
   };
 
-  onYes = () => {
-    this.props.onClickYes();
-    this.setState({open: false});
-  };
-
-  onNo = () => {
-    this.props.onClickNo();
-    this.setState({open: false});
-  };
+  handleAnswer = () => {
+    this.props.onAlertAnswer(this.state.value);
+    this.setState({open: false, value: ''});
+  }
 
   render() {
     const { open } = this.state;
+
+    var acceptButton;
+    acceptButton = <button
+      onClick={() => this.handleAnswer()}
+      className={styles.alertBtns}>
+      OK
+    </button>
 
     return (
       <div>
         <Modal
           open={open}
           closeOnEsc={false}
-          closeOnOverlayClick={false}          
+          closeOnOverlayClick={false}
           onClose={this.onCloseModal}
           onRequestClose={this.onCloseModal}
           center
@@ -67,31 +71,18 @@ class RelaunchModal extends React.Component {
              modal: styles.newExptModal,
              overlay: styles.customOverlay
            }}>
-           <div style={{height: 'auto'}}>
-              <p style={{textAlign: 'center', margin: '10px 5px 5px 5px', fontSize: '20px'}}>
+           <div style={{height: '180px'}}>
+              <p style={{textAlign: 'center', margin: '20px 50px 15px 50px', fontStyle: 'italic', fontSize: '24px',fontWeight: 'bold'}}>
                 {this.state.question}
               </p>
-              <p style={{whiteSpace: 'pre', textAlign: 'center', margin: '0px 5px 5px 5px', fontSize: '20px'}}>
-                {this.state.experiments}
-              </p>
               <div className='alertBtnRow' style={{margin: '0px 30px 0px 30px'}}>
-                <button
-                  onClick={this.onYes}
-                  className={styles.alertBtns}>
-                  Yes
-                </button>
-                <button
-                  onClick={this.onNo}
-                  className={styles.alertBtns}>
-                  No
-                </button>
+                      {acceptButton}
               </div>
             </div>
           </Modal>
       </div>
-
     );
   }
 }
 
-export default withStyles(cardStyles)(RelaunchModal);
+export default withStyles(cardStyles)(ModalAlert);
