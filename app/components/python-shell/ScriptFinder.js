@@ -8,6 +8,7 @@ import parsePath from 'parse-filepath';
 import jsonQuery from 'json-query';
 import {MdCached} from 'react-icons/md';
 import ReactTable from "react-table";
+import ReactTooltip from 'react-tooltip';
 import {FaPlay, FaStop, FaPen, FaChartBar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import routes from '../../constants/routes.json';
@@ -48,7 +49,7 @@ moment.updateLocale('en', {
 
 function dirTree(dirname) {
     if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname);        
+        fs.mkdirSync(dirname);
     }
         var folderStats = fs.lstatSync(dirname),
             info = {
@@ -105,7 +106,7 @@ class ScriptFinder extends React.Component {
     if (this.props.exptLocation !== prevProps.exptLocation) {
         this.setState({exptLocation: this.props.exptLocation}, function() {
             this.handleRefresh(this.props.subFolder);
-        });        
+        });
     }
   }
 
@@ -224,9 +225,10 @@ loadFileDir = (subFolder, isScript) => {
       {
           Header: '',
           Cell: (cellInfo) => (<div>
-            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key), evolverIp:this.state.evolverIp}}><button className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
-            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, evolverIp: this.state.evolverIp, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><button className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
-            {this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)) ? <button className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
+            <ReactTooltip />
+            <Link className="scriptFinderEditBtn" id="edits" to={{pathname: routes.EDITOR, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key), evolverIp:this.state.evolverIp}}><button data-tip="Edit settings for this experiment" className="tableIconButton" onClick={() => this.props.onEdit(cellInfo.row.key)}> <FaPen size={13}/> </button></Link>
+            <Link className="scriptFinderEditBtn" id="graphs" to={{pathname: routes.GRAPHING, evolverIp: this.state.evolverIp, exptDir: path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)}}><button data-tip="View data for this experiment" className="tableIconButton" onClick={() => this.props.onGraph(cellInfo.row.key)}> <FaChartBar size={18}/> </button></Link>
+            {this.props.runningExpts.includes(path.join(this.state.exptLocation, this.props.subFolder, cellInfo.row.key)) ? <button data-tip="Stop this experiment" className="tableIconButton" onClick={() => this.props.onStop(cellInfo.row.key)}> <FaStop size={13}/> </button> : (<button data-tip="Resume or start this experiment" className="tableIconButton" onClick={() => this.handlePlay(cellInfo.row.key)} disabled={this.props.disablePlay}> <FaPlay size={13}/> </button>)}
            </div>),
           width: 400
       }];

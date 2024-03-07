@@ -1,15 +1,18 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Redirect } from 'react-router';
-import { Link } from 'react-router-dom';
+import {Redirect} from 'react-router';
+import {Link} from 'react-router-dom';
 import routes from '../constants/routes.json';
-import ODcalInput from './calibrationInputs/CalInputs';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
+import ODCalInput0 from './calibrationInputs/CalInputs';
+import ODCalInput1 from './calibrationInputs/CalInputs';
+import ODCalInput2 from './calibrationInputs/CalInputs';
+import ODCalInput3 from './calibrationInputs/CalInputs';
 import Card from '@material-ui/core/Card';
-import ODcalGUI from './calibrationInputs/CalGUI';
+import ODCalGUI from './calibrationInputs/ODCalGUI';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import {FaPlay, FaArrowLeft, FaArrowRight, FaStop, FaCheck, FaPen } from 'react-icons/fa';
+import {FaPlay,FaArrowLeft,FaArrowRight,FaStop,FaCheck,FaPen} from 'react-icons/fa';
 import normalize from 'array-normalize'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TextKeyboard from './calibrationInputs/TextKeyboard';
@@ -25,19 +28,17 @@ const http = require('https');
 var path = require('path');
 var fs = require('fs');
 
-const densityButtons = Array.from(Array(16).keys())
-
 const cardStyles = theme => ({
-  cardODcalGUI: {
+  cardODCalGUI: {
     width: 570,
     height: 800,
     backgroundColor: 'transparent',
-    margin: '0px 0px 0px 500px',
+    margin: '-17px 0px 0px 500px',
     position: 'absolute'
   },
   progressBar: {
     flexGrow: 1,
-    margin: '27px 0px 0px 0px',
+    margin: '-15px 0px 0px 0px',
     height: 8
   },
   colorPrimary: {
@@ -50,7 +51,7 @@ const cardStyles = theme => ({
     color: '#f58245'
   },
   circle: {
-    strokeWidth: '4px'
+    strokeWidth: '5px'
   }
 });
 
@@ -65,18 +66,19 @@ class ODcal extends React.Component {
       disableForward: false,
       disableBackward: true,
       progressCompleted: 0,
-      vialOpacities: [],
-      enteredValues: Array(16).fill(''),
-      generalOpacity: Array(16).fill(0),
+      vialOpacities: [[],[],[],[]],//new Array(4).fill([]),
+      enteredValues: new Array(4).fill().map(() => Array(18).fill('')), //Array(4).fill('')
+      generalOpacity: new Array(4).fill().map(() => Array(18).fill(0)), //Array(4).fill(0)
       inputsEntered: false,
-      enteredValuesFloat: [],
+      enteredValuesFloat: [[],[],[],[]], //Array(4).fill([]),
       readProgress: 0,
       skipFirst: true,
-      vialProgress: Array(16).fill(0),
-      vialLabels: ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15'],
-      vialData: {'od135':[],'od90':[],'temp':[]},
+      vialProgress: Array(4).fill(0),
+      selectedSmartQuad: 0,
+      vialLabels: Array(4).fill(['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17']),
+      quadsData: {'od90': [[],[],[],[]]},
       timesRead: 3,
-      experimentName:'',
+      experimentName: '',
       alertOpen: false,
       alertQuestion: 'Running calibration...',
       alertAnswers: ['Retry', 'Exit'],
@@ -93,74 +95,97 @@ class ODcal extends React.Component {
     if (!fs.existsSync(path.join(app.getPath('userData'), 'calibration'))) {
         fs.mkdirSync(path.join(app.getPath('userData'), 'calibration'));
         var calibrationsFile = fs.createWriteStream(path.join(app.getPath('userData'), 'calibration', 'calibrate.py'));
-        var calibrationScriptRequest = http.get("https://raw.githubusercontent.com/FYNCH-BIO/dpu/rc/calibration/calibrate.py", function(response) {response.pipe(calibrationsFile)});
+        var calibrationScriptRequest = http.get("https://raw.githubusercontent.com/ezirayw/dpu/ht-evolver/calibration/calibrate.py", function(response) {response.pipe(calibrationsFile)});
     }
     ipcRenderer.on('calibration-finished', (event, calibrationName) => {this.props.socket.emit('getcalibration', {name: calibrationName})});
     this.props.socket.on('calibration', function(response) {
         this.setState({displayGraphs: true, displayCalibration: true, alertOpen: false, calibration: response});
     }.bind(this));
     this.props.socket.on('broadcast', function(response) {
-        console.log(this.state.vialData);
-        var newVialData = this.state.vialData;
-        // if stop was pressed or user still moving vials around, don't want to continue
-        if (this.state.readProgress === 0) {
-            return;
-        }
+      if (response.dummy) {
+        return;
+      }
 
-        // Add the data into the data structures
-        if (!this.state.skipFirst) {
-          if (response.data.od_90 && response.data.temp) {
-            this.progress();
-            /*
-               Note on indexing: Because vials are being shuffled around during a calibration,
-               the data is not collected in order, ie the vial with OD 0 would be the 3rd
-               data point collected for vial 2. To shift them properly,
-               use the formula: (-currentStep -1) + vialIndex. If this is negative,
-               do 15 - <value>.
-            */
-            for (var i = 0; i < response.data.od_90.length; i++) {
-              var shift = this.calculateShift(i);
+      // Structure incoming od_90_left and od_90_right data to properly map onto vial order on smart quad
+      let indexValues = [[0,1,2,3,4,5,6,7,8],[9,10,11,12,13,14,15,16,17],[18,19,20,21,22,23,24,25,26],[27,28,29,30,31,32,33,34,35]]
+      let odLeft = [[],[],[],[]];
+      let odRight = [[],[],[],[]];
+      for (var i = 0; i < odLeft.length; i++) {
+        odLeft[i] = response.data.od_90_left.filter((x,index) => indexValues[i].includes(index));
+        odRight[i] = response.data.od_90_right.filter((x,index) => indexValues[i].includes(index));
+      }
+
+      let odData = [[],[],[],[]]
+      for (var i = 0; i < odData.length; i++) {
+        odData[i].push(odLeft[i][0], odLeft[i][1], odLeft[i][2], odRight[i][0], odRight[i][1], odRight[i][2]);
+        odData[i].push(odLeft[i][3], odLeft[i][4], odLeft[i][5], odRight[i][3], odRight[i][4], odRight[i][5]);
+        odData[i].push(odLeft[i][6], odLeft[i][7], odLeft[i][8], odRight[i][6], odRight[i][7], odRight[i][8]);
+      }
+
+      let newquadsData = this.state.quadsData;
+      // if stop was pressed or user still moving vials around, don't want to continue
+      if (this.state.readProgress === 0) {
+        return;
+      }
+
+      // Add the data into the data structures
+      if (!this.state.skipFirst) {
+        if (response.data.od_90_left && response.data.od_90_right) {
+          this.progress();
+          /*
+             Note on indexing: Because vials are being shuffled around during a calibration,
+             the data is not collected in order, ie the vial with OD 0 would be the 3rd
+             data point collected for vial 2. To shift them properly,
+             use the formula: (-currentStep -1) + vialIndex. If this is negative,
+             do 15 - <value>.
+          */
+          for (var i = 0; i < 4; i++) {
+            for (var j = 0; j < 18; j++) {
+              var shift = this.calculateShift(j);
+              newquadsData.od90[i][j][shift].push(parseInt(odData[i][j]));
+              /*
               if (response.data.od_135) {
-                newVialData.od135[i][shift].push(parseInt(response.data.od_135[i]));
+                newquadsData.od135[i][shift].push(parseInt(response.data.od_135[i]));
               }
-              newVialData.od90[i][shift].push(parseInt(response.data.od_90[i]));
-              newVialData.temp[i][shift].push(parseInt(response.data.temp[i]));
+              */
+              //newquadsData.temp[i][j][shift].push(parseInt(response.data.temp[i]));
             }
           }
         }
-        else {
-          this.progress();
-        }
+      } else {
+        this.progress();
+      }
 
-        var progressCompleted = (100 * ((this.state.readsFinished) / 16));
-        var readProgress = this.state.readProgress;
-        var readsFinished = 0;
-        var newSkipFirst = false;
+      var progressCompleted = (100 * ((this.state.readsFinished) / 18));
+      var readProgress = this.state.readProgress;
+      var readsFinished = 0;
+      var newSkipFirst = false;
 
-        // Check how many reads have been finished by looking through the data structure
-        for (var i = 0; i < 16; i++) {
-          if (newVialData.od90[0][i].length === this.state.timesRead) {
-            readsFinished += 1;
-          }
+      // Check how many reads have been finished by looking through the data structure
+      for (var i = 0; i < 18; i++) {
+        if (newquadsData.od90[0][0][i].length === this.state.timesRead) {
+          readsFinished += 1;
         }
+      }
 
-        // This means we've finished - we have all the measurements we need for this step.
-        if (readProgress >= 100) {
-          readProgress = 0;
-          progressCompleted = (100 * ((readsFinished) / 16));
-          this.handleUnlockBtns();
-          newSkipFirst = true;
+      // This means we've finished - we have all the measurements we need for this step.
+      if (readProgress >= 100) {
+        readProgress = 0;
+        progressCompleted = (100 * ((readsFinished) / 18));
+        this.handleUnlockBtns();
+        newSkipFirst = true;
+      }
+      this.setState({
+        quadsData: newquadsData,
+        readProgress: readProgress,
+        progressCompleted: progressCompleted,
+        readsFinished: readsFinished,
+        skipFirst: newSkipFirst
+      }, function() {
+        if (this.state.progressCompleted === 100) {
+          store.set('runningODCal', this.state);
         }
-        this.setState({vialData: newVialData,
-          readProgress: readProgress,
-          progressCompleted: progressCompleted,
-          readsFinished: readsFinished,
-          skipFirst: newSkipFirst
-        }, function() {
-          if (this.state.progressCompleted === 100) {
-            store.set('runningODCal', this.state);
-          }
-        });
+      });
     }.bind(this));
 
     this.props.socket.on('calibrationrawcallback', function(response) {
@@ -173,86 +198,102 @@ class ODcal extends React.Component {
 
   componentDidMount() {
     this.props.logger.info('Routed to Density Calibration Page.')
-    if (store.has('runningODCal')){
-      this.setState({resumeOpen:true})
+    if (store.has('runningODCal')) {
+      this.setState({
+        resumeOpen: true
+      })
     } else {
       this.keyboard.current.onOpenModal();
     }
     this.setState({
-      vialOpacities: Array(16).fill(0),
-      })
+      vialOpacities: Array(4).fill([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]),
+    })
   };
 
   componentWillUnmount() {
     this.props.socket.removeAllListeners('broadcast');
     this.props.socket.removeAllListeners('calibrationrawcallback');
-    this.setState({readProgress: 0});
+    this.setState({
+      readProgress: 0
+    });
   };
 
 
   startRead = () => {
     this.handleLockBtns();
-    var newVialData = this.state.vialData;
+    var newquadsData = this.state.quadsData;
 
     // Initialization of data lists
     // First dimension is Vial
     // Second dimension is step number
     // Each step will be a list with 3 technical replicates
-    if (newVialData.od135.length === 0) {
-      for (var i = 0; i < 16; i++) {
-        newVialData.od135.push([]);
-        newVialData.od90.push([]);
-        newVialData.temp.push([]);
-        for (var j = 0; j < 16; j++) {
-          // fill these guys with nothing to start just to
-          newVialData.od135[i].push([]);
-          newVialData.od90[i].push([]);
-          newVialData.temp[i].push([]);
+    if (newquadsData.od90[0].length === 0) {
+      for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 18; j++) {
+          newquadsData.od90[i].push([]);
+          //newquadsData.temp[i].push([]);
+          for (var k = 0; k < 18; k++) {
+            // fill these guys with nothing to start just to
+            newquadsData.od90[i][j].push([]);
+            //newquadsData.temp[i][j].push([]);
+          }
         }
       }
     }
 
     // remove existing data for particular layout
-    for (var i = 0; i < newVialData.od135.length; i++) {
-      newVialData.od135[i][this.calculateShift(i)] = [];
-      newVialData.od90[i][this.calculateShift(i)] = [];
-      newVialData.temp[i][this.calculateShift(i)] = [];
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < 18; j++) {
+        newquadsData.od90[i][j][this.calculateShift(j)] = [];
+        //newquadsData.temp[i][this.calculateShift(j)] = [];
+      }
     }
-    this.setState({vialData:newVialData, readProgress: this.state.readProgress + .01});
+    this.setState({
+      quadsData: newquadsData,
+      readProgress: this.state.readProgress + .01
+    });
   };
 
   stopRead = () => {
     this.props.socket.emit('stopread', {});
     this.handleUnlockBtns()
     // remove existing data for particular layout
-    var newVialData = this.state.vialData;
-    if (this.vialData) {
-      for (var i = 0; i < this.vialData.od90.length; i++) {
-            if (newVialData.od135) {
-              newVialData.od135[i][this.state.currentStep - 1] = [];
-            }
-            newVialData.od90[i][this.state.currentStep - 1] = [];
-            newVialData.temp[i][this.state.currentStep - 1] = [];
+    var newquadsData = this.state.quadsData;
+    if (this.quadsData) {
+      for (var i = 0; i < this.quadsData.od90.length; i++) {
+        for (var j = 0; j < this.quadsData.od90[i].length; j++) {
+          if (newquadsData.od135) {
+            newquadsData.od135[i][this.state.currentStep - 1] = [];
           }
+          newquadsData.od90[i][this.state.currentStep - 1] = [];
+          //newquadsData.temp[i][this.state.currentStep - 1] = [];
+        }
+      }
     }
-    this.setState({readProgress: 0, vialData: newVialData, skipFirst: true});
+    this.setState({
+      readProgress: 0,
+      quadsData: newquadsData,
+      skipFirst: true
+    });
   }
 
   progress = () => {
-     let readProgress = this.state.readProgress;
-     readProgress = readProgress + (100/(this.state.timesRead + 1));
-     this.setState({readProgress: readProgress});
-   };
+    let readProgress = this.state.readProgress;
+    readProgress = readProgress + (100 / (this.state.timesRead + 1));
+    this.setState({
+      readProgress: readProgress
+    });
+  };
 
   handleBack = () => {
     var disableForward;
     var disableBackward;
     var currentStep = this.state.currentStep - 1;
 
-    if (this.state.currentStep === 16){
+    if (this.state.currentStep === 18) {
       disableForward = false;
     }
-    if (this.state.currentStep === 2){
+    if (this.state.currentStep === 2) {
       disableBackward = true;
     }
     this.child.current.handleBack();
@@ -260,7 +301,7 @@ class ODcal extends React.Component {
       disableForward: disableForward,
       disableBackward: disableBackward,
       currentStep: currentStep
-      });
+    });
   };
 
   handleAdvance = () => {
@@ -269,17 +310,17 @@ class ODcal extends React.Component {
     var currentStep = this.state.currentStep + 1;
 
     // Just in case. Somehow this can go out of it's bounds and cause weirdness
-    if (currentStep > 16) {
-       currentStep = 16;
+    if (currentStep > 18) {
+      currentStep = 18;
     }
     if (currentStep < 1) {
-        currentStep = 1;
+      currentStep = 1;
     }
 
-    if (this.state.currentStep === 1){
+    if (this.state.currentStep === 1) {
       disableBackward = false;
     }
-    if (this.state.currentStep === 15){
+    if (this.state.currentStep === 18) {
       disableForward = true;
     }
 
@@ -288,7 +329,7 @@ class ODcal extends React.Component {
       disableForward: disableForward,
       disableBackward: disableBackward,
       currentStep: currentStep
-      });
+    });
   };
 
   handleLockBtns = () => {
@@ -298,114 +339,143 @@ class ODcal extends React.Component {
     this.setState({
       disableForward: disableForward,
       disableBackward: disableBackward,
-      });
+    });
   };
 
   handleUnlockBtns = () => {
     var disableForward = false;
     var disableBackward = false;
 
-    if (this.state.currentStep === 1){
+    if (this.state.currentStep === 1) {
       disableBackward = true;
       disableForward = false;
     }
-    if (this.state.currentStep === 16){
+    if (this.state.currentStep === 18) {
       disableBackward = false;
       disableForward = true;
     }
     this.setState({
       disableForward: disableForward,
       disableBackward: disableBackward,
-      });
+    });
   };
 
   handleODChange = (odValues) => {
-      this.setState({enteredValues: odValues});
-    }
+    let newEnteredValues = this.state.enteredValues;
+    newEnteredValues[this.state.selectedSmartQuad] = odValues;
+    this.setState({
+      enteredValues: newEnteredValues
+    });
+  }
 
   handleStepOne = () => {
-    let floatValues = [];
-    var i;
-    for (i = 0; i < this.state.enteredValues.length; i++) {
-      floatValues[i] = parseFloat(this.state.enteredValues[i]);
+    let floatValues = this.state.enteredValuesFloat;
+    for (var i = 0; i < this.state.enteredValues.length; i++) {
+      let temp = [];
+      for (var j = 0; j < this.state.enteredValues[i].length; j++) {
+        temp[j] = parseFloat(this.state.enteredValues[i][j]);
+      }
+      floatValues[i] = temp;
     }
 
-    let inputOD = JSON.parse(JSON.stringify(floatValues));
-    let normalizedOD = normalize(inputOD);
+    let newVialOpacities = this.state.vialOpacities;
+    for (var i = 0; i < this.state.enteredValues.length; i++) {
+      let inputOD = JSON.parse(JSON.stringify(floatValues[i]));
+      let normalizedOD = normalize(inputOD);
+      newVialOpacities[i] = normalizedOD;
+    }
     this.setState({
       enteredValuesFloat: floatValues,
-      vialOpacities: normalizedOD,
+      vialOpacities: newVialOpacities,
       inputsEntered: true,
-      generalOpacity: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      generalOpacity: Array(4).fill().map(() => Array(18).fill(1))
     });
   }
 
   handleKeyboardInput = (input) => {
     var exptName;
-    if (input == ''){
+    if (input == '') {
       exptName = 'ODCal-' + new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
     } else {
       exptName = input
     }
-    this.setState({experimentName: exptName});
+    this.setState({
+      experimentName: exptName
+    });
   }
 
   handleFinishExpt = () => {
     this.setState({alertOpen: true})
+    console.log("Experiment Finished!");
     var d = new Date();
     var currentTime = d.getTime();
 
     var rawList = [];
-    var saveData = {name: this.state.experimentName, calibrationType: "od", timeCollected: currentTime, measuredData: Array(16).fill(this.state.enteredValuesFloat), fits:[]};
-    if (this.state.vialData.od90[0][0].length > 0) {
-      rawList.push({param: 'od_90', vialData: this.state.vialData.od90});
+    var saveData = {
+      name: this.state.experimentName,
+      calibrationType: "od",
+      timeCollected: currentTime,
+      measuredData: this.state.enteredValuesFloat,
+      fits: []
+    };
+    if (this.state.quadsData.od90[0][0].length > 0) {
+      rawList.push({
+        param: 'od_90',
+        quadsData: this.state.quadsData.od90
+      });
     }
-    if (this.state.vialData.od135[0][0].length > 0) {
-      rawList.push({param: 'od_135', vialData: this.state.vialData.od135});
-    }
-    rawList.push({param: 'temp', vialData: this.state.vialData.temp});
     saveData.raw = rawList;
     this.props.socket.emit('setrawcalibration', saveData);
 
-  }
+  };
 
   handleKeyboardModal = () => {
     this.keyboard.current.onOpenModal();
-  }
+  };
 
   onAlertAnswer = (answer) => {
-    if (answer == 'Retry'){
+    if (answer == 'Retry') {
       this.handleFinishExpt();
     }
-    if (answer == 'Exit'){
+    if (answer == 'Exit') {
       store.delete('runningODCal');
-      this.setState({exiting: true});
+      this.setState({
+        exiting: true
+      });
     }
-  }
+  };
 
   onResumeAnswer = (answer) => {
-    if (answer == 'New'){
+    if (answer == 'New') {
       this.keyboard.current.onOpenModal();
       store.delete('runningODCal');
     }
-    if (answer == 'Resume'){
+    if (answer == 'Resume') {
       var previousState = store.get('runningODCal');
       this.setState(previousState);
     }
-    this.setState({resumeOpen:false})
-  }
+    this.setState({
+      resumeOpen: false
+    })
+  };
 
   calculateShift = (i) => {
     var shift = -(this.state.currentStep - 1) + i;
     if (shift < 0) {
-      shift = 16 + shift;
+      shift = 18 + shift;
     }
     return shift;
-  }
+  };
+
+  handleSmartQuadSelection = (selectedSmartQuad) => {
+    this.setState({
+      selectedSmartQuad: selectedSmartQuad
+    }, () => {
+    });
+  };
 
   handleGraph = () => {
-    this.setState({displayGraphs: !this.state.displayGraphs});
-  }
+    this.setState({displayGraphs: !this.state.displayGraphs})};
 
   render() {
     const { classes, theme } = this.props;
@@ -413,58 +483,51 @@ class ODcal extends React.Component {
 
     let measureButton;
     if (this.state.readProgress === 0) {
-        measureButton =
-        <button
-          className="measureBtn"
-          onClick = {this.startRead}>
-           <FaPlay/>
-        </button>;
-        try {
-          if (this.state.vialData.od135[0][this.calculateShift(0)].length === this.state.timesRead){
-
-              measureButton =
-              <button
-                className="measureBtn"
-                onClick = {this.startRead}>
-                 <FaCheck/>
-              </button>;
-            }
+      measureButton = <button
+      className = "measureBtn"
+      onClick = {this.startRead} ><FaPlay / >
+      </button>;
+      try {
+        if (this.state.quadsData.od135[0][this.calculateShift(0)].length === this.state.timesRead) {
+          measureButton = <button
+          className = "measureBtn"
+          onClick = {this.startRead} ><FaCheck / >
+      </button>;
         }
-        catch(err) {}
+      } catch (err) {}
     } else {
       measureButton =
-      <button
-        className="measureBtn"
-        onClick= {this.stopRead}>
-        <CircularProgress
-          classes={{
-            colorPrimary: classes.circleProgressColor,
-            circle: classes.circle
+        <button
+          className = "measureBtn"
+          onClick = {this.stopRead}>
+          <CircularProgress
+            classes = {{
+              colorPrimary: classes.circleProgressColor,
+              circle: classes.circle
             }}
-          variant="static"
-          value={this.state.readProgress}
-          color="primary"
-          size= {35}
-        />
-        <FaStop size={18} className = "readStopBtn"/>
-      </button>
+            variant="static"
+            value={this.state.readProgress}
+            color="primary"
+            size={35}
+          />
+          <FaStop size={17} className="readStopBtn"/>
+        </button>
     }
 
     let btnRight;
-    if  ((this.state.progressCompleted >= 100) && (this.state.currentStep === 16)){
+    if ((this.state.progressCompleted >= 100) && (this.state.currentStep === 18)) {
       btnRight =
         <button
-          className="odAdvanceBtn"
+          className="tempAdvanceBtn"
           onClick={this.handleFinishExpt}>
           <FaPen/>
         </button>
     } else {
       btnRight =
         <button
-          className="odAdvanceBtn"
+          className="tempAdvanceBtn"
           disabled={this.state.disableForward}
-          onClick={this.handleAdvance}>
-          <FaArrowRight/>
+          onClick={this.handleAdvance}> <FaArrowRight/>
         </button>
     }
 
@@ -473,10 +536,9 @@ class ODcal extends React.Component {
         progressButtons = <div>
         <div className="row" style={{position: 'absolute'}}>
           <button
-            className="odBackBtn"
+            className="tempBackBtn"
             disabled={this.state.disableBackward}
-            onClick={this.handleBack}>
-            <FaArrowLeft/>
+            onClick={this.handleBack}> <FaArrowLeft/>
           </button>
           {measureButton}
           {btnRight}
@@ -485,42 +547,46 @@ class ODcal extends React.Component {
         </div>;
     } else {
       progressButtons =
-      <div className="row">
+      <div className="row" >
         <button
           className="stepOneBtn"
-          onClick={this.handleStepOne}>
-          Record Sample Densities <FaPlay size={17}/>
+          onClick={this.handleStepOne}> Record Sample Densities <FaPlay size = {17}/>
         </button>
       </div>;
-          }
+    }
 
     let calGraphic = null;
     let statusText;
     if (!this.state.inputsEntered) {
-      statusText = <p className="statusText"> Please enter OD calibration Values. </p>
-    }
-    else if (this.state.readProgress !== 0){
-      statusText = <p className="statusText"> Collecting raw values from eVOLVER... </p>
-    }
-    else if (this.state.inputsEntered && (this.state.vialData.length !== 0)){
-      statusText = <p className="statusText"> {this.state.readsFinished}/16 Measurements Made </p>
-    }
-    else if (this.state.inputsEntered){
-      statusText = <p className="statusText"> Calibration values locked! Follow sample mapping above. </p>
+      statusText = < p className = "statusText" > Please enter OD calibration Values. < /p>
+    } else if (this.state.readProgress !== 0) {
+      statusText = < p className = "statusText" > Collecting raw values from eVOLVER... < /p>
+    } else if (this.state.inputsEntered && (this.state.quadsData.length !== 0)) {
+      statusText = < p className = "statusText" > {this.state.readsFinished}/18 Measurements Made </p >
+    } else if (this.state.inputsEntered) {
+      statusText = < p className = "statusText" > Calibration values locked!Follow sample mapping above. < /p>
     }
 
     if (this.state.exiting) {
-      return <Redirect push to={{pathname:routes.CALMENU, socket:this.props.socket, logger:this.props.logger}} />;
+      return <Redirect push to = {
+        {
+          pathname: routes.CALMENU,
+          socket: this.props.socket,
+          logger: this.props.logger
+        }
+      }
+      />;
     }
 
     let linearProgress;
     let graphs;
-    let calInputs;
+    let odCalInput;
     let odCalTitles = <div></div>;
     let backArrow = <Link className="backHomeBtn" id="experiments" to={{pathname:routes.CALMENU, socket:this.props.socket , logger:this.props.logger}}><FaArrowLeft/></Link>;
     if (this.state.displayGraphs) {
         linearProgress = <div></div>
         graphs = <VialArrayGraph
+            selectedSmartQuad = {this.state.selectedSmartQuad}
             parameter = {this.state.parameter}
             exptDir = {'na'}
             activePlot = {'ALL'}
@@ -531,50 +597,82 @@ class ODcal extends React.Component {
             yaxisName = {'ADC VALUE'}
             displayCalibration = {this.state.displayCalibration}
             dataType = {{type:'calibration', param: 'od90'}}
-            passedData = {{vialData: this.state.vialData, enteredValuesFloat: this.state.enteredValuesFloat, calibration: this.state.calibration}}/>;
-        calInputs = <div></div>;
+            passedData = {{quadsData: this.state.quadsData, enteredValuesFloat: this.state.enteredValuesFloat, calibration: this.state.calibration}}/>;
+        odCalInput = <div></div>;
         progressButtons = <div><button className="odViewGraphBtnBack" onClick={this.handleGraph}>BACK</button></div>;
         backArrow = <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '-2px', left: '-35px'}} id="experiments" onClick={this.handleGraph}><FaArrowLeft/></button>
     }
     else {
-        linearProgress = <div><LinearProgress
-              classes= {{
-                root: classes.progressBar,
-                colorPrimary: classes.colorPrimary,
-                bar: classes.bar
-              }}
-              variant="determinate"
-              value={this.state.progressCompleted} />
-            {statusText}</div>;
-        graphs = <div></div>;
-        calInputs = <ODcalInput
-          onChangeValue={this.handleODChange}
-          enteredValues = {this.state.enteredValues}/>
-        odCalTitles = <button
-          className="odCalTitles"
-          onClick={this.handleKeyboardModal}><h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4></button>
+      linearProgress = <div><LinearProgress
+            classes= {{
+              root: classes.progressBar,
+              colorPrimary: classes.colorPrimary,
+              bar: classes.bar
+            }}
+            variant="determinate"
+            value={this.state.progressCompleted} />
+          {statusText}</div>;
+      graphs = <div></div>;
+
+      if (this.state.selectedSmartQuad == 0) {
+        odCalInput = < ODCalInput0
+        key={'ODCalInput0'}
+        id={'ODCalInput0'}
+        onChangeValue = {this.handleODChange}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
+      } else if (this.state.selectedSmartQuad == 1) {
+        odCalInput = < ODCalInput1
+        key={'ODCalInput1'}
+        id={'ODCalInput1'}
+        onChangeValue = {this.handleODChange}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
+      } else if (this.state.selectedSmartQuad == 2) {
+        odCalInput = < ODCalInput2
+        key={'ODCalInput2'}
+        id={'ODCalInput2'}
+        onChangeValue = {this.handleODChange}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
+      } else if (this.state.selectedSmartQuad == 3) {
+        odCalInput = < ODCalInput3
+        key={'ODCalInput3'}
+        id={'ODCalInput3'}
+        onChangeValue = {this.handleODChange}
+        onInputsEntered = {this.state.inputsEntered}
+        currentSmartQuad = {this.state.selectedSmartQuad}
+        enteredValues = {this.state.enteredValues[this.state.selectedSmartQuad]}/>
+      }
+      odCalTitles = <button
+        className="odCalTitles"
+        onClick={this.handleKeyboardModal}><h4 style={{fontWeight: 'bold', fontStyle: 'italic'}}> {this.state.experimentName} </h4></button>
     }
-    calGraphic = <div><Card className={classes.cardODcalGUI}>
-            <ODcalGUI
+    calGraphic = <div><Card className={classes.cardODCalGUI}>
+            <ODCalGUI
               ref={this.child}
               displayGraphs = {this.state.displayGraphs}
               vialOpacities = {this.state.vialOpacities}
               generalOpacity = {this.state.generalOpacity}
               valueInputs = {this.state.enteredValuesFloat}
               readProgress = {this.state.vialProgress}
+              onSmartQuadSelection = {this.handleSmartQuadSelection}
               vialLabels = {this.state.vialLabels}/>
               {linearProgress}
           </Card>
         </div>
-
     return (
       <div>
         {backArrow}
         {calGraphic}
+        {odCalInput}
         {graphs}
         {progressButtons}
-        {calInputs}
         {odCalTitles}
+
         <TextKeyboard ref={this.keyboard} onKeyboardInput={this.handleKeyboardInput} keyboardPrompt={this.state.keyboardPrompt}/>
         <ModalAlert
           alertOpen= {this.state.alertOpen}
@@ -591,4 +689,6 @@ class ODcal extends React.Component {
   }
 }
 
-export default withStyles(cardStyles, { withTheme: true })(ODcal);
+export default withStyles(cardStyles, {
+  withTheme: true
+})(ODcal);

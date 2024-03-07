@@ -1,9 +1,19 @@
 .vialPlotsMenuBtns{
-  width:30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   margin: 2px;
   border-radius: 20px;
   background-color: black;
+  border: 1px solid white;
+  padding: 0px 0px 0px 0px;
+}
+
+.vialPlotsMenuBtnsSelected{
+  width: 25px;
+  height: 25px;
+  margin: 2px;
+  border-radius: 20px;
+  background-color: orange;
   border: 1px solid white;
   padding: 0px 0px 0px 0px;
 }
@@ -14,34 +24,123 @@
 
 .vialPlotMenuBtnsText {
   color: orange;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: bold;
-  margin: -1px 0px 0px 0px;
+  margin: -3px 0px 0px 0px;
+}
+
+.vialPlotMenuBtnsTextSelected {
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
 }
 
 .vialPlotMenuBtnsText:hover{
   color: black;
 }
 
-.vialPlotAllMenuBtns{
-  width:70px;
-  height: 130px;
+.quadMenuBtnsText {
+  color: orange;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.quadMenuBtnsTextSelected {
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+}
+
+.quadMenuBtnsText:hover{
+  color: black;
+}
+
+.allMenuBtnText {
+  color: orange;
+  font-size: 15px;
+  font-weight: bold;
+  margin: -3px 0px 0px 0px;
+  line-height: 1.1em;
+}
+
+.allMenuBtnTextSelected {
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0px 0px 0px 0px;
+  line-height: 1.1em;
+}
+
+.allMenuBtnText:hover{
+  color: black;
+  line-height: 1.1em;
+}
+
+.quadMenuBtns{
+  width: 100px;
+  height: 30px;
   margin: 2px;
   border-radius: 5px;
   background-color: black;
   border: 1px solid white;
-  position: absolute;
-  top: 332px;
-  left: 27px;
   color: orange;
   font-size: 17px;
   font-weight: bold;
 }
 
+.quadMenuBtnsSelected{
+  width: 100px;
+  height: 30px;
+  margin: 2px;
+  border-radius: 5px;
+  background-color: orange;
+  border: 1px solid white;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+}
 
-.vialPlotAllMenuBtns:hover{
+
+.quadMenuBtns:hover{
   background-color: orange;
   color: black;
+}
+
+.allMenuBtn{
+  width: 42px;
+  height: 85px;
+  margin: 0px 0px 0px 170px;
+  overflow-wrap: break-word;
+  border-radius: 5px;
+  background-color: black;
+  border: 1px solid white;
+  color: orange;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.1em;
+}
+
+.allMenuBtnSelected{
+  width: 42px;
+  height: 85px;
+  margin: 0px 0px 0px 170px;
+  overflow-wrap: break-word;
+  border-radius: 5px;
+  background-color: orange;
+  border: 1px solid white;
+  color: black;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.1em;
+}
+
+.allMenuBtn:hover{
+  background-color: orange;
+  color: black;
+  line-height: 1.1em;
 }
 
 .graphTitle{
@@ -53,16 +152,17 @@
 
 .dataActionButtons {
   position: absolute;
-  top: 550px;
+  top: 590px;
   left: 10px;
-  width: 330px;
+  width: 300px;
   overflow-y: auto;
 }
 
 .dataActionButton {
-  width: 130px;
+  width: 110px;
+  height: 40px;
   margin: 0px 10px 0px 0px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .dataActionButton:active {
@@ -87,8 +187,8 @@
 .expt-buttons-graph {
   position: absolute;
   left: 40px;
-  top: 480px;
-  width: 220px;
+  top: 530px;
+  width: 200px;
   overflow: auto;
   overflow-y: auto;
 }

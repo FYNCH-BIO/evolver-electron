@@ -9,13 +9,14 @@ import Card from '@material-ui/core/Card';
 import { withStyles } from '@material-ui/core/styles';
 
 
-const densityButtons = Array.from(Array(16).keys())
+const densityButtons = Array.from(Array(18).keys())
 
 const cardStyles = theme => ({
   cardIndividualInput: {
     width: 200,
-    height: 55,
+    height: 50,
     backgroundColor: 'black',
+    marginBottom: '2px'
   }
 });
 
@@ -61,7 +62,7 @@ class CalInput extends React.Component {
  clickBack = (event,value) => {
    let nextID = this.state.numPadID
    if (this.state.numPadID == 0){
-     nextID = nextID + 15
+     nextID = nextID + 17
    }
    else {
      nextID = nextID - 1
@@ -71,8 +72,8 @@ class CalInput extends React.Component {
 
   clickForward = (event,value) => {
     let nextID = this.state.numPadID
-    if (this.state.numPadID == 15){
-      nextID = nextID - 15
+    if (this.state.numPadID == 17){
+      nextID = nextID - 17
     }
     else {
       nextID = nextID + 1
@@ -85,7 +86,6 @@ class CalInput extends React.Component {
     const { open } = this.state;
     const { classes, theme } = this.props;
 
-
     return (
       <div>
         <div className="calInputColumns">
@@ -96,8 +96,8 @@ class CalInput extends React.Component {
                 <button
                   className ="calInputBtns"
                   onClick={() => this.onOpenModal(index)}
-                  key= {index}
-                  id={index}
+                  key= {this.props.key + toString(index)}
+                  id={this.props.id + toString(index)}
                   disabled = {this.state.inputsLocked}>
                   {this.state.enteredValues[index]}
                 </button>

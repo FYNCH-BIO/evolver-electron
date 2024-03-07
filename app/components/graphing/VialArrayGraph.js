@@ -25,12 +25,27 @@ const styles = theme => ({
     backgroundColor: 'black',
     position: 'absolute',
     top: '570px',
-    left: '270px'
+    left: '275px'
   },
   yaxisTitle: {
     backgroundColor: 'black',
     position: 'absolute',
-    top: '390px',
+    top: '385px',
+    left: '-25px',
+    transform: 'rotate(-90deg)',
+    textAlign: 'center'
+  },
+  xaxisTitleCalibration: {
+    display: 'flex',
+    backgroundColor: 'black',
+    position: 'absolute',
+    top: '570px',
+    left: '390px'
+  },
+  yaxisTitleCalibration: {
+    backgroundColor: 'black',
+    position: 'absolute',
+    top: '385px',
     left: '-60px',
     transform: 'rotate(-90deg)',
     textAlign: 'center'
@@ -42,7 +57,7 @@ class VialArrayGraph extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      option: this.initializeGraphs(),
+      option: this.initializeGraphs(0),
       ymax: this.props.ymax,
       ymin: -0.1,
       timePlotted: this.props.timePlotted,
@@ -54,6 +69,7 @@ class VialArrayGraph extends React.Component {
       data: [],
       loaded: false,
       missingData: false,
+      selectedSmartQuad: this.props.selectedSmartQuad,
       useDatazoomForAll: false,
       datazoomStart: 0,
       datazoomEnd: 100,
@@ -66,6 +82,10 @@ class VialArrayGraph extends React.Component {
   timeTicket = null;
 
   componentDidUpdate(prevProps) {
+    if (this.props.selectedSmartQuad !== prevProps.selectedSmartQuad) {
+      this.setState({ selectedSmartQuad: this.props.selectedSmartQuad},
+        () => this.getData())
+    }
     if (this.props.activePlot !== prevProps.activePlot) {
       this.setState({ activePlot: this.props.activePlot},
         () => this.getData())
@@ -117,10 +137,10 @@ class VialArrayGraph extends React.Component {
   }
 };
 
-  initializeGraphs = () => {
+  initializeGraphs = (quad) => {
     var option = [];
-    for (var i = 0; i < 16; i++) {
-      option[i] = this.allVials(i, [], null, null, null)
+    for (var i = 0; i < 18; i++) {
+      option[i] = this.allVials(i, [], null, null, null, null, quad)
     }
     return option
   }
@@ -151,7 +171,7 @@ class VialArrayGraph extends React.Component {
       })
 
   }
-  
+
   getStandardDeviation = (array, mean) => {
       var n = array.length;
       var sumSquares = 0
@@ -164,17 +184,18 @@ class VialArrayGraph extends React.Component {
 
   getData = () => {
     var option = []; var compiled_data = []; var calibrationData = []; var compiledCalibrationData = []; var errorData = []; var compiledErrorData = [];
-    if (this.state.activePlot == 'ALL'){
+    if (this.state.activePlot == 'ALL') {
       console.log('Plotting All Vials!');
       if (this.state.dataType.type !== 'calibration' && !fs.existsSync(path.join(this.props.exptDir,'data'))) {
-        this.setState({missingData: true});
+        option = this.initializeGraphs(this.state.selectedSmartQuad)
+        this.setState({option: option, missingData: true});
         return;
       }
-      for (var i = 0; i < 16; i++) {
+      for (var i = 0; i < 18; i++) {
         var maxDataPoint = this.state.ymax;
         var minDataPoint = this.state.ymin;
-        var odPath =  path.join(this.props.exptDir, 'data','OD', 'vial' + i + '_OD.txt');
-        var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + i + '_temp.txt');
+        var odPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'OD', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + i.toString() + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'temp', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + i.toString() + '_temp.txt');
         var data = []; var ymin; var calibrationData = []; var errorData = [];
         var timePlotted = Number.MAX_SAFE_INTEGER;
         if (this.state.timePlotted !== 'ALL' && this.state.dataType.type !== 'calibration') {
@@ -182,47 +203,47 @@ class VialArrayGraph extends React.Component {
         }
 
         if (this.props.dataType.type === 'calibration') {
-            var vialData;
+          var quadData;
             try {
-                if (this.state.dataType.param === 'od90') {
-                    vialData = this.state.passedData.vialData[this.state.dataType.param][i]
-                    for (var j = 0; j < vialData.length; j++) {
-                        var dataAverage = 0;
-                        for (var k = 0; k < vialData[j].length; k++) {
-                            dataAverage = dataAverage + vialData[j][k]
-                        }
-                        dataAverage = dataAverage / vialData[j].length;
-                        if (dataAverage > maxDataPoint) {
-                            maxDataPoint = dataAverage;
-                        }
-                        if (dataAverage < minDataPoint) {
-                            minDataPoint = Math.max(-0.1, dataAverage);
-                        }
-                    data.push([this.state.passedData.enteredValuesFloat[j], dataAverage]);
-                    if (this.state.passedData.enteredValuesFloat[j].length != 0 && !isNaN(dataAverage)) {
-                        var stdDev = this.getStandardDeviation(vialData[j], dataAverage);
-                        errorData.push([this.state.passedData.enteredValuesFloat[j], dataAverage + stdDev, dataAverage - stdDev]);
-                    }
+              if (this.state.dataType.param === 'od90') {
+                quadData = this.state.passedData.quadsData[this.state.dataType.param][this.state.selectedSmartQuad][i]
+                for (var j = 0; j < Object.keys(quadData).length; j++) {
+                  var dataAverage = 0;
+                  for (var k = 0; k < quadData[j].length; k++) {
+                    dataAverage = dataAverage + quadData[j][k]
+                  }
+                  dataAverage = dataAverage / quadData[j].length;
+                  if (dataAverage > maxDataPoint) {
+                    maxDataPoint = dataAverage;
+                  }
+                  if (dataAverage < minDataPoint) {
+                    minDataPoint = Math.max(-0.1, dataAverage);
+                  }
+                  data.push([this.state.passedData.enteredValuesFloat[this.state.selectedSmartQuad][j], dataAverage]);
+                  if (this.state.passedData.enteredValuesFloat[this.state.selectedSmartQuad][j].length != 0 && !isNaN(dataAverage)) {
+                    var stdDev = this.getStandardDeviation(quadData[j], dataAverage);
+                    errorData.push([this.state.passedData.enteredValuesFloat[this.state.selectedSmartQuad][j], dataAverage + stdDev, dataAverage - stdDev]);
                   }
                 }
-                if (this.state.dataType.param === 'temp') {
-                    vialData = this.state.passedData.vialData;
-                    for (var j = 0; j < vialData.length; j++) {
-                        var tempData = vialData[j].temp;
-                        var averageTemp = 0;
-                        for (var k = 0; k < tempData[i].length; k++) {
-                            averageTemp = averageTemp + tempData[i][k];
-                        }
-                        averageTemp = averageTemp / tempData[i].length;
-                        if (dataAverage > maxDataPoint) {
-                            maxDataPoint = dataAverage;
-                        }
-                        if (dataAverage < minDataPoint) {
-                            minDataPoint = dataAverage;
-                        }                        
-                        data.push([averageTemp, parseFloat(vialData[j].enteredValues[i])]);
+              }
+              if (this.state.dataType.param === 'temp') {
+                quadData = this.state.passedData.vialData;
+                for (var j = 0; j < vialData.length; j++) {
+                  var tempData = vialData[j].temp;
+                  var averageTemp = 0;
+                    for (var k = 0; k < tempData[i].length; k++) {
+                      averageTemp = averageTemp + tempData[i][k];
                     }
+                  averageTemp = averageTemp / tempData[i].length;
+                  if (dataAverage > maxDataPoint) {
+                    maxDataPoint = dataAverage;
+                  }
+                  if (dataAverage < minDataPoint) {
+                    minDataPoint = dataAverage;
+                  }
+                  data.push([averageTemp, parseFloat(vialData[j].enteredValues[i])]);
                 }
+              }
             }
             catch (error) {
                 console.log(error);
@@ -231,9 +252,10 @@ class VialArrayGraph extends React.Component {
             }
             if (this.state.passedData.calibration) {
                 if (this.state.passedData.calibration.fits.length > 0) {
+                  console.log(this.state.passedData.calibration.fits)
                     var fit = this.state.passedData.calibration.fits[0];
-                    var coefficients = fit.coefficients[i]
-                    var measuredData = this.state.passedData.calibration.measuredData[i];
+                    var coefficients = fit.coefficients[this.state.selectedSmartQuad][i]
+                    var measuredData = this.state.passedData.calibration.measuredData[this.state.selectedSmartQuad].filter(element => element!=null);
                     if (fit.type === 'sigmoid') {
                         var a = coefficients[0];
                         var b = coefficients[1];
@@ -332,11 +354,11 @@ class VialArrayGraph extends React.Component {
         compiled_data[i] = data;
         compiledCalibrationData[i] = calibrationData;
         compiledErrorData[i] = errorData;
-        option[i] = this.allVials(i, data, minDataPoint, maxDataPoint, calibrationData, errorData)
+        option[i] = this.allVials(i, data, minDataPoint, maxDataPoint, calibrationData, errorData, this.state.selectedSmartQuad)
         }
       } else {
-        var odPath =  path.join(this.props.exptDir, 'data', 'OD', 'vial' + this.state.activePlot + '_OD.txt');
-        var tempPath =  path.join(this.props.exptDir, 'data', 'temp', 'vial' + this.state.activePlot + '_temp.txt');
+        var odPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'OD', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + this.state.activePlot.toString() + '_OD.txt');
+        var tempPath =  path.join(this.props.exptDir, 'data','quad_' + this.state.selectedSmartQuad.toString(), 'temp', 'quad' + this.state.selectedSmartQuad.toString() + '_vial' + this.state.activePlot.toString() + '_temp.txt');
         var data = []; var ymin;
         var timePlotted = parseFloat(this.state.timePlotted.substring(0, this.state.timePlotted.length - 1));
 
@@ -347,7 +369,8 @@ class VialArrayGraph extends React.Component {
             odArray = fs.readFileSync(odPath).toString().split('\n');
           }
           catch (error) {
-            this.setState({missingData: true});
+            option.push(this.singleVial(this.state.activePlot, [], null, null, this.state.selectedSmartQuad))
+            this.setState({option: option, missingData: true});
             return;
           }
           var lastTime = odArray[odArray.length -2].split(',')[0]
@@ -366,7 +389,8 @@ class VialArrayGraph extends React.Component {
             tempArray = fs.readFileSync(tempPath).toString().split('\n');
           }
           catch (error) {
-            this.setState({missingData: true});
+            option.push(this.singleVial(this.state.activePlot, [], null, null, this.state.selectedSmartQuad))
+            this.setState({option: option, missingData: true});
             return;
           }
           var lastTime = tempArray[tempArray.length -2].split(',')[0]
@@ -378,23 +402,19 @@ class VialArrayGraph extends React.Component {
           }
         }
         compiled_data[i] = data;
-        option.push(this.singleVial(this.state.activePlot, data, ymin, this.state.ymax))
-      }
-      if (this.state.dataType.type === 'calibration') {
-          compiled_data = compiled_data.slice(12,16).concat(compiled_data.slice(8,12)).concat(compiled_data.slice(4,8)).concat(compiled_data.slice(0,4));
-          option = option.slice(12,16).concat(option.slice(8,12)).concat(option.slice(4,8)).concat(option.slice(0,4));
+        option.push(this.singleVial(this.state.activePlot, data, ymin, this.state.ymax, this.state.selectedSmartQuad))
       }
       this.setState({data: compiled_data, option: option, loaded: true, missingData: false});
     }
 
-  allVials = (vial, data, ymin, ymax, calibrationData, errorData) => ({
+  allVials = (vial, data, ymin, ymax, calibrationData, errorData, quad) => ({
     title: {
-      text:'Vial ' + vial,
-      top: -5,
-      left: '41%',
+      text: 'SQ:' + quad + ' Vial ' + vial,
+      top: 0,
+      left: '22%',
       textStyle: {
         color: 'white',
-        fontSize: 20,
+        fontSize: 15,
       }
     },
     dataZoom: {
@@ -520,11 +540,11 @@ class VialArrayGraph extends React.Component {
     ]
   });
 
-  singleVial = (vial, data, ymin, ymax) => ({
+  singleVial = (vial, data, ymin, ymax, quad) => ({
     title: {
-      text:'Vial ' + vial,
+      text:'SQ:' + quad + ' Vial:' + vial,
       top: 0,
-      left: '50%',
+      left: '40%',
       textStyle: {
         color: 'white',
         fontSize: 30,
@@ -607,20 +627,24 @@ class VialArrayGraph extends React.Component {
 
   render() {
     const { classes, theme } = this.props;
-    var graphMargin = '25px 20px 0px 345px';
-    var graphWidth = '190px';
+    var graphMargin = '25px 20px 0px 300px';
+    var graphWidth = '130px';
+    let xaxisTitleClass = classes.xaxisTitle;
+    let yaxisTitleClass = classes.yaxisTitle;
     if (this.state.dataType.type === 'calibration') {
-        graphMargin = '30px 40px 0px 85px';
-        graphWidth = '250px';
+        graphMargin = '30px 0px 0px 90px';
+        graphWidth = '165px';
+        xaxisTitleClass = classes.xaxisTitleCalibration;
+        yaxisTitleClass = classes.yaxisTitleCalibration;
     }
     let loadingText;
     if (!this.state.loaded) {
       if (this.state.missingData) {
-        loadingText = <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-94px 0px 0px 68px'}}> No Data! </p>
+        loadingText = <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-95px 0px 0px 40px'}}> No Data! </p>
       }
       else {
         loadingText =
-          <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-94px 0px 0px 68px'}}> Loading... </p>
+          <p style={{fontSize: '20px', position: 'absolute', color: 'orange', margin: '-95px 0px 0px 40px'}}> Loading... </p>
       }
     }
 
@@ -632,7 +656,7 @@ class VialArrayGraph extends React.Component {
             <div key={index}>
               <ReactEcharts ref={index} key={index}
                 option={this.state.option[index]}
-                style={{height: 140, width: graphWidth}} />
+                style={{height: 190, width: graphWidth}} />
               {loadingText}
             </div>
             ))}
@@ -656,10 +680,10 @@ class VialArrayGraph extends React.Component {
 
     return (
       <div className='row' style={{position: 'absolute', margin: graphMargin}} >
-        <Paper square elevation={10} className={classes.xaxisTitle}>
+        <Paper square elevation={10} className={xaxisTitleClass}>
           <Typography variant="h5" className={classes.title}> {this.state.xaxisName} </Typography>
         </Paper>
-        <Paper square elevation={10} className={classes.yaxisTitle}>
+        <Paper square elevation={10} className={yaxisTitleClass}>
           <Typography variant="h5" className={classes.title}> {this.state.yaxisName} </Typography>
         </Paper>
         {graph}

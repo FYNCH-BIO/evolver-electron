@@ -42,7 +42,8 @@ const { PythonShell } = require('python-shell');
 const store = new Store({
   defaults:{
     running_expts: [],
-    first_visit: null
+    first_visit: null,
+    dpu_env: '/Users/ezirayimerwolle/.pyenv/versions/dpu'
   }
 });
 var backgroundShells = [];
@@ -73,7 +74,7 @@ function storeRunningExpts() {
 /* Handle startup of a python shell instance to run the DPU */
 function startPythonExpt(exptDir, flag) {
   var scriptName = path.join(exptDir, 'eVOLVER.py');
-  var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+  var pythonPath = path.join(store.get('dpu_env'), 'bin', 'python3');
   if (isWin) {
     pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
   }
@@ -100,7 +101,7 @@ function startPythonExpt(exptDir, flag) {
 
 function startPythonCalibration(calibrationName, ip, fitType, fitName, params) {
     var scriptName = path.join(app.getPath('userData'), 'calibration', 'calibrate.py');
-    var pythonPath = path.join(store.get('dpu-env'), 'bin', 'python3');
+    var pythonPath = path.join(store.get('dpu_env'), 'bin', 'python3');
     if (isWin) {
         pythonPath = path.join(store.get('dpu-env'), 'Scripts', 'python');
     }

@@ -48,7 +48,7 @@ class Graph extends React.Component {
       exptName: exptName,
       ymax: '0.5',
       ymaxChoices: ymaxChoicesOD,
-      ymaxTitle: 'YAXIS - MAX VALUE',
+      ymaxTitle: 'YAXIS - MAX VALUE:',
       timePlotted: '5h',
       timePlottedChoices: ['ALL', '5h', '12h', '24h'],
       timePlottedTitle: 'XAXIS - RECENT DATA:',
@@ -62,19 +62,20 @@ class Graph extends React.Component {
       logToggleOptions: ['VIEW GRAPH', 'VIEW LOGS'],
       logToggleState: true,
       logData: '',
+      selectedSmartQuad: 0,
       disablePlay: false,
       changeNameDisabled: false,
       deleteExptAlertOpen: false,
       deleteExptAlertDirections: "",
       cloneOpen: false,
       cloneDirections: 'Enter a new experiment name:',
-      exptLocation: app.getPath('userData') 
+      exptLocation: app.getPath('userData')
     };
-    
+
     if (store.get('exptLocation')) {
         this.setState({exptLocation: store.get('exptLocation')});
     }
-    
+
     ipcRenderer.on('running-expts', (event, arg) => {
       var disablePlay = false;
       var changeNameDisabled = false;
@@ -87,7 +88,7 @@ class Graph extends React.Component {
       this.setState({disablePlay: disablePlay, changeNameDisabled: changeNameDisabled});
     });
 
-    ipcRenderer.send('running-expts');    
+    ipcRenderer.send('running-expts');
   }
 
   componentDidMount() {
@@ -122,9 +123,7 @@ class Graph extends React.Component {
 
   handleYmax = event => {
     console.log(event)
-    this.setState({
-      ymax: event
-    })
+    this.setState({ymax: event})
   };
 
   handleTimePlotted = event => {
@@ -151,12 +150,12 @@ class Graph extends React.Component {
   handleParameterSelect = event => {
     var ymaxChoices, ymax, xaxisName
     if (event == 'OD'){
-      ymax = '0.5'
+      ymax = '0.5';
       ymaxChoices = ymaxChoicesOD;
       xaxisName = xAxisNameOD;
     }
     if (event == 'Temp'){
-      ymax = '40'
+      ymax = '40';
       ymaxChoices = ymaxChoicesTemp;
       xaxisName = xAxisNameTemp;
     }
@@ -188,57 +187,62 @@ class Graph extends React.Component {
     this.setState({logToggleState: logToggleState, logToggleText: logToggleText});
   }
 
-  handleActivePlot = (event) => {
-    this.setState({activePlot: event})
+  handleActivePlot = (vial) => {
+    this.setState({activePlot:vial})
   }
-  
+
+  handleSmartQuadSelection = (smartQuad) => {
+    this.setState({selectedSmartQuad: smartQuad})
+  }
+
   setAllGraphs = () => {
     this.setState({activePlot: 'ALL'});
   }
-  
+
   handlePlay = (exptToPlay) => {
       ipcRenderer.send('start-script', exptToPlay);
       this.setState({disablePlay:true});
+
   }
-  
+
   onStop = (exptToStop) => {
       ipcRenderer.send('stop-script', exptToStop);
   }
-  
+
   handleReset = (exptToStop) => {
       var directions = "Are you sure you want to reset the experiment " + this.state.exptName + "?";
       this.setState({deleteExptAlertDirections: directions}, function() {
           this.setState({deleteExptAlertOpen: true});
       }.bind(this));
   }
-  
+
   deleteExptAlertAnswer = (response) => {
       this.setState({deleteExptAlertOpen: false});
       if (response) {
           if (this.state.disablePlay) {
             ipcRenderer.send('stop-script', this.state.exptDir);
-          }          
+          }
           if (fs.existsSync(path.join(this.state.exptDir, 'data'))) {
-            rimraf.sync(path.join(this.state.exptDir, 'data'));              
-          }          
+            rimraf.sync(path.join(this.state.exptDir, 'data'));
+          }
       }
   }
-  
+
   cloneExpt = () => {
       this.setState({cloneOpen: true});
   }
-  
+
   onResumeClone = (exptName) => {
       this.setState({cloneOpen: false});
         if (exptName !== false) {
           this.createNewExperiment(exptName);
         }
   }
-  
+
   handleDataZoom = () => {
-      this.setState({timePlotted:'None'});      
+      this.setState({timePlotted:'None'});
   }
-  
+
     createNewExperiment = (exptName) => {
         var newDir = path.join(this.state.exptLocation, 'experiments', exptName);
         var oldDir = path.join(this.state.exptDir);
@@ -251,19 +255,20 @@ class Graph extends React.Component {
             fs.copyFileSync(path.join(oldDir, filename), path.join(newDir, filename));
           }
         });
-    }  
+    }
 
   render() {
     const { classes } = this.props;
-      var backButton = this.state.activePlot == 'ALL' ? 
-        <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger, evolverIp: this.props.evolverIp}}><FaArrowLeft/></Link> :
-        <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '3px', left: '-55px'}}onClick={this.setAllGraphs}><FaArrowLeft/></button>;
-      var exptName = path.basename(this.props.exptDir);
-      var dataDisplay = this.state.logToggleState ?
+    var backButton = this.state.activePlot == 'ALL' ?
+      <Link className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '5px', left: '-20px'}} id="experiments" to={{pathname:routes.EXPTMANAGER, socket: this.props.socket, logger:this.props.logger, evolverIp: this.props.evolverIp}}><FaArrowLeft/></Link> :
+      <button className="backHomeBtn" style={{zIndex: '10', position: 'absolute', top: '3px', left: '-55px'}}onClick={this.setAllGraphs}><FaArrowLeft/></button>;
+    var exptName = path.basename(this.props.exptDir);
+    var dataDisplay = this.state.logToggleState ?
         <VialArrayGraph
             parameter={this.state.parameter}
             exptDir={this.props.exptDir}
             activePlot = {this.state.activePlot}
+            selectedSmartQuad={this.state.selectedSmartQuad}
             ymax={this.state.ymax}
             timePlotted={this.state.timePlotted}
             downsample = {this.state.downsample}
@@ -284,24 +289,24 @@ class Graph extends React.Component {
             editorProps={{$blockScrolling: true}}/></div>
       var exptControlButtons = <div class="expt-buttons-graph">
         <ReactTooltip />
-        {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}><FaStop size={25}/></button> : <button data-tip="Start experiment (begin collecting data and execute culture routine)" class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.changeNameDisabled}><FaPlay size={25}/></button>}
-        <button class="ebfe" data-tip="Reset experiment (delete all data)" onClick={() => this.handleReset(this.state.exptDir)}><FaTrashAlt size={25}/></button>
-        <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneExpt()}><FaCopy size={25}/></button>
+        {this.state.disablePlay ? <button class="ebfe" data-tip="Stop the experiment (end data collection and end culture routines)" onClick={() => this.onStop(this.state.exptDir)}><FaStop size={20}/></button> : <button data-tip="Start experiment (begin collecting data and execute culture routine)" class="ebfe" onClick={() => this.handlePlay(this.state.exptDir)} disabled={this.state.changeNameDisabled}><FaPlay size={20}/></button>}
+        <button class="ebfe" data-tip="Reset experiment (delete all data)" onClick={() => this.handleReset(this.state.exptDir)}><FaTrashAlt size={20}/></button>
+        <button class="ebfe" data-tip="Clone this experiment, creating a new one with identical configuration" onClick={() => this.cloneExpt()}><FaCopy size={20}/></button>
         </div>;
 
-    return ( 
+    return (
      <div>
         {backButton}
         <h4 className="graphTitle">{exptName}</h4>
         {dataDisplay}
-        <div style={{position: 'absolute', top: '85px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '85px', left: '8px'}}>
           <VialArrayBtns
             labels={this.state.parameterChoices}
             radioTitle = {this.state.parameterTitle}
             value={this.state.parameter}
             onSelectRadio={this.handleParameterSelect}/>
         </div>
-        <div style={{position: 'absolute', top: '155px', left: '-10px'}}>
+        <div style={{position: 'absolute', top: '170px', left: '8px'}}>
           <VialArrayBtns
             labels={this.state.timePlottedChoices}
             radioTitle = {this.state.timePlottedTitle}
@@ -313,12 +318,15 @@ class Graph extends React.Component {
             value={this.state.ymax}
             onSelectRadio={this.handleYmax}/>
         </div>
-         {exptControlButtons}       
-        <VialMenu onSelectGraph={this.handleActivePlot}/>
+        {exptControlButtons}
+        <VialMenu
+          onSelectGraph={this.handleActivePlot}
+          onSmartQuadSelect={this.handleSmartQuadSelection}
+          activePlot={this.activePlot}/>
         <div className="dataActionButtons">
-          <button className={"dataActionButton"} onClick={this.downloadData}>DOWNLOAD</button>
-          <button className={"dataActionButton"} onClick={this.toggleLog}>{this.state.logToggleText}</button>
-        </div>
+           <button className={"dataActionButton"} onClick={this.downloadData}>DOWNLOAD</button>
+           <button className={"dataActionButton"} onClick={this.toggleLog}>{this.state.logToggleText}</button>
+         </div>
         <DeleteExptModal
             alertOpen = {this.state.deleteExptAlertOpen}
             alertQuestion = {this.state.deleteExptAlertDirections}
@@ -331,7 +339,6 @@ class Graph extends React.Component {
           alertQuestion = {this.state.cloneDirections}
           onAlertAnswer = {this.onResumeClone}/>
       </div>
-
     );
   }
 }

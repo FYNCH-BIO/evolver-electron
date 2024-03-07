@@ -17,12 +17,12 @@ const styles = theme => ({
     borderRadius: '10px',
     display: 'flex',
     width: '300px',
-    padding: '0px 0px 15px 0px',
-    justifyContent: 'center',
+    padding: '0px 0px 30px 0px',
+    justifyContent: 'left',
   },
   label: {
     color: 'white',
-    textAlign: 'center',
+    textAlign: 'left',
     fontSize: '20px',
     fontWeight: 'bold',
     '&$focused': {
